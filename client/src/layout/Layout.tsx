@@ -18,7 +18,7 @@ const Layout = () => {
           position: "sticky",
           top: "0px",
           zIndex: 50,
-          padding: "16px 40px",
+          padding: "10px 20px",
           background: "transparent",
         }}
       >
