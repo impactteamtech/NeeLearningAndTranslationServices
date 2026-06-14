@@ -1,5 +1,4 @@
 # NeeLearningAndTranslationServices
-# Nee's Learning & Translation Services
 
 ## Overview
 
@@ -7,7 +6,7 @@ Nee's Learning & Translation Services is a modern language-learning and translat
 
 The platform specializes in Haitian Creole language education while also supporting translation services between Haitian Creole, English, French, and additional languages in the future.
 
-Our goal is to make language learning and translation services accessible, affordable, and efficient through a modern web application powered by React, FastAPI, and PostgreSQL.
+Our goal is to make language learning and translation services accessible, affordable, and efficient through a modern web application powered by React, FastAPI, SQLAlchemy, and Supabase PostgreSQL.
 
 ---
 
@@ -54,19 +53,54 @@ Our goal is to make language learning and translation services accessible, affor
 * FastAPI
 * Python
 * SQLAlchemy
-* Alembic
-* JWT Authentication
+* Pydantic
+* Alembic (Planned)
+* JWT Authentication (Planned)
 
 ### Database
 
 * PostgreSQL
+* Supabase
 
 ### Cloud & Infrastructure
 
-* AWS
-* Docker
-* GitHub Actions
+* Supabase
+* AWS (Future)
+* Docker (Planned)
+* GitHub Actions (Planned)
 * REST APIs
+
+---
+
+## Current Development Status
+
+### Services Module
+
+* [x] Create Service
+* [x] Get All Services
+* [ ] Get Service By ID
+* [ ] Update Service
+* [ ] Delete Service
+
+### Availability Module
+
+* [x] Schema Design
+* [x] Route Design
+* [ ] PostgreSQL Migration
+
+### Booking Module
+
+* [x] Schema Design
+* [x] Route Design
+* [ ] PostgreSQL Migration
+
+### Translation Requests Module
+
+* [ ] In Development
+
+### Authentication & Users
+
+* [ ] Planned
 
 ---
 
@@ -86,6 +120,11 @@ NeeLearningAndTranslationServices/
 │   └── public_api/
 │
 ├── management/
+│   ├── core/
+│   ├── database/
+│   │   ├── database.py
+│   │   └── base.py
+│   │
 │   ├── models/
 │   ├── schemas/
 │   ├── routes/
@@ -93,6 +132,37 @@ NeeLearningAndTranslationServices/
 │   └── main.py
 │
 └── README.md
+```
+
+---
+
+## Database Architecture
+
+The application uses SQLAlchemy ORM with Supabase PostgreSQL.
+
+### Current Tables
+
+#### Services
+
+```text
+services
+├── id
+├── name
+├── description
+├── category
+├── price
+├── duration_minutes
+└── is_active
+```
+
+### Planned Tables
+
+```text
+users
+availability
+bookings
+translation_requests
+payments
 ```
 
 ---
@@ -105,6 +175,7 @@ Manage tutoring and translation services.
 
 ```http
 GET     /api/v1/services
+GET     /api/v1/services/{id}
 POST    /api/v1/services
 PUT     /api/v1/services/{id}
 DELETE  /api/v1/services/{id}
@@ -155,13 +226,31 @@ We believe language is more than communication—it is identity, culture, and op
 
 Impact Team Technologies
 
-Project Contributors:
+### Project Contributors
 
-* Frontend Developers (Yassine, Rae)
-* Backend Developers (Miracle, Yuri)
-* Management API Developers (Miracle, Yuri)
-* UI/UX Designers (Rae, Yassine)
-* QA Testers (TBD)
+* Frontend Developers
+
+  * Yassine Benkacem
+  * Rae
+
+* Backend Developers
+
+  * Miracle
+  * Houbenove "Yuri" Pierre-Louis
+
+* Management API Developers
+
+  * Miracle
+  * Houbenove "Yuri" Pierre-Louis
+
+* UI/UX Designers
+
+  * Rae
+  * Yassine Benkacem
+
+* QA Testers
+
+  * TBD
 
 ---
 
