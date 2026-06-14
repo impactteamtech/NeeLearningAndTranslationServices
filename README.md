@@ -1,42 +1,20 @@
 # NeeLearningAndTranslationServices
-# Nee's Learning & Translation Services
 
 ## Overview
 
 Nee's Learning & Translation Services is a modern language-learning and translation platform designed to connect students with qualified tutors and translators.
 
-The platform specializes in Haitian Creole language education while also supporting translation services between Haitian Creole, English, French, and additional languages in the future.
+The platform specializes in Haitian Creole language education while supporting translation services between Haitian Creole, English, French, and additional languages in the future.
 
-Our goal is to make language learning and translation services accessible, affordable, and efficient through a modern web application powered by React, FastAPI, and PostgreSQL.
+Our mission is to make language learning and translation services accessible, affordable, and efficient through a modern web application powered by React, FastAPI, SQLAlchemy, and Supabase PostgreSQL.
 
 ---
 
-## Features
+## Mission
 
-### Language Learning
+We believe language is more than communication—it is identity, culture, opportunity, and connection.
 
-* One-on-one Haitian Creole tutoring
-* Beginner, Intermediate, and Advanced courses
-* Flexible scheduling
-* Student progress tracking
-* Online lesson booking
-
-### Translation Services
-
-* Document translation
-* Certified translation requests
-* Multi-language support
-* Secure file uploads
-* Translation order tracking
-
-### Administration
-
-* Service management
-* Tutor management
-* Availability management
-* Booking management
-* Translation request management
-* Reporting and analytics
+Nee's Learning & Translation Services aims to promote Haitian Creole globally while providing professional translation services that help bridge communication gaps across cultures.
 
 ---
 
@@ -54,19 +32,22 @@ Our goal is to make language learning and translation services accessible, affor
 * FastAPI
 * Python
 * SQLAlchemy
-* Alembic
-* JWT Authentication
+* Pydantic
+* Alembic (Planned)
+* JWT Authentication (Planned)
 
 ### Database
 
 * PostgreSQL
+* Supabase
 
-### Cloud & Infrastructure
+### Infrastructure
 
-* AWS
-* Docker
-* GitHub Actions
+* GitHub
 * REST APIs
+* Docker (Planned)
+* GitHub Actions (Planned)
+* AWS (Future)
 
 ---
 
@@ -78,18 +59,26 @@ NeeLearningAndTranslationServices/
 ├── client/
 │   ├── src/
 │   ├── public/
-│   └── package.json
-│
-├── backend/
-│   ├── authentication/
-│   ├── users/
-│   └── public_api/
+│   ├── package.json
+│   └── vite.config.ts
 │
 ├── management/
+│   ├── core/
+│   │
+│   ├── database/
+│   │   ├── database.py
+│   │   └── base.py
+│   │
 │   ├── models/
+│   │
 │   ├── schemas/
+│   │
 │   ├── routes/
+│   │
 │   ├── services/
+│   │
+│   ├── .env
+│   │
 │   └── main.py
 │
 └── README.md
@@ -97,22 +86,122 @@ NeeLearningAndTranslationServices/
 
 ---
 
-## API Modules
+## Architecture
+
+The application follows a monorepo architecture:
+
+### Client
+
+The React frontend application responsible for:
+
+* User Interface
+* Student Dashboard
+* Tutor Dashboard
+* Booking Pages
+* Translation Request Pages
+
+### Management API
+
+The FastAPI backend responsible for:
+
+* Business Logic
+* Database Operations
+* Authentication
+* Service Management
+* Availability Management
+* Booking Management
+* Translation Requests
+
+### Database
+
+Supabase PostgreSQL serves as the primary database.
+
+SQLAlchemy is used as the ORM layer between FastAPI and PostgreSQL.
+
+---
+
+## Current Development Status
+
+### Database
+
+* [x] Supabase PostgreSQL Connected
+* [x] SQLAlchemy Engine Configured
+* [x] SessionLocal Configured
+* [x] Database Dependency Injection (`get_db`)
+* [x] Services Table Created
 
 ### Services API
 
-Manage tutoring and translation services.
+* [x] Create Service
+* [x] Get All Services
+* [ ] Get Service By ID
+* [ ] Update Service
+* [ ] Delete Service
+
+### Availability API
+
+* [x] Schema Design
+* [x] Route Design
+* [ ] PostgreSQL Migration
+
+### Booking API
+
+* [x] Schema Design
+* [x] Route Design
+* [ ] PostgreSQL Migration
+
+### Translation Requests API
+
+* [ ] In Development
+
+### Authentication
+
+* [ ] Planned
+
+---
+
+## Database Architecture
+
+### Current Tables
+
+#### Services
+
+```text
+services
+├── id
+├── name
+├── description
+├── category
+├── price
+├── duration_minutes
+└── is_active
+```
+
+### Planned Tables
+
+```text
+users
+availability
+bookings
+translation_requests
+payments
+```
+
+---
+
+## API Endpoints
+
+### Services
 
 ```http
 GET     /api/v1/services
+GET     /api/v1/services/{id}
 POST    /api/v1/services
 PUT     /api/v1/services/{id}
 DELETE  /api/v1/services/{id}
 ```
 
-### Availability API
-
-Manage tutor schedules.
+### Availability
 
 ```http
 GET     /api/v1/availability
@@ -121,9 +210,7 @@ PUT     /api/v1/availability/{id}
 DELETE  /api/v1/availability/{id}
 ```
 
-### Booking API
-
-Manage lesson bookings.
+### Bookings
 
 ```http
 GET     /api/v1/bookings
@@ -132,9 +219,7 @@ PUT     /api/v1/bookings/{id}
 DELETE  /api/v1/bookings/{id}
 ```
 
-### Translation Requests API
-
-Manage translation orders and requests.
+### Translation Requests
 
 ```http
 GET     /api/v1/translation-requests
@@ -143,25 +228,59 @@ POST    /api/v1/translation-requests
 
 ---
 
-## Vision
+## Development Roadmap
 
-Our mission is to promote Haitian Creole language education globally while providing professional translation services that help bridge communication gaps across cultures.
+### Phase 1
 
-We believe language is more than communication—it is identity, culture, and opportunity.
+* Services Management
+* Availability Management
+* Booking Management
+* PostgreSQL Integration
+
+### Phase 2
+
+* User Authentication
+* User Profiles
+* Tutor Profiles
+* Student Profiles
+
+### Phase 3
+
+* Translation Requests
+* File Uploads
+* Payment Processing
+
+### Phase 4
+
+* Notifications
+* Analytics Dashboard
+* Reporting
+* Mobile Optimization
 
 ---
 
 ## Contributors
 
-Impact Team Technologies
+### Impact Team Technologies
 
-Project Contributors:
+#### Frontend Team
 
-* Frontend Developers (Yassine, Rae)
-* Backend Developers (Miracle, Yuri)
-* Management API Developers (Miracle, Yuri)
-* UI/UX Designers (Rae, Yassine)
-* QA Testers (TBD)
+* Yassine Benkacem
+* Rae
+
+#### Backend Team
+
+* Miracle
+* Houbenove "Yuri" Pierre-Louis
+
+#### UI/UX Team
+
+* Rae
+* Yassine Benkacem
+
+#### QA Team
+
+* TBD
 
 ---
 
