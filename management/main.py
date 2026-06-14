@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes import services, availability
+from routes import services, availability, bookings
 
 
 app = FastAPI(
@@ -18,6 +18,12 @@ app.include_router(
     prefix="/api/v1/availability",
     tags=['Availability']
 )
+app.include_router(
+    bookings.router,
+    prefix="/api/v1/bookings",
+    tags=['Bookings']
+)
+
 
 @app.get("/")
 def home():
