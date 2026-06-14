@@ -1,12 +1,12 @@
 #the function that will handles creating services 
 
 from fastapi import APIRouter, HTTPException
-from schemas.service import ServiceCreate, ServiceResponse
-from database.database import get_db
+from management.schemas.service import ServiceCreate, ServiceResponse
+from management.database.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from fastapi import Depends
-from models.service import Service
+from management.models.service import Service
 router = APIRouter()
 
 

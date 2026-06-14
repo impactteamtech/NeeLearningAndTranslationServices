@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from schemas.availability import AvailabilityCreate, AvailabilityResponse
-from models.availability import availability_db
+from management.schemas.availability import AvailabilityCreate, AvailabilityResponse
+from management.models.availability import availability_db
 
 
 router = APIRouter()
