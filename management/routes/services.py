@@ -3,7 +3,8 @@
 from fastapi import APIRouter, HTTPException
 from schemas.service import ServiceCreate, ServiceResponse
 from database.database import get_db
-from sqlAlchamy.orm import Session 
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 from fastapi import Depends
 from models.service import Service
 router = APIRouter()
@@ -25,10 +26,17 @@ def create_service(service: ServiceCreate, db:Session = Depends(get_db)):
     db.commit()
     db.refresh(new_service)
     return new_service
+
+
 #route to get services
 @router.get("/", response_model=list[ServiceResponse])
-def get_services():
-    return services_db
+def get_services(db:Session = Depends(get_db)):
+    query = select(Service)
+    result = db.execute(query)
+    services = result.scalars().all()
+
+    return services
+
 
 #route to get service ids
 @router.get("/{service_id}", response_model=ServiceResponse)
