@@ -25,7 +25,7 @@ const Layout = () => {
       </header>
 
       {/* Page content — full width */}
-      <main className="flex-1 px-4 sm:px-8 md:px-16 lg:px-20">
+      <main className="flex-1">
         <Outlet />
       </main>
 

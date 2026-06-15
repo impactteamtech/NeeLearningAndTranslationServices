@@ -1,7 +1,70 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+/* ─── Types ─── */
+interface Testimonial {
+  id: string;
+  quote: string;
+  body: string;
+  authorName: string;
+  authorRole: string;
+  authorPhoto: string;
+  personImage: string;
+  personImageAlt: string;
+}
+
+/* ─── Data — module-level constant, never re-allocated ─── */
+const testimonials: Testimonial[] = [
+  {
+    id: "marie-larose",
+    quote:
+      "Nee's helped us communicate more effectively & turn language barriers into bridges of opportunity.",
+    body: "Working with Nee's Learning & Translation Services was an absolute pleasure. They managed every stage of our program and their attention to cultural detail ensured a flawless final result that exceeded our expectations.",
+    authorName: "Marie Larose",
+    authorRole: "Community Integration Specialist",
+    authorPhoto:
+      "https://framerusercontent.com/images/dQAcvt53XxCI90ObdM8wXH7wic.jpg",
+    personImage:
+      "https://framerusercontent.com/images/ApIWUGszZxDGSijwfglaSJU36f0.png",
+    personImageAlt: "Marie Larose, happy client of Nee's Learning & Translation",
+  },
+  {
+    id: "jean-pierre",
+    quote:
+      "The translation quality was outstanding — every cultural nuance was preserved with remarkable precision.",
+    body: "Our legal documents were handled with the utmost professionalism. The team understood not just the words, but the intent behind every clause. I would recommend Nee's to anyone navigating the Haitian diaspora.",
+    authorName: "Jean-Pierre Moreau",
+    authorRole: "Legal Advisor, Avocats Sans Frontières",
+    authorPhoto:
+      "https://framerusercontent.com/images/dQAcvt53XxCI90ObdM8wXH7wic.jpg",
+    personImage:
+      "https://framerusercontent.com/images/ApIWUGszZxDGSijwfglaSJU36f0.png",
+    personImageAlt:
+      "Jean-Pierre Moreau, legal advisor and satisfied client of Nee's",
+  },
+  {
+    id: "sophia-charles",
+    quote:
+      "My children are now thriving in school — the Kreyòl lessons gave them the confidence they needed.",
+    body: "As a Haitian mother living abroad, I was worried about my children losing their roots. Nee's structured learning program gave them language skills AND cultural pride. The instructors are patient, passionate, and truly gifted.",
+    authorName: "Sophia Charles",
+    authorRole: "Parent & Language Learner",
+    authorPhoto:
+      "https://framerusercontent.com/images/dQAcvt53XxCI90ObdM8wXH7wic.jpg",
+    personImage:
+      "https://framerusercontent.com/images/ApIWUGszZxDGSijwfglaSJU36f0.png",
+    personImageAlt: "Sophia Charles, parent and language learner at Nee's",
+  },
+];
+
+/* ─── Star icon ─── */
 const StarIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 20 20"
+    fill="none"
+    aria-hidden="true"
+  >
     <path
       d="M10 1.39l2.47 5.01 5.53.8-4 3.9.94 5.51L10 14.1l-4.94 2.6.94-5.51-4-3.9 5.53-.8L10 1.39z"
       fill="#FFA800"
@@ -9,287 +72,177 @@ const StarIcon = () => (
   </svg>
 );
 
+/* ─── Dot nav indicator ─── */
+const DotNav = ({
+  count,
+  active,
+  onSelect,
+}: {
+  count: number;
+  active: number;
+  onSelect: (i: number) => void;
+}) => (
+  <div className="testimonial-section__dots" role="tablist" aria-label="Testimonial navigation">
+    {Array.from({ length: count }).map((_, i) => (
+      <button
+        key={i}
+        role="tab"
+        aria-selected={i === active}
+        aria-label={`View testimonial ${i + 1}`}
+        className={`testimonial-section__dot${i === active ? " testimonial-section__dot--active" : ""}`}
+        onClick={() => onSelect(i)}
+      />
+    ))}
+  </div>
+);
+
+/* ─── Main Component ─── */
 const TestimonialSection = () => {
-  const [hoveredCard, setHoveredCard] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [animating, setAnimating] = useState(false);
+
+  /* Scroll-reveal observer — matches pattern used by every sibling section */
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.12 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const goTo = (index: number) => {
+    if (index === activeIndex || animating) return;
+    setAnimating(true);
+    setTimeout(() => {
+      setActiveIndex(index);
+      setAnimating(false);
+    }, 280);
+  };
+
+  const t = testimonials[activeIndex];
 
   return (
     <section
       id="testimonials"
-      style={{
-        width: "100%",
-        padding: "220px 40px 160px 40px",
-        background: "#f9fbfd",
-        position: "relative",
-        overflow: "hidden",
-      }}
+      className="testimonial-section"
+      ref={sectionRef}
+      aria-label="Client testimonials"
     >
       {/* Background glow blob */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          top: "20%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "700px",
-          height: "700px",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(6,67,159,0.03) 0%, transparent 70%)",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
+      <div aria-hidden="true" className="testimonial-section__bg-glow" />
 
       {/* Container */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "1240px",
-          marginLeft: "auto",
-          marginRight: "auto",
-          display: "flex",
-          flexDirection: "row",
-          gap: "70px",
-          alignItems: "center",
-          justifyContent: "center",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        {/* MainWrapper */}
+      <div className="section-container testimonial-section__inner">
+
+        {/* ── Section header ── */}
         <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            gap: "80px",
-            alignItems: "center",
-            width: "100%",
-          }}
+          className={`testimonial-section__header${visible ? " testimonial-section__header--visible" : ""}`}
         >
-          {/* Left Column ImageWrapper */}
+          <span className="testimonial-section__badge">Testimonials</span>
+          <h2 className="testimonial-section__heading">
+            What our <em className="testimonial-section__heading-italic">clients</em> say about us.
+          </h2>
+        </div>
+
+        {/* ── Two-column layout ── */}
+        <div className="testimonial-section__grid">
+
+          {/* Left — image panel */}
           <div
-            onMouseEnter={() => setHoveredCard(true)}
-            onMouseLeave={() => setHoveredCard(false)}
-            style={{
-              width: "580px",
-              height: "525px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "70px",
-              alignItems: "center",
-              position: "relative",
-              flexShrink: 0,
-            }}
+            className={`testimonial-section__image-panel${visible ? " testimonial-section__image-panel--visible" : ""}`}
           >
-            {/* Background frame */}
-            <div
-              style={{
-                width: "580px",
-                height: "525px",
-                background: "#EFF3F7",
-                borderRadius: "15px",
-                overflow: "clip",
-                position: "relative",
-                border: "1.5px solid rgba(6,67,159,0.12)",
-                boxShadow: hoveredCard ? "0 16px 40px rgba(6,67,159,0.08)" : "0 4px 20px rgba(6,67,159,0.02)",
-                transition: "box-shadow 0.3s ease",
-              }}
-            >
-              {/* Person image */}
+            {/* Photo frame */}
+            <div className="relative testimonial-section__frame">
               <img
-                src="https://framerusercontent.com/images/ApIWUGszZxDGSijwfglaSJU36f0.png"
-                alt="Happy student"
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: "50%",
-                  transform: "translateX(-50%) scale(1.02)",
-                  width: "361px",
-                  height: "620px",
-                  objectFit: "cover",
-                  objectPosition: "top",
-                  zIndex: 1,
-                  display: "block",
-                  transition: "transform 0.4s ease",
-                }}
+                src={t.personImage}
+                alt={t.personImageAlt}
+                loading="lazy"
+                decoding="async"
+                className={`testimonial-section__person-img${animating ? " testimonial-section__person-img--fade" : ""}`}
               />
             </div>
 
-            {/* CounterCard */}
-            <div
-              className="glass"
-              style={{
-                position: "absolute",
-                bottom: "22px",
-                left: "22px",
-                background: "rgba(255,255,255,0.85)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
-                border: "1px solid rgba(255,255,255,0.6)",
-                borderRadius: "15px",
-                padding: "17px",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: "15px",
-                zIndex: 2,
-                boxShadow: hoveredCard
-                  ? "0 12px 36px rgba(6,67,159,0.16)"
-                  : "0 4px 24px rgba(6,67,159,0.08)",
-                transform: hoveredCard ? "translateY(-2px)" : "translateY(0)",
-                transition: "transform 0.3s ease, box-shadow 0.3s ease",
-              }}
-            >
-              {/* Count */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <div style={{ display: "flex", alignItems: "baseline" }}>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-roxborough)",
-                      fontSize: "32px",
-                      fontWeight: 800,
-                      letterSpacing: "-0.02em",
-                      lineHeight: "1.1em",
-                      color: "var(--color-haiti-navy)",
-                    }}
-                  >
-                    2500
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-roxborough)",
-                      fontSize: "24px",
-                      fontWeight: 800,
-                      color: "var(--color-haiti-red)",
-                      marginLeft: "2px",
-                    }}
-                  >
-                    +
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    color: "var(--color-gray-500)",
-                  }}
-                >
-                  Happy Clients
-                </span>
-              </div>
-            </div>
           </div>
 
-          {/* Right Column ContentWrapper */}
+          {/* Right — content panel */}
           <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              gap: "40px",
-              alignItems: "flex-start",
-              overflow: "clip",
-            }}
+            className={`testimonial-section__content${visible ? " testimonial-section__content--visible" : ""}`}
           >
-            {/* TextWrapper */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "30px", overflow: "clip", width: "100%" }}>
-              {/* Rating stars */}
-              <div style={{ display: "flex", flexDirection: "row", gap: "8px", alignItems: "center" }}>
-                {[...Array(5)].map((_, i) => (
-                  <StarIcon key={i} />
-                ))}
-              </div>
-
-              {/* TestimonialText */}
-              <div
-                style={{
-                  maxWidth: "500px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "25px",
-                }}
-              >
-                {/* Blockquote */}
-                <p
-                  style={{
-                    fontFamily: "var(--font-roxborough)",
-                    fontSize: "clamp(24px, 3vw, 32px)",
-                    fontWeight: 600,
-                    lineHeight: "1.2em",
-                    letterSpacing: "-0.03em",
-                    color: "var(--color-haiti-navy)",
-                    margin: 0,
-                  }}
-                >
-                  "Nee's helped us communicate more effectively & turn language barriers into bridges of opportunity."
-                </p>
-
-                {/* Body Paragraph */}
-                <p
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "16px",
-                    lineHeight: "1.65em",
-                    color: "var(--color-gray-500)",
-                    margin: 0,
-                  }}
-                >
-                  "Working with Nee's Learning & Translation Services was an absolute pleasure. They managed every stage of our program and their attention to cultural detail ensured a flawless final result that exceeded our expectations."
-                </p>
-              </div>
-            </div>
-
-            {/* Border */}
+            {/* Stars */}
             <div
-              style={{
-                width: "100%",
-                height: "1px",
-                background: "rgba(6,67,159,0.12)",
-              }}
-            />
-
-            {/* AuthorInfo */}
-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "19px", overflow: "clip" }}>
-              {/* Author photo */}
-              <img
-                src="https://framerusercontent.com/images/dQAcvt53XxCI90ObdM8wXH7wic.jpg"
-                alt="Marie Larose"
-                style={{
-                  width: "70px",
-                  height: "70px",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  flexShrink: 0,
-                  border: "1.5px solid rgba(6,67,159,0.12)",
-                }}
-              />
-
-              {/* Author text wrapper */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-roxborough)",
-                    fontSize: "20px",
-                    fontWeight: 700,
-                    lineHeight: "1.25em",
-                    letterSpacing: "-0.01em",
-                    color: "var(--color-haiti-navy)",
-                  }}
-                >
-                  Marie Larose
-                </span>
-                <span
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "15px",
-                    color: "var(--color-gray-500)",
-                  }}
-                >
-                  Community Integration Specialist
-                </span>
-              </div>
+              role="img"
+              aria-label="5 out of 5 stars"
+              className="testimonial-section__stars"
+            >
+              {Array.from({ length: 5 }).map((_, i) => (
+                <StarIcon key={i} />
+              ))}
             </div>
+
+            {/* Quote text */}
+            <figure className="testimonial-section__figure">
+              <blockquote
+                className={`testimonial-section__quote${animating ? " testimonial-section__quote--fade" : ""}`}
+              >
+                <p className="testimonial-section__quote-text">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+              </blockquote>
+
+              <p
+                className={`testimonial-section__body${animating ? " testimonial-section__quote--fade" : ""}`}
+              >
+                &ldquo;{t.body}&rdquo;
+              </p>
+
+              {/* Divider */}
+              <div className="testimonial-section__divider" />
+
+              {/* Author */}
+              <figcaption
+                className={`testimonial-section__author${animating ? " testimonial-section__quote--fade" : ""}`}
+              >
+                <img
+                  src={t.authorPhoto}
+                  alt={t.authorName}
+                  loading="lazy"
+                  decoding="async"
+                  className="testimonial-section__author-photo"
+                />
+                <div className="testimonial-section__author-text">
+                  <cite className="testimonial-section__author-name">
+                    {t.authorName}
+                  </cite>
+                  <span className="testimonial-section__author-role">
+                    {t.authorRole}
+                  </span>
+                </div>
+              </figcaption>
+            </figure>
+
+            {/* Dot navigation */}
+            <DotNav
+              count={testimonials.length}
+              active={activeIndex}
+              onSelect={goTo}
+            />
           </div>
         </div>
       </div>

@@ -7,20 +7,8 @@ const HeroSection = () => {
     <section
       className="flex flex-col lg:flex-row relative items-center pt-10 lg:pt-15 mb-20 lg:mb-30 justify-between gap-12 lg:gap-0 max-w-8xl w-full px-6 lg:px-20"
     >
-      {/* icon 7  */}
       <DecoratorBox className="absolute -bottom-20 left-210 -translate-x-1/2 z-20 animate-decorator-slide-up" />
       
-      <img
-        src="/hero-section-icons/icon-12.png"
-        className="hidden lg:block absolute w-22 bottom-20 left-[47%] rotate-40 opacity-30"
-      />
-      
-      <img
-        src="/hero-section-icons/icon-4.png"
-        className="hidden lg:block absolute  w-30 top-29 left-[48%] opacity-35"
-      />
-      
-      {/* ── Grid background — centered decorative backdrop ── */}
       <img
         src="/grid-background.png"
         alt=""
@@ -54,7 +42,7 @@ const HeroSection = () => {
         >
           Learn Haitian
           <br />
-          Creole &amp; English
+          Creole &amp; Frensh
         </h1>
 
         {/* ── DESCRIPTION — left-aligned, below title, z-index 1 ── */}

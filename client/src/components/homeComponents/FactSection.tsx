@@ -14,18 +14,21 @@ const useCountUp = (target: number, durationMs = 2000) => {
         if (entry.isIntersecting && !started.current) {
           started.current = true;
           const startTime = performance.now();
+
           const animate = (now: number) => {
             const progress = Math.min((now - startTime) / durationMs, 1);
-            // Ease out cubic
             const eased = 1 - Math.pow(1 - progress, 3);
             setCount(Math.round(eased * target));
+
             if (progress < 1) requestAnimationFrame(animate);
           };
+
           requestAnimationFrame(animate);
         }
       },
       { threshold: 0.4 }
     );
+
     observer.observe(el);
     return () => observer.disconnect();
   }, [target, durationMs]);
@@ -34,8 +37,8 @@ const useCountUp = (target: number, durationMs = 2000) => {
 };
 
 const FactSection = () => {
-  const sat = useCountUp(98, 2000);
-  const rev = useCountUp(80, 2000);
+  const accuracy = useCountUp(96, 2000);
+  const translations = useCountUp(120, 2000);
 
   return (
     <section
@@ -50,228 +53,203 @@ const FactSection = () => {
         alignItems: "center",
       }}
     >
-      {/* Background Image Parallax */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          zIndex: 0,
-        }}
-      >
+      {/* Background */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
         <img
-          src="https://framerusercontent.com/images/XtF2Dn0CFhmqQ1hhZFk9ifmlDQ.jpg"
+          src="/bg-fact-section.jpg"
           alt=""
-          aria-hidden="true"
           style={{
             width: "100%",
             height: "120%",
             objectFit: "cover",
             objectPosition: "center",
             marginTop: "-10%",
-            display: "block",
           }}
         />
       </div>
 
-      {/* Brand Dark Overlay */}
+      {/* Overlay */}
       <div
         aria-hidden="true"
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(19, 46, 63, 0.6)",
+          background: "rgba(1, 20, 35, 0.75)",
           zIndex: 1,
         }}
       />
 
       {/* Container */}
       <div
-        ref={sat.containerRef}
+        ref={accuracy.containerRef}
         style={{
           position: "relative",
           zIndex: 2,
           width: "100%",
           maxWidth: "1320px",
-          marginLeft: "auto",
-          marginRight: "auto",
-          padding: "0px 40px 0px 40px",
+          margin: "0 auto",
+          padding: "0 40px",
           display: "flex",
           flexDirection: "column",
-          alignItems: "flex-start",
         }}
       >
-        {/* ContentWrapper */}
+        {/* TEXT BLOCK */}
         <div
           style={{
-            maxWidth: "550px",
+            maxWidth: "600px",
             display: "flex",
             flexDirection: "column",
             gap: "45px",
-            alignItems: "flex-start",
-            width: "100%",
           }}
         >
-          {/* TextWrapper */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "25px", width: "100%" }}>
-            {/* Title */}
-            <h2
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "flex-start",
-                gap: "4px 17px",
-                margin: 0,
-              }}
-            >
-              {["Simplifying", "life", "through"].map(w => (
-                <span
-                  key={w}
-                  style={{
-                    fontFamily: "var(--font-roxborough)",
-                    fontSize: "clamp(36px, 5vw, 64px)",
-                    fontWeight: 700,
-                    lineHeight: "1.1em",
-                    letterSpacing: "-0.03em",
-                    color: "#ffffff",
-                  }}
-                >
-                  {w}
-                </span>
-              ))}
+          {/* TITLE */}
+          <h2
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "10px",
+              margin: 0,
+            }}
+          >
+            {["Learning", "Haitian", "Creole"].map((w) => (
               <span
+                key={w}
                 style={{
                   fontFamily: "var(--font-roxborough)",
-                  fontStyle: "italic",
                   fontSize: "clamp(36px, 5vw, 64px)",
                   fontWeight: 700,
-                  lineHeight: "1.1em",
-                  letterSpacing: "-0.03em",
-                  color: "var(--color-haiti-red)",
+                  color: "#ffffff",
                 }}
               >
-                solutions
+                {w}
               </span>
-            </h2>
+            ))}
 
-            {/* Subtext */}
-            <p
+            <span
               style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "18px",
-                lineHeight: "1.5em",
-                color: "rgba(255,255,255,0.75)",
-                maxWidth: "650px",
-                margin: 0,
+                fontFamily: "var(--font-roxborough)",
+                fontSize: "clamp(36px, 5vw, 64px)",
+                fontWeight: 700,
+                fontStyle: "italic",
+                color: "#ff4d4d",
               }}
             >
-              Simple ideas, smart execution. We craft meaningful solutions that make a difference where it matters most.
-            </p>
-          </div>
+              & Translation
+            </span>
+          </h2>
 
-          {/* Divider */}
+          {/* SUBTEXT */}
+          <p
+            style={{
+              fontSize: "18px",
+              lineHeight: "1.6em",
+              color: "rgba(255,255,255,0.75)",
+              margin: 0,
+              maxWidth: "600px",
+            }}
+          >
+            Break language barriers with AI-powered Haitian Creole learning and
+            smart document translation. Understand, translate, and communicate
+            naturally across languages.
+          </p>
+
+          {/* DIVIDER */}
           <div
             style={{
               width: "100%",
               height: "1px",
-              background: "rgba(255, 255, 255, 0.3)",
+              background: "rgba(255,255,255,0.2)",
             }}
           />
 
-          {/* Counter Grid */}
-          <div style={{ display: "flex", alignItems: "center", gap: "70px", flexWrap: "wrap", width: "100%" }}>
-            {/* Stat 1 */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-start" }}>
+          {/* STATS */}
+          <div
+            style={{
+              display: "flex",
+              gap: "70px",
+              flexWrap: "wrap",
+            }}
+          >
+            {/* STAT 1 */}
+            <div>
               <div style={{ display: "flex", alignItems: "baseline" }}>
                 <span
                   style={{
                     fontFamily: "var(--font-roxborough)",
-                    fontSize: "clamp(48px, 6vw, 64px)",
+                    fontSize: "64px",
                     fontWeight: 800,
-                    letterSpacing: "-0.02em",
-                    lineHeight: "1.125em",
-                    color: "#ffffff",
+                    color: "#fff",
                   }}
                 >
-                  {sat.count}
+                  {accuracy.count}
                 </span>
                 <span
                   style={{
-                    fontFamily: "var(--font-roxborough)",
-                    fontSize: "clamp(24px, 3vw, 36px)",
-                    fontWeight: 800,
-                    color: "var(--color-haiti-red)",
-                    marginLeft: "2px",
+                    fontSize: "32px",
+                    color: "#ff4d4d",
+                    marginLeft: "4px",
                   }}
                 >
                   %
                 </span>
               </div>
+
               <span
                 style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  lineHeight: "1.4em",
-                  letterSpacing: "0.08em",
+                  fontSize: "13px",
+                  letterSpacing: "0.1em",
                   textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.7)",
+                  color: "rgba(255,255,255,0.6)",
+                  fontWeight: 600,
                 }}
               >
-                Customer Satisfaction
+                Translation Accuracy
               </span>
             </div>
 
-            {/* Vertical Divider */}
+            {/* DIVIDER */}
             <div
               style={{
                 width: "1px",
                 height: "60px",
-                background: "rgba(255, 255, 255, 0.3)",
-                flexShrink: 0,
+                background: "rgba(255,255,255,0.2)",
               }}
             />
 
-            {/* Stat 2 */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-start" }}>
+            {/* STAT 2 */}
+            <div>
               <div style={{ display: "flex", alignItems: "baseline" }}>
                 <span
                   style={{
                     fontFamily: "var(--font-roxborough)",
-                    fontSize: "clamp(48px, 6vw, 64px)",
+                    fontSize: "64px",
                     fontWeight: 800,
-                    letterSpacing: "-0.02em",
-                    lineHeight: "1.125em",
-                    color: "#ffffff",
+                    color: "#fff",
                   }}
                 >
-                  {rev.count}
+                  {translations.count}
                 </span>
                 <span
                   style={{
-                    fontFamily: "var(--font-roxborough)",
-                    fontSize: "clamp(24px, 3vw, 36px)",
-                    fontWeight: 800,
-                    color: "var(--color-haiti-red)",
-                    marginLeft: "2px",
+                    fontSize: "32px",
+                    color: "#ff4d4d",
+                    marginLeft: "4px",
                   }}
                 >
-                  %
+                  +
                 </span>
               </div>
+
               <span
                 style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  lineHeight: "1.4em",
-                  letterSpacing: "0.08em",
+                  fontSize: "13px",
+                  letterSpacing: "0.1em",
                   textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.7)",
+                  color: "rgba(255,255,255,0.6)",
+                  fontWeight: 600,
                 }}
               >
-                Increased Revenue
+                Supported Translations
               </span>
             </div>
           </div>
