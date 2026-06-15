@@ -1,3 +1,4 @@
+import { useState } from "react";
 
 interface FeatureCardData {
   headline: string;
@@ -7,8 +8,7 @@ interface FeatureCardData {
   point2Title: string;
   point2Body: string;
   top: string;
-  /** x2vCjhHPt = light, p7HksjE3c = dark */
-  variant: "light" | "dark";
+  imagePosition: "left" | "right";
   image: string;
 }
 
@@ -21,7 +21,7 @@ const features: FeatureCardData[] = [
     point2Title: "Track every milestone in real time",
     point2Body: "Instant progress tracking so you always know where you stand and what's coming next on your journey.",
     top: "130px",
-    variant: "light",
+    imagePosition: "left",
     image: "https://framerusercontent.com/images/IZLx5S5dEqmgGNkvLXFUprpqweo.jpg",
   },
   {
@@ -32,7 +32,7 @@ const features: FeatureCardData[] = [
     point2Title: "Stay updated on every translation instantly",
     point2Body: "Get live notifications on your document's progress from submission to final delivery.",
     top: "170px",
-    variant: "dark",
+    imagePosition: "right",
     image: "https://framerusercontent.com/images/XtF2Dn0CFhmqQ1hhZFk9ifmlDQ.jpg",
   },
   {
@@ -41,14 +41,14 @@ const features: FeatureCardData[] = [
     point1Title: "Clear insights, no more guesswork at all",
     point1Body: "Understand what's happening at a glance. Focus on what matters most and make informed decisions without getting lost in unnecessary complexity.",
     point2Title: "Track every session in real time easily",
-    point2Body: "Stay updated as things evolve. Monitor your changes instantly and keep moving in the right direction.",
+    point2Body: "Stay updated as things evolve. Monitor your progress instantly and keep moving in the right direction.",
     top: "210px",
-    variant: "light",
+    imagePosition: "left",
     image: "https://framerusercontent.com/images/0YLFJEPLwZvkWT4P3c1VnmJEoF0.jpg",
   },
 ];
 
-const PointCheck = ({ dark }: { dark: boolean }) => (
+const PointCheck = () => (
   <svg
     width="20"
     height="20"
@@ -60,11 +60,11 @@ const PointCheck = ({ dark }: { dark: boolean }) => (
       cx="10"
       cy="10"
       r="10"
-      fill={dark ? "rgba(255,255,255,0.12)" : "rgba(26,59,80,0.07)"}
+      fill="rgba(206, 17, 38, 0.08)"
     />
     <path
       d="M6 10l2.8 2.8 5-5"
-      stroke={dark ? "rgba(255,255,255,0.9)" : "var(--color-dark)"}
+      stroke="var(--color-haiti-red)"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -73,34 +73,48 @@ const PointCheck = ({ dark }: { dark: boolean }) => (
 );
 
 const FeatureCard = ({ f }: { f: FeatureCardData }) => {
-  const dark = f.variant === "dark";
+  const [hovered, setHovered] = useState(false);
+  const isRight = f.imagePosition === "right";
+
   return (
     <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         position: "sticky",
         top: f.top,
         width: "100%",
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "80px",
+        display: "flex",
+        flexDirection: isRight ? "row-reverse" : "row",
+        gap: "60px",
         alignItems: "center",
-        borderRadius: "20px",
-        border: dark ? "none" : "1px solid var(--color-gray-300)",
-        background: dark ? "var(--color-dark)" : "var(--color-white)",
+        borderRadius: "15px",
+        border: "1.5px solid rgba(6,67,159,0.12)",
+        background: "#ffffff",
         padding: "60px",
-        boxShadow: "0 2px 20px rgba(26,59,80,0.06)",
+        boxShadow: hovered
+          ? "0 20px 48px rgba(6,67,159,0.12)"
+          : "0 4px 28px rgba(6,67,159,0.05)",
+        transform: hovered ? "translateY(-4px)" : "translateY(0)",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        overflow: "hidden",
       }}
     >
-      {/* Left: illustration / UI image */}
+      {/* Left/Right: illustration / UI image */}
       <div
         style={{
-          borderRadius: "12px",
+          width: "480px",
+          height: "400px",
+          borderRadius: "15px",
           overflow: "hidden",
-          background: dark ? "rgba(255,255,255,0.06)" : "var(--color-gray-200)",
-          height: "340px",
+          background: "rgba(6,67,159,0.03)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          position: "relative",
+          zIndex: 1,
+          border: "1px solid rgba(6,67,159,0.08)",
+          flexShrink: 0,
         }}
       >
         <img
@@ -111,22 +125,34 @@ const FeatureCard = ({ f }: { f: FeatureCardData }) => {
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            opacity: 0.85,
+            opacity: 0.95,
+            transition: "transform 0.5s ease",
+            transform: hovered ? "scale(1.03)" : "scale(1)",
           }}
         />
       </div>
 
-      {/* Right: text content */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-        {/* Main headline — Display 2 */}
+      {/* Right/Left: text content */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          gap: "24px",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {/* Main headline */}
         <h3
           style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "38px",
+            fontFamily: "var(--font-roxborough)",
+            fontSize: "clamp(24px, 3vw, 32px)",
             fontWeight: 700,
-            lineHeight: "1.15em",
-            letterSpacing: "-0.035em",
-            color: dark ? "var(--color-white)" : "var(--color-dark)",
+            lineHeight: "1.2em",
+            letterSpacing: "-0.02em",
+            color: "var(--color-haiti-navy)",
+            margin: 0,
           }}
         >
           {f.headline}
@@ -136,31 +162,32 @@ const FeatureCard = ({ f }: { f: FeatureCardData }) => {
         <p
           style={{
             fontFamily: "var(--font-sans)",
-            fontSize: "18px",
-            lineHeight: "1.5em",
-            color: dark ? "rgba(255,255,255,0.65)" : "var(--color-gray-500)",
+            fontSize: "16px",
+            lineHeight: "1.6em",
+            color: "var(--color-gray-500)",
+            margin: 0,
           }}
         >
           {f.body}
         </p>
 
         {/* Two bullet points */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           {[
             { title: f.point1Title, body: f.point1Body },
             { title: f.point2Title, body: f.point2Body },
           ].map((pt, j) => (
             <div key={j} style={{ display: "flex", gap: "14px", alignItems: "flex-start" }}>
-              <PointCheck dark={dark} />
+              <PointCheck />
               <div>
                 <p
                   style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "16px",
+                    fontFamily: "var(--font-roxborough)",
+                    fontSize: "18px",
                     fontWeight: 700,
-                    letterSpacing: "-0.015em",
-                    color: dark ? "var(--color-white)" : "var(--color-dark)",
-                    marginBottom: "5px",
+                    letterSpacing: "-0.01em",
+                    color: "var(--color-haiti-navy)",
+                    margin: "0 0 4px 0",
                     lineHeight: "1.3em",
                   }}
                 >
@@ -169,9 +196,10 @@ const FeatureCard = ({ f }: { f: FeatureCardData }) => {
                 <p
                   style={{
                     fontFamily: "var(--font-sans)",
-                    fontSize: "15px",
-                    lineHeight: "1.55em",
-                    color: dark ? "rgba(255,255,255,0.6)" : "var(--color-gray-500)",
+                    fontSize: "14px",
+                    lineHeight: "1.5em",
+                    color: "var(--color-gray-500)",
+                    margin: 0,
                   }}
                 >
                   {pt.body}
@@ -190,11 +218,29 @@ const WhyChooseSection = () => (
     id="why-choose"
     style={{
       width: "100%",
-      padding: "160px 40px 160px 40px",
-      background: "var(--color-gray-100)",
+      padding: "160px 40px",
+      background: "#ffffff",
+      position: "relative",
+      overflow: "hidden",
     }}
   >
-    {/* Container — max 1240px, horizontal */}
+    {/* Radial glow background */}
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        top: "10%",
+        left: "5%",
+        width: "600px",
+        height: "600px",
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(6,67,159,0.04) 0%, transparent 70%)",
+        pointerEvents: "none",
+        zIndex: 0,
+      }}
+    />
+
+    {/* Container */}
     <div
       style={{
         width: "100%",
@@ -206,9 +252,10 @@ const WhyChooseSection = () => (
         gap: "70px",
         alignItems: "center",
         justifyContent: "center",
+        position: "relative",
+        zIndex: 1,
       }}
     >
-      {/* MainWrapper — 1fr, vertical, gap 56px */}
       <div
         style={{
           flex: 1,
@@ -218,7 +265,7 @@ const WhyChooseSection = () => (
           alignItems: "center",
         }}
       >
-        {/* Headline — max 550px, gap 15px, center */}
+        {/* Headline */}
         <div
           style={{
             display: "flex",
@@ -229,7 +276,26 @@ const WhyChooseSection = () => (
             textAlign: "center",
           }}
         >
-          <span className="t-label">Why Choose Nee's?</span>
+          {/* Label Pill */}
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "rgba(6, 67, 159, 0.06)",
+              border: "1px solid rgba(6, 67, 159, 0.15)",
+              color: "var(--color-haiti-navy)",
+              padding: "4px 14px",
+              borderRadius: "9999px",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+            }}
+          >
+            Why Choose Nee's?
+          </span>
+
           <h2
             style={{
               display: "flex",
@@ -237,15 +303,56 @@ const WhyChooseSection = () => (
               justifyContent: "center",
               alignItems: "flex-start",
               gap: "0px 11px",
+              margin: 0,
             }}
           >
-            {["A", "few", "reasons"].map(w => <span key={w} className="t-d2">{w}</span>)}
-            <span className="t-d2i">why</span>
-            {["our", "clients", "choose", "us", "first."].map(w => <span key={w} className="t-d2">{w}</span>)}
+            {["A", "few", "reasons"].map(w => (
+              <span
+                key={w}
+                style={{
+                  fontFamily: "var(--font-roxborough)",
+                  fontSize: "clamp(32px, 4.5vw, 48px)",
+                  fontWeight: 700,
+                  lineHeight: 1.15,
+                  letterSpacing: "-0.02em",
+                  color: "var(--color-haiti-navy)",
+                }}
+              >
+                {w}
+              </span>
+            ))}
+            <span
+              style={{
+                fontFamily: "var(--font-roxborough)",
+                fontStyle: "italic",
+                fontSize: "clamp(32px, 4.5vw, 48px)",
+                fontWeight: 700,
+                lineHeight: 1.15,
+                letterSpacing: "-0.02em",
+                color: "var(--color-haiti-red)",
+              }}
+            >
+              why
+            </span>
+            {["our", "clients", "choose", "us", "first."].map(w => (
+              <span
+                key={w}
+                style={{
+                  fontFamily: "var(--font-roxborough)",
+                  fontSize: "clamp(32px, 4.5vw, 48px)",
+                  fontWeight: 700,
+                  lineHeight: 1.15,
+                  letterSpacing: "-0.02em",
+                  color: "var(--color-haiti-navy)",
+                }}
+              >
+                {w}
+              </span>
+            ))}
           </h2>
         </div>
 
-        {/* FeatureCards — vertical stack, gap 40px */}
+        {/* FeatureCards */}
         <div
           style={{
             display: "flex",
@@ -255,7 +362,9 @@ const WhyChooseSection = () => (
             maxWidth: "1140px",
           }}
         >
-          {features.map((f, i) => <FeatureCard key={i} f={f} />)}
+          {features.map((f, i) => (
+            <FeatureCard key={i} f={f} />
+          ))}
         </div>
       </div>
     </div>

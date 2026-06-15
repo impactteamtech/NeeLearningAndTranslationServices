@@ -1,15 +1,12 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/homeComponents/navbar/NavBar";
+import Footer from "../components/homeComponents/Footer";
 
-/**
- * Layout — sticky navbar floating above full-width page content
- * Navbar is contained within max-width and centered
- */
 const Layout = () => {
   return (
     <div
       className="flex flex-col min-h-screen"
-      style={{ background: "var(--color-gray-100)" }}
+      style={{ background: "#ffffff" }}
     >
       {/* Sticky navbar header */}
       <header
@@ -22,15 +19,18 @@ const Layout = () => {
           background: "transparent",
         }}
       >
-        <div style={{ maxWidth: "1240px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "100%" }} className="px-4 sm:px-8 md:px-20 lg:px-30">
           <Navbar />
         </div>
       </header>
 
       {/* Page content — full width */}
-      <main className="flex-1" style={{ marginTop: "-118px" }}>
+      <main className="flex-1 px-4 sm:px-8 md:px-16 lg:px-20">
         <Outlet />
       </main>
+
+      {/* Footer component */}
+      <Footer />
     </div>
   );
 };
