@@ -1,4 +1,5 @@
 import HeroSection from "../../components/homeComponents/hero-section/HeroSection";
+import VideoSection from "../../components/homeComponents/VideoSection";
 import ServicesSection from "../../components/homeComponents/ServicesSection";
 import WhyChooseSection from "../../components/homeComponents/WhyChooseSection";
 import FactSection from "../../components/homeComponents/FactSection";
@@ -11,18 +12,19 @@ import TestimonialSection from "../../components/homeComponents/TestimonialSecti
 
 const Home = () => {
   return (
-    <>
+    <main className="flex flex-col">
       <HeroSection />
+      <VideoSection />
       <ServicesSection />
       <WhyChooseSection />
       <FactSection />
       <ProcessSection />
       <OptimizeSection />
-      {/* <BlogSection /> */}
-      {/* <PricingSection /> */}
-      {/* <ClientsSection /> */}
-      {/* <TestimonialSection /> */}
-    </>
+      <BlogSection />
+      <PricingSection />
+      <ClientsSection />
+      <TestimonialSection />
+    </main>
   );
 };
 

@@ -1,7 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { IoIosArrowRoundForward } from "react-icons/io";
-
-
 
 const posts = [
   {
@@ -48,26 +47,168 @@ const posts = [
   },
 ];
 
-/** Gradient bg for card image area matching Framer blog card style */
 const cardGradients = [
-  "linear-gradient(135deg, #e8f4fd 0%, #bdd9f5 100%)",
-  "linear-gradient(135deg, #edf2ff 0%, #c3d5f5 100%)",
-  "linear-gradient(135deg, #f0f8ff 0%, #bde3ff 100%)",
-  "linear-gradient(135deg, #e6f0ff 0%, #c5d8f8 100%)",
-  "linear-gradient(135deg, #eaf4fd 0%, #b8d8f4 100%)",
-  "linear-gradient(135deg, #f5f0ff 0%, #d4c7f8 100%)",
+  "linear-gradient(135deg, rgba(8,12,24,0.03) 0%, rgba(6,67,159,0.08) 100%)",
+  "linear-gradient(135deg, rgba(6,67,159,0.03) 0%, rgba(13,31,122,0.08) 100%)",
+  "linear-gradient(135deg, rgba(13,31,122,0.03) 0%, rgba(8,12,24,0.08) 100%)",
 ];
+
+interface BlogCardProps {
+  post: (typeof posts)[0];
+  index: number;
+}
+
+const BlogCard = ({ post, index }: BlogCardProps) => {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <Link
+      to={post.link}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        background: "#ffffff",
+        borderRadius: "20px",
+        overflow: "hidden",
+        border: "1.5px solid rgba(6,67,159,0.12)",
+        textDecoration: "none",
+        transform: hovered ? "translateY(-5px)" : "translateY(0)",
+        boxShadow: hovered
+          ? "0 16px 40px rgba(6,67,159,0.12)"
+          : "0 4px 20px rgba(6,67,159,0.04)",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        cursor: "pointer",
+      }}
+    >
+      {/* Card image area */}
+      <div
+        style={{
+          height: "190px",
+          background: cardGradients[index % cardGradients.length],
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          borderBottom: "1.5px solid rgba(6,67,159,0.08)",
+        }}
+      >
+        <img
+          src="/logo.png"
+          alt=""
+          aria-hidden="true"
+          style={{
+            width: "60px",
+            height: "60px",
+            objectFit: "contain",
+            opacity: 0.15,
+            transform: hovered ? "scale(1.05)" : "scale(1)",
+            transition: "transform 0.3s ease",
+          }}
+        />
+      </div>
+
+      {/* Card body */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          padding: "28px",
+          gap: "16px",
+          flex: 1,
+        }}
+      >
+        {/* Tag + date */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "4px 12px",
+              borderRadius: "9999px",
+              fontSize: "11px",
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              background: "rgba(206, 17, 38, 0.08)",
+              color: "var(--color-haiti-red)",
+            }}
+          >
+            {post.tag}
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "13px",
+              color: "var(--color-gray-500)",
+            }}
+          >
+            {post.date}
+          </span>
+        </div>
+
+        {/* Title */}
+        <h3
+          style={{
+            fontFamily: "var(--font-roxborough)",
+            fontSize: "18px",
+            fontWeight: 700,
+            letterSpacing: "-0.01em",
+            lineHeight: "1.35em",
+            color: "var(--color-haiti-navy)",
+            margin: 0,
+            flex: 1,
+          }}
+        >
+          {post.title}
+        </h3>
+
+        {/* Excerpt */}
+        <p
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: "14px",
+            lineHeight: "1.55em",
+            color: "var(--color-gray-500)",
+            margin: 0,
+          }}
+        >
+          {post.excerpt}
+        </p>
+      </div>
+    </Link>
+  );
+};
 
 const BlogSection = () => (
   <section
     id="blog"
     style={{
       width: "100%",
-      padding: "160px 40px 160px 40px",
-      background: "var(--color-gray-200)",
+      padding: "160px 40px",
+      background: "#EFF3F7",
+      position: "relative",
+      overflow: "hidden",
     }}
   >
-    {/* Container — max 1240px */}
+    {/* Subtle radial glow */}
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        top: "0",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "70%",
+        height: "400px",
+        background: "radial-gradient(ellipse at center, rgba(6,67,159,0.04) 0%, transparent 70%)",
+        pointerEvents: "none",
+        zIndex: 0,
+      }}
+    />
+
+    {/* Container */}
     <div
       style={{
         width: "100%",
@@ -79,9 +220,11 @@ const BlogSection = () => (
         gap: "70px",
         alignItems: "center",
         justifyContent: "center",
+        position: "relative",
+        zIndex: 1,
       }}
     >
-      {/* MainWrapper — 1fr, vertical, gap 50px, align start */}
+      {/* MainWrapper */}
       <div
         style={{
           flex: 1,
@@ -91,7 +234,7 @@ const BlogSection = () => (
           alignItems: "flex-start",
         }}
       >
-        {/* ContentWrapper — horizontal, gap 70px, space-between, align end */}
+        {/* ContentWrapper */}
         <div
           style={{
             width: "100%",
@@ -100,32 +243,88 @@ const BlogSection = () => (
             gap: "70px",
             justifyContent: "space-between",
             alignItems: "flex-end",
+            flexWrap: "wrap",
           }}
         >
-          {/* Title — max 400px, wrapping, "insights." italic */}
-          <div
+          {/* Title */}
+          <h2
             style={{
               maxWidth: "400px",
               display: "flex",
               flexWrap: "wrap",
               alignItems: "flex-start",
               gap: "0px 11px",
+              margin: 0,
             }}
           >
             {["Our", "latest", "articles", "with", "useful"].map(w => (
-              <span key={w} className="t-d2">{w}</span>
+              <span
+                key={w}
+                style={{
+                  fontFamily: "var(--font-roxborough)",
+                  fontSize: "clamp(32px, 4.5vw, 44px)",
+                  fontWeight: 700,
+                  lineHeight: "1.15em",
+                  letterSpacing: "-0.02em",
+                  color: "var(--color-haiti-navy)",
+                }}
+              >
+                {w}
+              </span>
             ))}
-            <span className="t-d2i">insights.</span>
-          </div>
+            <span
+              style={{
+                fontFamily: "var(--font-roxborough)",
+                fontStyle: "italic",
+                fontSize: "clamp(32px, 4.5vw, 44px)",
+                fontWeight: 700,
+                lineHeight: "1.15em",
+                letterSpacing: "-0.02em",
+                color: "var(--color-haiti-red)",
+              }}
+            >
+              insights.
+            </span>
+          </h2>
 
           {/* Button "See All Posts" */}
-          <Link to="/blog" className="btn-ghost" style={{ flexShrink: 0, paddingBottom: "6px" }}>
+          <Link
+            to="/blog"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              fontFamily: "var(--font-sans)",
+              fontSize: "15px",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--color-haiti-navy)",
+              textDecoration: "none",
+              transition: "all 0.25s ease",
+              paddingBottom: "4px",
+              borderBottom: "1.5px solid transparent",
+              flexShrink: 0,
+            }}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLAnchorElement;
+              el.style.gap = "14px";
+              el.style.color = "var(--color-haiti-red)";
+              el.style.borderBottomColor = "var(--color-haiti-red)";
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLAnchorElement;
+              el.style.gap = "8px";
+              el.style.color = "var(--color-haiti-navy)";
+              el.style.borderBottomColor = "transparent";
+            }}
+          >
             See All Posts
-            <IoIosArrowRoundForward style={{ width: "22px", height: "22px" }} />
+            <IoIosArrowRoundForward style={{ width: "22px", height: "22px", flexShrink: 0 }} />
           </Link>
         </div>
 
-        {/* Blog grid — 3 col x 2 rows, gap 35px */}
+        {/* Blog grid */}
         <div
           style={{
             display: "grid",
@@ -135,116 +334,7 @@ const BlogSection = () => (
           }}
         >
           {posts.map((post, i) => (
-            <Link
-              key={i}
-              to={post.link}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                background: "var(--color-white)",
-                borderRadius: "15px",
-                overflow: "hidden",
-                border: "1px solid var(--color-gray-300)",
-                textDecoration: "none",
-                transition: "transform 0.25s ease, box-shadow 0.25s ease",
-                cursor: "pointer",
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-5px)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 16px 40px rgba(26,59,80,0.12)";
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "none";
-              }}
-            >
-              {/* Card image area */}
-              <div
-                style={{
-                  height: "190px",
-                  background: cardGradients[i % cardGradients.length],
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <img
-                  src="/logo.png"
-                  alt=""
-                  aria-hidden="true"
-                  style={{ width: "60px", height: "60px", objectFit: "contain", opacity: 0.18 }}
-                />
-              </div>
-
-              {/* Card body */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  padding: "28px",
-                  gap: "14px",
-                  flex: 1,
-                }}
-              >
-                {/* Tag + date */}
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      padding: "3px 12px",
-                      borderRadius: "9999px",
-                      fontSize: "12px",
-                      fontWeight: 700,
-                      letterSpacing: "0.05em",
-                      textTransform: "uppercase",
-                      /* Brand sky blue for tags */
-                      background: "rgba(66,165,245,0.12)",
-                      color: "var(--color-brand-blue)",
-                    }}
-                  >
-                    {post.tag}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-sans)",
-                      fontSize: "13px",
-                      color: "var(--color-gray-500)",
-                    }}
-                  >
-                    {post.date}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <h3
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "17px",
-                    fontWeight: 700,
-                    letterSpacing: "-0.02em",
-                    lineHeight: "1.35em",
-                    color: "var(--color-dark)",
-                    flex: 1,
-                  }}
-                >
-                  {post.title}
-                </h3>
-
-                {/* Excerpt */}
-                <p
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "14px",
-                    lineHeight: "1.55em",
-                    color: "var(--color-gray-500)",
-                  }}
-                >
-                  {post.excerpt}
-                </p>
-              </div>
-            </Link>
+            <BlogCard key={i} post={post} index={i} />
           ))}
         </div>
       </div>

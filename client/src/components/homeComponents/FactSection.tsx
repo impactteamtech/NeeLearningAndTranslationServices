@@ -43,14 +43,14 @@ const FactSection = () => {
       style={{
         position: "relative",
         width: "100%",
+        height: "750px",
         overflow: "hidden",
         zIndex: 2,
-        minHeight: "750px",
         display: "flex",
         alignItems: "center",
       }}
     >
-      {/* ImageParallax — background with parallax effect */}
+      {/* Background Image Parallax */}
       <div
         style={{
           position: "absolute",
@@ -66,27 +66,27 @@ const FactSection = () => {
           aria-hidden="true"
           style={{
             width: "100%",
-            height: "110%",
+            height: "120%",
             objectFit: "cover",
             objectPosition: "center",
-            marginTop: "-5%",
+            marginTop: "-10%",
             display: "block",
           }}
         />
       </div>
 
-      {/* ParallaxOverlay — rgba(19,46,63,0.6) from XML */}
+      {/* Brand Dark Overlay */}
       <div
         aria-hidden="true"
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(19,46,63,0.6)",
+          background: "rgba(19, 46, 63, 0.6)",
           zIndex: 1,
         }}
       />
 
-      {/* Container — absolute center, max 1320px, padding 0 40px, align start */}
+      {/* Container */}
       <div
         ref={sat.containerRef}
         style={{
@@ -96,13 +96,13 @@ const FactSection = () => {
           maxWidth: "1320px",
           marginLeft: "auto",
           marginRight: "auto",
-          padding: "120px 40px 120px 40px",
+          padding: "0px 40px 0px 40px",
           display: "flex",
           flexDirection: "column",
           alignItems: "flex-start",
         }}
       >
-        {/* ContentWrapper — max 550px, gap 45px, align start */}
+        {/* ContentWrapper */}
         <div
           style={{
             maxWidth: "550px",
@@ -110,30 +110,31 @@ const FactSection = () => {
             flexDirection: "column",
             gap: "45px",
             alignItems: "flex-start",
+            width: "100%",
           }}
         >
-          {/* TextWrapper — gap 25px */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
-
-            {/* Title — Display 1 + Display 1 italic */}
+          {/* TextWrapper */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "25px", width: "100%" }}>
+            {/* Title */}
             <h2
               style={{
                 display: "flex",
                 flexWrap: "wrap",
                 alignItems: "flex-start",
                 gap: "4px 17px",
+                margin: 0,
               }}
             >
               {["Simplifying", "life", "through"].map(w => (
                 <span
                   key={w}
                   style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "72px",
+                    fontFamily: "var(--font-roxborough)",
+                    fontSize: "clamp(36px, 5vw, 64px)",
                     fontWeight: 700,
-                    lineHeight: "1.05em",
-                    letterSpacing: "-0.04em",
-                    color: "var(--color-white)",
+                    lineHeight: "1.1em",
+                    letterSpacing: "-0.03em",
+                    color: "#ffffff",
                   }}
                 >
                   {w}
@@ -141,100 +142,133 @@ const FactSection = () => {
               ))}
               <span
                 style={{
-                  fontFamily: "var(--font-serif)",
+                  fontFamily: "var(--font-roxborough)",
                   fontStyle: "italic",
-                  fontSize: "72px",
+                  fontSize: "clamp(36px, 5vw, 64px)",
                   fontWeight: 700,
-                  lineHeight: "0.975em",
+                  lineHeight: "1.1em",
                   letterSpacing: "-0.03em",
-                  color: "var(--color-white)",
+                  color: "var(--color-haiti-red)",
                 }}
               >
                 solutions
               </span>
             </h2>
 
-            {/* /Paragraph/Body (Large) — white 0.75 opacity */}
+            {/* Subtext */}
             <p
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: "22px",
-                lineHeight: "1.425em",
+                fontSize: "18px",
+                lineHeight: "1.5em",
                 color: "rgba(255,255,255,0.75)",
-                maxWidth: "500px",
+                maxWidth: "650px",
+                margin: 0,
               }}
             >
               Simple ideas, smart execution. We craft meaningful solutions that make a difference where it matters most.
             </p>
           </div>
 
-          {/* Border — 1px rgba(255,255,255,0.3) */}
-          <div className="divider-white" />
+          {/* Divider */}
+          <div
+            style={{
+              width: "100%",
+              height: "1px",
+              background: "rgba(255, 255, 255, 0.3)",
+            }}
+          />
 
-          {/* Counter — horizontal, gap 70px */}
-          <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
-
-            {/* First — 98% Customer Satisfaction */}
+          {/* Counter Grid */}
+          <div style={{ display: "flex", alignItems: "center", gap: "70px", flexWrap: "wrap", width: "100%" }}>
+            {/* Stat 1 */}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-start" }}>
+              <div style={{ display: "flex", alignItems: "baseline" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-roxborough)",
+                    fontSize: "clamp(48px, 6vw, 64px)",
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    lineHeight: "1.125em",
+                    color: "#ffffff",
+                  }}
+                >
+                  {sat.count}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-roxborough)",
+                    fontSize: "clamp(24px, 3vw, 36px)",
+                    fontWeight: 800,
+                    color: "var(--color-haiti-red)",
+                    marginLeft: "2px",
+                  }}
+                >
+                  %
+                </span>
+              </div>
               <span
                 style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "52px",
-                  fontWeight: 800,
-                  letterSpacing: "-0.04em",
-                  lineHeight: "1.125em",
-                  color: "var(--color-white)",
-                }}
-              >
-                {sat.count}%
-              </span>
-              {/* /Heading/Heading 5 — 20px white */}
-              <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "20px",
-                  fontWeight: 500,
-                  lineHeight: "1.275em",
-                  letterSpacing: "-0.02em",
-                  color: "rgba(255,255,255,0.8)",
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  lineHeight: "1.4em",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.7)",
                 }}
               >
                 Customer Satisfaction
               </span>
             </div>
 
-            {/* Vertical border */}
+            {/* Vertical Divider */}
             <div
               style={{
                 width: "1px",
                 height: "60px",
-                background: "rgba(255,255,255,0.3)",
+                background: "rgba(255, 255, 255, 0.3)",
                 flexShrink: 0,
               }}
             />
 
-            {/* Second — 80% Increased Revenue */}
+            {/* Stat 2 */}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-start" }}>
+              <div style={{ display: "flex", alignItems: "baseline" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-roxborough)",
+                    fontSize: "clamp(48px, 6vw, 64px)",
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    lineHeight: "1.125em",
+                    color: "#ffffff",
+                  }}
+                >
+                  {rev.count}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-roxborough)",
+                    fontSize: "clamp(24px, 3vw, 36px)",
+                    fontWeight: 800,
+                    color: "var(--color-haiti-red)",
+                    marginLeft: "2px",
+                  }}
+                >
+                  %
+                </span>
+              </div>
               <span
                 style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "52px",
-                  fontWeight: 800,
-                  letterSpacing: "-0.04em",
-                  lineHeight: "1.125em",
-                  color: "var(--color-white)",
-                }}
-              >
-                {rev.count}%
-              </span>
-              <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "20px",
-                  fontWeight: 500,
-                  lineHeight: "1.275em",
-                  letterSpacing: "-0.02em",
-                  color: "rgba(255,255,255,0.8)",
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  lineHeight: "1.4em",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.7)",
                 }}
               >
                 Increased Revenue

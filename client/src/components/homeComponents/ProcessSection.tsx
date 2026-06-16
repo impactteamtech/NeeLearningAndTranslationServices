@@ -1,18 +1,17 @@
 import { useState } from "react";
 
-
 const accordionItems = [
   {
-    title: "Rapid solution is the key",
+    title: "Structured path to fluency",
     body: "We design thoughtful systems that reduce complexity, improve performance, and help students move faster with clarity.",
   },
   {
-    title: "Innovative thinking drives results",
-    body: "We shape ideas into functional solutions that simplify the learning curve, improve usability, and create meaningful impact.",
+    title: "Expert cultural context",
+    body: "We shape lessons and translations into culturally authentic communications, simplifying the learning curve for native accuracy.",
   },
   {
-    title: "Customer-first mindset",
-    body: "We develop solutions that bring clarity to ideas, improve efficiency, and help every student achieve results with confidence.",
+    title: "Certified accuracy & trust",
+    body: "We develop educational curriculums and certified documents that ensure you navigate academic, professional, and legal goals with confidence.",
   },
 ];
 
@@ -25,7 +24,7 @@ const Accordion = () => {
         <div key={i}>
           {/* Top border for first item only */}
           {i === 0 && (
-            <div style={{ height: "1px", background: "var(--color-gray-300)", width: "100%" }} />
+            <div style={{ height: "1px", background: "rgba(6, 67, 159, 0.12)", width: "100%" }} />
           )}
           <button
             onClick={() => setOpenIdx(openIdx === i ? -1 : i)}
@@ -34,10 +33,10 @@ const Accordion = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "22px 0",
+              padding: "20px 0",
               background: "transparent",
               border: "none",
-              borderBottom: "1px solid var(--color-gray-300)",
+              borderBottom: "1px solid rgba(6, 67, 159, 0.12)",
               cursor: "pointer",
               gap: "16px",
               textAlign: "left",
@@ -45,12 +44,12 @@ const Accordion = () => {
           >
             <span
               style={{
-                fontFamily: "var(--font-display)",
+                fontFamily: "var(--font-roxborough)",
                 fontSize: "18px",
-                fontWeight: 600,
-                letterSpacing: "-0.02em",
+                fontWeight: 700,
+                letterSpacing: "-0.01em",
                 lineHeight: "1.3em",
-                color: "var(--color-dark)",
+                color: "var(--color-haiti-navy)",
               }}
             >
               {item.title}
@@ -68,8 +67,8 @@ const Accordion = () => {
             >
               <path
                 d="M10 4v12M4 10h12"
-                stroke="var(--color-dark)"
-                strokeWidth="1.5"
+                stroke="var(--color-haiti-red)"
+                strokeWidth="2"
                 strokeLinecap="round"
               />
             </svg>
@@ -78,16 +77,17 @@ const Accordion = () => {
           {openIdx === i && (
             <div
               style={{
-                padding: "20px 0 24px 0",
+                padding: "16px 0 20px 0",
                 animation: "fadeIn 0.25s ease-out",
               }}
             >
               <p
                 style={{
                   fontFamily: "var(--font-sans)",
-                  fontSize: "18px",
-                  lineHeight: "1.5em",
+                  fontSize: "15px",
+                  lineHeight: "1.6em",
                   color: "var(--color-gray-500)",
+                  margin: 0,
                 }}
               >
                 {item.body}
@@ -106,10 +106,27 @@ const ProcessSection = () => (
     style={{
       width: "100%",
       padding: "160px 40px 0px 40px",
-      background: "var(--color-gray-100)",
+      background: "#ffffff",
+      position: "relative",
+      overflow: "hidden",
     }}
   >
-    {/* Container — max 1240px, horizontal, gap 70px */}
+    {/* Subtle radial glow */}
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        bottom: "0",
+        right: "0",
+        width: "500px",
+        height: "500px",
+        background: "radial-gradient(circle, rgba(6,67,159,0.03) 0%, transparent 70%)",
+        pointerEvents: "none",
+        zIndex: 0,
+      }}
+    />
+
+    {/* Container */}
     <div
       style={{
         width: "100%",
@@ -121,9 +138,11 @@ const ProcessSection = () => (
         gap: "70px",
         alignItems: "center",
         justifyContent: "center",
+        position: "relative",
+        zIndex: 1,
       }}
     >
-      {/* MainWrapper — horizontal, gap 80px */}
+      {/* MainWrapper */}
       <div
         style={{
           display: "flex",
@@ -133,7 +152,7 @@ const ProcessSection = () => (
           width: "100%",
         }}
       >
-        {/* Image — 580x696, borderRadius 15px */}
+        {/* Image wrapper */}
         <div style={{ flexShrink: 0 }}>
           <img
             src="https://framerusercontent.com/images/XtF2Dn0CFhmqQ1hhZFk9ifmlDQ.jpg"
@@ -144,11 +163,13 @@ const ProcessSection = () => (
               objectFit: "cover",
               borderRadius: "15px",
               display: "block",
+              boxShadow: "0 20px 50px rgba(6, 67, 159, 0.08)",
+              border: "1.5px solid rgba(6, 67, 159, 0.12)",
             }}
           />
         </div>
 
-        {/* ContentWrapper — 1fr, vertical, gap 35px, align start */}
+        {/* ContentWrapper */}
         <div
           style={{
             flex: 1,
@@ -158,31 +179,87 @@ const ProcessSection = () => (
             alignItems: "flex-start",
           }}
         >
-          {/* TextWrapper — gap 25px, align start */}
+          {/* TextWrapper */}
           <div style={{ display: "flex", flexDirection: "column", gap: "25px", alignItems: "flex-start" }}>
-
-            {/* Title — max 450px, wrapping words */}
-            <div
+            {/* Title */}
+            <h2
               style={{
-                maxWidth: "450px",
                 display: "flex",
                 flexWrap: "wrap",
                 alignItems: "flex-start",
                 gap: "0px 11px",
+                margin: 0,
               }}
             >
-              {["We", "make", "spending"].map(w => (
-                <span key={w} className="t-d2">{w}</span>
+              {["We", "make", "learning"].map(w => (
+                <span
+                  key={w}
+                  style={{
+                    fontFamily: "var(--font-roxborough)",
+                    fontSize: "clamp(32px, 4.5vw, 44px)",
+                    fontWeight: 700,
+                    lineHeight: "1.15em",
+                    letterSpacing: "-0.02em",
+                    color: "var(--color-haiti-navy)",
+                  }}
+                >
+                  {w}
+                </span>
               ))}
-              <span className="t-d2i">stress</span>
-              <span className="t-d2i">free</span>
+              <span
+                style={{
+                  fontFamily: "var(--font-roxborough)",
+                  fontStyle: "italic",
+                  fontSize: "clamp(32px, 4.5vw, 44px)",
+                  fontWeight: 700,
+                  lineHeight: "1.15em",
+                  letterSpacing: "-0.02em",
+                  color: "var(--color-haiti-red)",
+                }}
+              >
+                stress
+              </span>
+              <span
+                style={{
+                  fontFamily: "var(--font-roxborough)",
+                  fontStyle: "italic",
+                  fontSize: "clamp(32px, 4.5vw, 44px)",
+                  fontWeight: 700,
+                  lineHeight: "1.15em",
+                  letterSpacing: "-0.02em",
+                  color: "var(--color-haiti-red)",
+                }}
+              >
+                free
+              </span>
               {["so", "you", "have", "the", "perfect", "control."].map(w => (
-                <span key={w} className="t-d2">{w}</span>
+                <span
+                  key={w}
+                  style={{
+                    fontFamily: "var(--font-roxborough)",
+                    fontSize: "clamp(32px, 4.5vw, 44px)",
+                    fontWeight: 700,
+                    lineHeight: "1.15em",
+                    letterSpacing: "-0.02em",
+                    color: "var(--color-haiti-navy)",
+                  }}
+                >
+                  {w}
+                </span>
               ))}
-            </div>
+            </h2>
 
-            {/* /Paragraph/Body */}
-            <p className="t-body" style={{ textAlign: "left" }}>
+            {/* Paragraph body */}
+            <p
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: "16px",
+                lineHeight: "1.65em",
+                color: "var(--color-gray-500)",
+                margin: 0,
+                textAlign: "left",
+              }}
+            >
               Our team delivers fast, reliable, and student-focused solutions designed to simplify the learning journey and enhance everyday experiences. With a strong focus on adaptability and innovation, we turn complex challenges into seamless, intuitive results.
             </p>
           </div>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 
 const logos = [
   "United Way",
@@ -10,17 +11,66 @@ const logos = [
   "Diaspora Professionals",
 ];
 
+interface MarqueeItemProps {
+  name: string;
+}
+
+const MarqueeItem = ({ name }: MarqueeItemProps) => {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        opacity: hovered ? 0.95 : 0.45,
+        transition: "opacity 0.25s ease, transform 0.25s ease",
+        transform: hovered ? "scale(1.03)" : "scale(1)",
+        cursor: "default",
+      }}
+    >
+      {/* Logo dot accent */}
+      <div
+        style={{
+          width: "8px",
+          height: "8px",
+          borderRadius: "9999px",
+          background: "var(--color-haiti-red)",
+          flexShrink: 0,
+        }}
+      />
+      <span
+        style={{
+          fontFamily: "var(--font-roxborough)",
+          fontSize: "18px",
+          fontWeight: 700,
+          letterSpacing: "-0.01em",
+          color: "var(--color-haiti-navy)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {name}
+      </span>
+    </div>
+  );
+};
+
 const ClientsSection = () => (
   <section
     id="clients"
     style={{
       width: "100%",
       padding: "130px 40px 0px 40px",
-      background: "var(--color-gray-100)",
+      background: "#ffffff",
       overflow: "hidden",
+      position: "relative",
     }}
   >
-    {/* Container — max 1240px */}
+    {/* Container */}
     <div
       style={{
         width: "100%",
@@ -32,9 +82,11 @@ const ClientsSection = () => (
         gap: "70px",
         alignItems: "center",
         justifyContent: "center",
+        position: "relative",
+        zIndex: 1,
       }}
     >
-      {/* MainWrapper — 1fr, vertical, gap 45px, center, overflow hidden */}
+      {/* MainWrapper */}
       <div
         style={{
           flex: 1,
@@ -46,22 +98,23 @@ const ClientsSection = () => (
           width: "100%",
         }}
       >
-        {/* /Heading/Heading 6 — 18px */}
+        {/* Title text */}
         <p
           style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "18px",
-            fontWeight: 600,
+            fontFamily: "var(--font-roxborough)",
+            fontSize: "clamp(18px, 2.5vw, 24px)",
+            fontWeight: 700,
             lineHeight: "1.3em",
-            letterSpacing: "-0.02em",
-            color: "var(--color-dark)",
+            letterSpacing: "-0.01em",
+            color: "var(--color-haiti-navy)",
             textAlign: "center",
+            margin: 0,
           }}
         >
           Trusted by over 500+ students & partners across the world.
         </p>
 
-        {/* Logos — animated marquee */}
+        {/* Logos marquee */}
         <div
           style={{
             width: "100%",
@@ -79,41 +132,9 @@ const ClientsSection = () => (
               width: "max-content",
             }}
           >
-            {/* Double the list for seamless loop */}
+            {/* Double list for loop */}
             {[...logos, ...logos].map((name, i) => (
-              <div
-                key={i}
-                style={{
-                  flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  opacity: 0.45,
-                }}
-              >
-                {/* Logo dot accent */}
-                <div
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "9999px",
-                    background: "var(--color-brand-sky)",
-                    flexShrink: 0,
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "16px",
-                    fontWeight: 700,
-                    letterSpacing: "-0.015em",
-                    color: "var(--color-dark)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {name}
-                </span>
-              </div>
+              <MarqueeItem key={i} name={name} />
             ))}
           </div>
         </div>
