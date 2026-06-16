@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-
+import DecoratorBox from "../DecoratorBox";
 const btnDark =
   "inline-flex items-center justify-center gap-3 bg-gradient-to-br from-[#080c18] via-[#0d1f7a] to-[#00209F] " +
   "text-white py-[15px] px-[34px] rounded-full font-sans text-[13px] font-bold tracking-[0.12em] uppercase " +
@@ -12,7 +12,6 @@ const btnDark =
 const HeroSection = () => {
   return (
     <section className="flex flex-col lg:flex-row relative items-center pt-10 lg:pt-5 mb-20 lg:mb-30 justify-between gap-12 lg:gap-0 max-w-8xl w-full px-6 lg:px-20">
-        {/* <DecoratorBox className="absolute hidden xl:block -bottom-14 right-110 -translate-x-1/2 z-20 animate-decorator-slide-up" /> */}
 
       <img
         src="/grid-background.png"
@@ -100,12 +99,15 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Right — hero image */}
-      <img
-        src="/background-image.png"
-        alt="Haitian Creole & English learning vibrant culture collage"
-        className="w-full max-w-[480px] lg:max-w-[500px] 2xl:max-w-[600px] lg:flex-1 h-auto lg:h-[450px] xl:h-150 object-cover z-0 opacity-100"
-      />
+      {/* Right — hero image with responsive DecoratorBox */}
+      <div className="relative w-full max-w-[480px] lg:max-w-[500px] 2xl:max-w-[600px] lg:flex-1 h-auto lg:h-[450px] xl:h-150 z-10 flex items-center justify-center">
+        <img
+          src="/background-image.png"
+          alt="Haitian Creole & English learning vibrant culture collage"
+          className="w-full h-full object-cover rounded-[20px]"
+        />
+        <DecoratorBox className="absolute hidden 2xl:flex -bottom-6 left-1/2 z-20 animate-decorator-slide-up [--decorator-tx:-50%] lg:left-auto lg:-left-12 lg:translate-x-0 lg:[--decorator-tx:0%]" />
+      </div>
     </section>
   );
 };

@@ -31,7 +31,7 @@ const DecoratorBox: React.FC<DecoratorBoxProps> = ({
   return (
     <div
       className={`
-        flex items-center gap-3 sm:gap-5 py-2.5 sm:py-[18px] px-4 sm:px-[34px]
+        flex items-center gap-3 sm:gap-5 py-1 sm:py-[18px] px-2 sm:px-3
         bg-white/95 backdrop-blur-[12px]
         border border-[#06439f]/10 rounded-[16px] sm:rounded-[20px]
         shadow-[0_4px_24px_rgba(6,67,159,0.08),0_1px_3px_rgba(0,0,0,0.04)]
@@ -54,12 +54,8 @@ const DecoratorBox: React.FC<DecoratorBoxProps> = ({
             style={{ zIndex: avatars.length - i }}
           />
         ))}
-        <span
-          className="w-8 h-8 sm:w-[42px] sm:h-[42px] rounded-full border-[2px] sm:border-[2.5px] border-white -ml-2.5 sm:-ml-3 flex items-center justify-center bg-primary text-white font-sans font-bold text-[10px] sm:text-xs tracking-[-0.02em] shadow-[0_1px_4px_rgba(6,67,159,0.25)]"
-          aria-label="Plus 99 more students"
-        >
-          +99
-        </span>
+ 
+        
       </div>
 
       {/* Divider */}
@@ -67,7 +63,7 @@ const DecoratorBox: React.FC<DecoratorBoxProps> = ({
 
       {/* Stars */}
       <div
-        className="flex gap-0.5 sm:gap-1"
+        className="hidden sm:flex gap-0.5 sm:gap-1"
         aria-label="Rating: 5 stars out of 5"
       >
         {[...Array(5)].map((_, i) => (
@@ -85,8 +81,9 @@ const DecoratorBox: React.FC<DecoratorBoxProps> = ({
 
       {/* Rating info */}
       <div className="flex flex-col gap-[1px] sm:gap-[3px]">
-        <span className="font-sans font-bold text-sm sm:text-[17px] text-primary tracking-[-0.01em] leading-none">
-          {rating}
+        <span className="font-sans font-bold text-sm sm:text-[17px] text-primary tracking-[-0.01em] leading-none flex items-center gap-1">
+          <span className="sm:hidden text-[#f59e0b]">★</span>
+          <span>{rating}</span>
         </span>
         <span className="font-sans font-medium text-[10px] sm:text-[13px] text-[#7a8599] tracking-wider leading-none">
           {reviewsCount}
