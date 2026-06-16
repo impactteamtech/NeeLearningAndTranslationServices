@@ -17,13 +17,12 @@ const Logo = ({ variant = 'dark' }: LogoProps) => {
         alt="Nee's Learning logo"
       />
       <span
-        className="font-sans font-bold text-xl tracking-tight"
-        style={{ color: isLight ? '#ffffff' : 'var(--color-dark)' }}
+        className={`font-sans font-bold text-xl tracking-tight ${
+          isLight ? 'text-white' : 'text-dark'
+        }`}
       >
         Nee
-        <span style={{ color: isLight ? 'rgba(255,255,255,0.70)' : 'var(--color-accent)' }}>
-          's
-        </span>{' '}
+        <span className={isLight ? 'text-white/70' : 'text-accent'}>'s</span>{' '}
         Learning
       </span>
     </Link>

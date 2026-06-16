@@ -12,20 +12,20 @@ interface Testimonial {
   personImageAlt: string;
 }
 
-/* ─── Data — module-level constant, never re-allocated ─── */
+/* ─── Data ─── */
 const testimonials: Testimonial[] = [
   {
-    id: "marie-larose",
+    id: "marc-larose",
     quote:
       "Nee's helped us communicate more effectively & turn language barriers into bridges of opportunity.",
     body: "Working with Nee's Learning & Translation Services was an absolute pleasure. They managed every stage of our program and their attention to cultural detail ensured a flawless final result that exceeded our expectations.",
-    authorName: "Marie Larose",
+    authorName: "Marc Larose",
     authorRole: "Community Integration Specialist",
     authorPhoto:
-      "https://framerusercontent.com/images/dQAcvt53XxCI90ObdM8wXH7wic.jpg",
+      "https://img.magnific.com/free-photo/cheerful-indian-businessman-smiling-closeup-portrait-jobs-career-campaign_53876-129417.jpg?semt=ais_hybrid&w=740&q=80",
     personImage:
-      "https://framerusercontent.com/images/ApIWUGszZxDGSijwfglaSJU36f0.png",
-    personImageAlt: "Marie Larose, happy client of Nee's Learning & Translation",
+      "https://img.magnific.com/free-photo/cheerful-indian-businessman-smiling-closeup-portrait-jobs-career-campaign_53876-129417.jpg?semt=ais_hybrid&w=740&q=80",
+    personImageAlt: "Marc Larose, happy client of Nee's Learning & Translation",
   },
   {
     id: "jean-pierre",
@@ -35,9 +35,9 @@ const testimonials: Testimonial[] = [
     authorName: "Jean-Pierre Moreau",
     authorRole: "Legal Advisor, Avocats Sans Frontières",
     authorPhoto:
-      "https://framerusercontent.com/images/dQAcvt53XxCI90ObdM8wXH7wic.jpg",
+      "https://img.magnific.com/free-photo/close-up-portrait-young-bearded-man-white-shirt-jacket-posing-camera-with-broad-smile-isolated-gray_171337-629.jpg?semt=ais_hybrid&w=740&q=80",
     personImage:
-      "https://framerusercontent.com/images/ApIWUGszZxDGSijwfglaSJU36f0.png",
+      "https://img.magnific.com/free-photo/close-up-portrait-young-bearded-man-white-shirt-jacket-posing-camera-with-broad-smile-isolated-gray_171337-629.jpg?semt=ais_hybrid&w=740&q=80",
     personImageAlt:
       "Jean-Pierre Moreau, legal advisor and satisfied client of Nee's",
   },
@@ -49,22 +49,16 @@ const testimonials: Testimonial[] = [
     authorName: "Sophia Charles",
     authorRole: "Parent & Language Learner",
     authorPhoto:
-      "https://framerusercontent.com/images/dQAcvt53XxCI90ObdM8wXH7wic.jpg",
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=740",
     personImage:
-      "https://framerusercontent.com/images/ApIWUGszZxDGSijwfglaSJU36f0.png",
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=740",
     personImageAlt: "Sophia Charles, parent and language learner at Nee's",
   },
 ];
 
 /* ─── Star icon ─── */
 const StarIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 20 20"
-    fill="none"
-    aria-hidden="true"
-  >
+  <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
     <path
       d="M10 1.39l2.47 5.01 5.53.8-4 3.9.94 5.51L10 14.1l-4.94 2.6.94-5.51-4-3.9 5.53-.8L10 1.39z"
       fill="#FFA800"
@@ -72,7 +66,7 @@ const StarIcon = () => (
   </svg>
 );
 
-/* ─── Dot nav indicator ─── */
+/* ─── Dot nav ─── */
 const DotNav = ({
   count,
   active,
@@ -82,15 +76,23 @@ const DotNav = ({
   active: number;
   onSelect: (i: number) => void;
 }) => (
-  <div className="testimonial-section__dots" role="tablist" aria-label="Testimonial navigation">
+  <div
+    className="flex flex-row gap-2.5 items-center"
+    role="tablist"
+    aria-label="Testimonial navigation"
+  >
     {Array.from({ length: count }).map((_, i) => (
       <button
         key={i}
         role="tab"
         aria-selected={i === active}
         aria-label={`View testimonial ${i + 1}`}
-        className={`testimonial-section__dot${i === active ? " testimonial-section__dot--active" : ""}`}
         onClick={() => onSelect(i)}
+        className={`rounded-full h-2.5 border-none cursor-pointer p-0 flex-shrink-0 transition-[background,transform,width] duration-300 ${
+          i === active
+            ? "w-[26px] bg-haiti-navy"
+            : "w-2.5 bg-[rgba(6,67,159,0.18)] [@media(hover:hover)]:hover:bg-[rgba(6,67,159,0.40)] [@media(hover:hover)]:hover:scale-[1.2]"
+        }`}
       />
     ))}
   </div>
@@ -103,16 +105,13 @@ const TestimonialSection = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
 
-  /* Scroll-reveal observer — matches pattern used by every sibling section */
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
-
     if (typeof IntersectionObserver === "undefined") {
       setVisible(true);
       return;
     }
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -122,7 +121,6 @@ const TestimonialSection = () => {
       },
       { threshold: 0.12 }
     );
-
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -141,96 +139,143 @@ const TestimonialSection = () => {
   return (
     <section
       id="testimonials"
-      className="testimonial-section"
       ref={sectionRef}
+      className="w-full bg-[#f9fbfd] relative overflow-hidden"
+      style={{
+        paddingTop: "clamp(80px,10vw,120px)",
+        paddingBottom: "clamp(80px,10vw,120px)",
+      }}
       aria-label="Client testimonials"
     >
-      {/* Background glow blob */}
-      <div aria-hidden="true" className="testimonial-section__bg-glow" />
+      {/* Background glow */}
+      <div
+        aria-hidden="true"
+        className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-[radial-gradient(circle,rgba(6,67,159,0.06)_0%,transparent_70%)] pointer-events-none z-0"
+      />
 
       {/* Container */}
-      <div className="section-container testimonial-section__inner">
-
-        {/* ── Section header ── */}
+      <div
+        className="w-full max-w-[1400px] mx-auto flex flex-col relative z-10"
+        style={{
+          paddingLeft: "clamp(20px,5vw,40px)",
+          paddingRight: "clamp(20px,5vw,40px)",
+          gap: "clamp(48px,6vw,72px)",
+        }}
+      >
+        {/* Section header */}
         <div
-          className={`testimonial-section__header${visible ? " testimonial-section__header--visible" : ""}`}
+          className={`flex flex-col items-center gap-[15px] text-center transition-[opacity,transform] duration-[650ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
+            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"
+          }`}
         >
-          <span className="testimonial-section__badge">Testimonials</span>
-          <h2 className="testimonial-section__heading">
-            What our <em className="testimonial-section__heading-italic">clients</em> say about us.
+          <span className="inline-flex items-center gap-2 bg-[rgba(6,67,159,0.06)] border border-[rgba(6,67,159,0.15)] text-haiti-navy px-[14px] py-1 rounded-full font-sans text-[12px] font-bold tracking-[0.1em] uppercase">
+            Testimonials
+          </span>
+          <h2
+            className="font-roxborough font-bold leading-[1.15] tracking-[-0.02em] text-haiti-navy m-0"
+            style={{ fontSize: "clamp(32px,4.5vw,48px)" }}
+          >
+            What our <em className="italic text-haiti-red">clients</em> say about
+            us.
           </h2>
         </div>
 
-        {/* ── Two-column layout ── */}
-        <div className="testimonial-section__grid">
-
+        {/* Two-column grid */}
+        <div
+          className="flex flex-row items-center w-full max-[900px]:flex-col max-[900px]:gap-10"
+          style={{ gap: "clamp(48px,6vw,80px)" }}
+        >
           {/* Left — image panel */}
           <div
-            className={`testimonial-section__image-panel${visible ? " testimonial-section__image-panel--visible" : ""}`}
+            className={`flex-shrink-0 relative transition-[opacity,transform] duration-[700ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] max-[900px]:w-full max-[900px]:max-w-[480px] max-[900px]:mx-auto [@media(hover:hover)]:hover:[&_.frame]:shadow-[0_16px_48px_rgba(6,67,159,0.10)] ${
+              visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"
+            }`}
+            style={{
+              width: "clamp(300px,40vw,520px)",
+              transitionDelay: visible ? "100ms" : "0ms",
+            }}
           >
             {/* Photo frame */}
-            <div className="relative testimonial-section__frame">
+            <div
+              className="frame w-full bg-[#edf3fa] rounded-[16px] border-[1.5px] border-[rgba(6,67,159,0.12)] shadow-[0_4px_24px_rgba(6,67,159,0.04)] relative transition-[box-shadow] duration-300 overflow-hidden"
+              style={{ aspectRatio: "10/9" }}
+            >
               <img
                 src={t.personImage}
                 alt={t.personImageAlt}
                 loading="lazy"
                 decoding="async"
-                className={`testimonial-section__person-img${animating ? " testimonial-section__person-img--fade" : ""}`}
+                className={`absolute inset-0 w-full h-full object-cover block transition-[opacity,transform] duration-[280ms] ${
+                  animating
+                    ? "opacity-0 scale-[0.98]"
+                    : "opacity-100 scale-100"
+                }`}
               />
             </div>
-
           </div>
 
           {/* Right — content panel */}
           <div
-            className={`testimonial-section__content${visible ? " testimonial-section__content--visible" : ""}`}
+            className={`flex-1 flex flex-col gap-8 items-start transition-[opacity,transform] duration-[700ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] max-[900px]:w-full ${
+              visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"
+            }`}
+            style={{ transitionDelay: visible ? "200ms" : "0ms" }}
           >
             {/* Stars */}
             <div
               role="img"
               aria-label="5 out of 5 stars"
-              className="testimonial-section__stars"
+              className="flex flex-row gap-1.5 items-center"
             >
               {Array.from({ length: 5 }).map((_, i) => (
                 <StarIcon key={i} />
               ))}
             </div>
 
-            {/* Quote text */}
-            <figure className="testimonial-section__figure">
+            {/* Quote + author */}
+            <figure className="flex flex-col gap-6 w-full m-0">
               <blockquote
-                className={`testimonial-section__quote${animating ? " testimonial-section__quote--fade" : ""}`}
+                className={`m-0 transition-[opacity,transform] duration-[280ms] ${
+                  animating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                }`}
               >
-                <p className="testimonial-section__quote-text">
+                <p
+                  className="font-roxborough font-semibold leading-[1.25] tracking-[-0.02em] text-haiti-navy m-0 max-[580px]:text-[20px]"
+                  style={{ fontSize: "clamp(22px,3vw,30px)" }}
+                >
                   &ldquo;{t.quote}&rdquo;
                 </p>
               </blockquote>
 
               <p
-                className={`testimonial-section__body${animating ? " testimonial-section__quote--fade" : ""}`}
+                className={`font-sans text-base leading-[1.65] text-[#6B7280] m-0 max-[580px]:text-[15px] transition-[opacity,transform] duration-[280ms] ${
+                  animating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                }`}
               >
                 &ldquo;{t.body}&rdquo;
               </p>
 
               {/* Divider */}
-              <div className="testimonial-section__divider" />
+              <div className="w-full h-px bg-[rgba(6,67,159,0.12)] flex-shrink-0" />
 
               {/* Author */}
               <figcaption
-                className={`testimonial-section__author${animating ? " testimonial-section__quote--fade" : ""}`}
+                className={`flex flex-row items-center gap-4 not-italic transition-[opacity,transform] duration-[280ms] ${
+                  animating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                }`}
               >
                 <img
                   src={t.authorPhoto}
                   alt={t.authorName}
                   loading="lazy"
                   decoding="async"
-                  className="testimonial-section__author-photo"
+                  className="w-16 h-16 rounded-full object-cover flex-shrink-0 border-[1.5px] border-[rgba(6,67,159,0.12)] block"
                 />
-                <div className="testimonial-section__author-text">
-                  <cite className="testimonial-section__author-name">
+                <div className="flex flex-col gap-1">
+                  <cite className="font-roxborough text-[18px] font-bold leading-[1.25] tracking-[-0.01em] text-haiti-navy not-italic">
                     {t.authorName}
                   </cite>
-                  <span className="testimonial-section__author-role">
+                  <span className="font-sans text-[14px] text-[#6B7280] leading-[1.4]">
                     {t.authorRole}
                   </span>
                 </div>

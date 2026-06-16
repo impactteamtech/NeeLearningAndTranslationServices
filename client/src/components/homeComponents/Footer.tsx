@@ -11,7 +11,7 @@ import Logo from "./navbar/Logo";
 /* ─── Module-level constant — never re-computed on render ─── */
 const CURRENT_YEAR = new Date().getFullYear();
 
-/* ─── Link data — corrected to match hash-anchor routes ─── */
+/* ─── Link data ─── */
 const serviceLinks = [
   { label: "Language Learning",    href: "#courses" },
   { label: "Translation Services", href: "#courses" },
@@ -48,31 +48,56 @@ const socialLinks = [
   },
 ];
 
-/* ─── Footer component ─── */
+/* ─── Footer ─── */
 const Footer = () => {
   return (
-    <footer className="footer" aria-label="Site footer">
+    <footer
+      className="w-full relative overflow-hidden bg-gradient-to-br from-[#080c18] via-[#0b1245] to-[#06439f]"
+      style={{
+        paddingTop: "clamp(64px,8vw,96px)",
+        paddingBottom: "clamp(32px,4vw,48px)",
+      }}
+      aria-label="Site footer"
+    >
       {/* Decorative radial glows */}
-      <div aria-hidden="true" className="footer__glow footer__glow--left" />
-      <div aria-hidden="true" className="footer__glow footer__glow--right" />
+      <div
+        aria-hidden="true"
+        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none z-0 -bottom-[200px] -left-[100px] bg-[radial-gradient(circle,rgba(6,67,159,0.25)_0%,transparent_70%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none z-0 -top-[100px] -right-[100px] bg-[radial-gradient(circle,rgba(206,17,38,0.10)_0%,transparent_70%)]"
+      />
 
-      <div className="section-container footer__inner">
-
-        {/* ── Top row: brand + link columns + contact ── */}
-        <div className="footer__top">
-
+      {/* Inner container */}
+      <div
+        className="w-full max-w-[1400px] mx-auto relative z-10 flex flex-col"
+        style={{
+          paddingLeft: "clamp(20px,5vw,40px)",
+          paddingRight: "clamp(20px,5vw,40px)",
+          gap: "clamp(40px,5vw,56px)",
+        }}
+      >
+        {/* ── Top row ── */}
+        <div
+          className="flex flex-row items-start w-full max-[900px]:flex-col max-[900px]:gap-12"
+          style={{ gap: "clamp(40px,6vw,80px)" }}
+        >
           {/* Brand block */}
-          <div className="footer__brand">
-            {/* Light variant — white wordmark for dark footer background */}
+          <div className="flex flex-col gap-5 max-w-[280px] flex-shrink-0 max-[900px]:max-w-full">
             <Logo variant="light" />
 
-            <p className="footer__tagline">
+            <p className="font-sans text-[14px] leading-[1.65] text-white/60 m-0">
               Empowering learners through structured Haitian Kreyòl &amp; English
               courses and certified translation services.
             </p>
 
             {/* Social icons */}
-            <div className="footer__social" role="list" aria-label="Social media links">
+            <div
+              className="flex flex-row gap-2.5 items-center flex-wrap"
+              role="list"
+              aria-label="Social media links"
+            >
               {socialLinks.map((s) => (
                 <a
                   key={s.label}
@@ -81,7 +106,7 @@ const Footer = () => {
                   role="listitem"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="footer__social-icon"
+                  className="w-9 h-9 rounded-full border-[1.5px] border-white/[0.18] flex items-center justify-center text-white/70 text-[14px] no-underline flex-shrink-0 transition-[background,border-color,color,transform] duration-[250ms] [@media(hover:hover)]:hover:bg-haiti-red [@media(hover:hover)]:hover:border-haiti-red [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 focus-visible:outline-offset-[3px] focus-visible:rounded-full"
                 >
                   {s.icon}
                 </a>
@@ -90,14 +115,21 @@ const Footer = () => {
           </div>
 
           {/* Link columns */}
-          <div className="footer__cols">
+          <div
+            className="flex-1 flex flex-row flex-wrap items-start justify-end gap-[clamp(32px,5vw,64px)] max-[900px]:justify-start max-[580px]:flex-col max-[580px]:gap-8"
+          >
             {/* Services column */}
-            <nav aria-label="Services links" className="footer__col">
-              <h3 className="footer__col-heading">Services</h3>
-              <ul className="footer__col-list">
+            <nav aria-label="Services links" className="flex flex-col gap-4 min-w-[120px]">
+              <h3 className="font-sans text-[11px] font-bold tracking-[0.12em] uppercase text-white/50 m-0 leading-[1.4]">
+                Services
+              </h3>
+              <ul className="list-none p-0 m-0 flex flex-col gap-[11px]">
                 {serviceLinks.map((l) => (
                   <li key={l.label}>
-                    <a href={l.href} className="footer__col-link">
+                    <a
+                      href={l.href}
+                      className="font-sans text-[14px] text-white/65 no-underline leading-[1.4] transition-colors duration-200 [@media(hover:hover)]:hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/50 focus-visible:outline-offset-[2px] focus-visible:rounded-[2px] focus-visible:text-white"
+                    >
                       {l.label}
                     </a>
                   </li>
@@ -106,12 +138,17 @@ const Footer = () => {
             </nav>
 
             {/* Company column */}
-            <nav aria-label="Company links" className="footer__col">
-              <h3 className="footer__col-heading">Company</h3>
-              <ul className="footer__col-list">
+            <nav aria-label="Company links" className="flex flex-col gap-4 min-w-[120px]">
+              <h3 className="font-sans text-[11px] font-bold tracking-[0.12em] uppercase text-white/50 m-0 leading-[1.4]">
+                Company
+              </h3>
+              <ul className="list-none p-0 m-0 flex flex-col gap-[11px]">
                 {companyLinks.map((l) => (
                   <li key={l.label}>
-                    <a href={l.href} className="footer__col-link">
+                    <a
+                      href={l.href}
+                      className="font-sans text-[14px] text-white/65 no-underline leading-[1.4] transition-colors duration-200 [@media(hover:hover)]:hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/50 focus-visible:outline-offset-[2px] focus-visible:rounded-[2px] focus-visible:text-white"
+                    >
                       {l.label}
                     </a>
                   </li>
@@ -120,36 +157,38 @@ const Footer = () => {
             </nav>
 
             {/* Contact column */}
-            <div className="footer__col" aria-label="Contact information">
-              <h3 className="footer__col-heading">Get in Touch</h3>
-              <ul className="footer__col-list">
+            <div aria-label="Contact information" className="flex flex-col gap-4 min-w-[120px]">
+              <h3 className="font-sans text-[11px] font-bold tracking-[0.12em] uppercase text-white/50 m-0 leading-[1.4]">
+                Get in Touch
+              </h3>
+              <ul className="list-none p-0 m-0 flex flex-col gap-[11px]">
                 <li>
                   <a
                     href="mailto:info@neeslearning.com"
-                    className="footer__col-link footer__col-link--contact"
+                    className="flex items-center gap-2 font-sans text-[14px] text-white/65 no-underline leading-[1.4] transition-colors duration-200 [@media(hover:hover)]:hover:text-white"
                     aria-label="Email us at info@neeslearning.com"
                   >
-                    <IoMailOutline aria-hidden="true" className="footer__contact-icon" />
+                    <IoMailOutline aria-hidden="true" className="text-[16px] flex-shrink-0 opacity-80" />
                     info@neeslearning.com
                   </a>
                 </li>
                 <li>
                   <a
                     href="tel:+15551234567"
-                    className="footer__col-link footer__col-link--contact"
+                    className="flex items-center gap-2 font-sans text-[14px] text-white/65 no-underline leading-[1.4] transition-colors duration-200 [@media(hover:hover)]:hover:text-white"
                     aria-label="Call us at +1 555 123 4567"
                   >
-                    <IoCallOutline aria-hidden="true" className="footer__contact-icon" />
+                    <IoCallOutline aria-hidden="true" className="text-[16px] flex-shrink-0 opacity-80" />
                     +1 (555) 123-4567
                   </a>
                 </li>
               </ul>
 
-              {/* CTA */}
+              {/* CTA pill */}
               <Link
                 to="/contact"
-                className="footer__cta"
                 aria-label="Book a free consultation"
+                className="inline-flex items-center justify-center mt-2 px-[22px] py-[10px] rounded-full bg-white/[0.10] border-[1.5px] border-white/[0.22] font-sans text-[12px] font-bold tracking-[0.08em] uppercase text-white/85 no-underline whitespace-nowrap transition-[background,border-color,color,transform] duration-[250ms] [@media(hover:hover)]:hover:bg-haiti-red [@media(hover:hover)]:hover:border-haiti-red [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 focus-visible:outline-offset-[3px]"
               >
                 Book a Free Consultation
               </Link>
@@ -158,15 +197,17 @@ const Footer = () => {
         </div>
 
         {/* ── Divider ── */}
-        <div className="footer__divider" aria-hidden="true" />
+        <div
+          aria-hidden="true"
+          className="w-full h-px bg-white/[0.10] flex-shrink-0"
+        />
 
-        {/* ── Bottom row: copyright + legal ── */}
-        <div className="footer__bottom">
-          <p className="footer__copyright">
+        {/* ── Bottom row ── */}
+        <div className="flex flex-row items-center justify-between flex-wrap gap-4 max-[580px]:flex-col max-[580px]:items-start max-[580px]:gap-3">
+          <p className="font-sans text-[13px] text-white/40 m-0 leading-[1.5]">
             &copy; {CURRENT_YEAR} Nee&apos;s Learning &amp; Translation Services.
             All rights reserved.
           </p>
-
         </div>
       </div>
     </footer>

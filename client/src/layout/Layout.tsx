@@ -4,24 +4,10 @@ import Footer from "../components/homeComponents/Footer";
 
 const Layout = () => {
   return (
-    <div
-      className="flex flex-col min-h-screen"
-      style={{ background: "#ffffff" }}
-    >
+    <div className="flex flex-col min-h-screen bg-white">
       {/* Sticky navbar header */}
-      <header
-        className="w-full"
-        style={{
-          position: "sticky",
-          top: "0px",
-          zIndex: 50,
-          padding: "16px 40px",
-          background: "transparent",
-        }}
-      >
-        <div style={{ maxWidth: "100%" }} className="px-4 sm:px-8 md:px-20 lg:px-30">
-          <Navbar />
-        </div>
+      <header className="w-full sticky top-0 z-50 bg-transparent px-4 py-4 sm:px-8 md:px-20 lg:px-30">
+        <Navbar />
       </header>
 
       {/* Page content — full width */}
@@ -29,7 +15,7 @@ const Layout = () => {
         <Outlet />
       </main>
 
-      {/* Footer component */}
+      {/* Footer */}
       <Footer />
     </div>
   );
