@@ -88,8 +88,8 @@ const Footer = () => {
             <Logo variant="light" />
 
             <p className="font-sans text-[14px] leading-[1.65] text-white/60 m-0">
-              Empowering learners through structured Haitian Kreyòl &amp; English
-              courses and certified translation services.
+              Empowering learners through structured Haitian Kreyòl &amp; 
+              certified translation services.
             </p>
 
             {/* Social icons */}

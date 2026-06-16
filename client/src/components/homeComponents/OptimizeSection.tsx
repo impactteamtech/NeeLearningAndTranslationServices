@@ -167,25 +167,31 @@ const OptimizeSection = () => {
               </p>
             </div>
 
-            {/* CTA Button */}
             <Link
               to="/services"
-              className="group inline-flex items-center gap-3 bg-gradient-to-br from-[#080c18] via-[#0d1f7a] to-[#00209F] text-white py-[15px] px-[34px] rounded-full font-sans text-[13px] font-bold tracking-[0.12em] uppercase cursor-pointer border-none transition-[transform,box-shadow] duration-300 whitespace-nowrap no-underline shadow-[0_4px_20px_rgba(0,32,159,0.40),0_1px_6px_rgba(8,12,24,0.30)] hover:-translate-y-[3px] hover:shadow-[0_10px_36px_rgba(0,32,159,0.55),0_3px_10px_rgba(8,12,24,0.35)] hover:from-[#001278] hover:via-[#00209F] hover:to-[#1a3aff] active:-translate-y-[1px]"
+              className="group relative inline-flex items-center gap-3 bg-gradient-to-br from-[#080c18] via-[#0d1f7a] to-[#00209F] text-white py-[15px] px-[34px] rounded-full font-sans text-[13px] font-bold tracking-[0.12em] uppercase cursor-pointer border-none transition-[transform,box-shadow] duration-[400ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] whitespace-nowrap no-underline shadow-[0_4px_20px_rgba(0,32,159,0.40),0_1px_6px_rgba(8,12,24,0.30),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:-translate-y-[3px] hover:shadow-[0_12px_40px_rgba(0,32,159,0.55),0_4px_12px_rgba(8,12,24,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.3)] active:-translate-y-[1px] overflow-hidden"
             >
-              More Details
-              {/* Arrow circle */}
-              <span className="relative overflow-hidden rounded-full w-[38px] h-[38px] bg-white/[0.18] flex items-center justify-center flex-shrink-0">
+              {/* Smooth Hover Gradient Overlay */}
+              <span className="absolute inset-0 bg-gradient-to-br from-[#001278] via-[#00209F] to-[#1a3aff] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full z-0" />
+
+              {/* Shimmer / Glint Effect on Hover */}
+              <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-[150%] group-hover:translate-x-[250%] transition-transform duration-[1000ms] ease-out pointer-events-none z-0" />
+
+              {/* Text content - placed above overlays */}
+              <span className="relative z-10">More Details</span>
+
+              {/* Arrow container - scaled and backgrounds transitioned */}
+              <span className="relative overflow-hidden rounded-full w-[38px] h-[38px] bg-white/[0.14] group-hover:bg-white/[0.24] group-hover:scale-105 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-300 z-10">
                 <IoIosArrowRoundForward
-                  className="absolute w-[22px] h-[22px] text-white transition-transform duration-300 ease-in-out translate-x-0 group-hover:translate-x-full"
+                  className="absolute w-[22px] h-[22px] text-white transition-transform duration-300 ease-in-out translate-x-0 group-hover:translate-x-10"
                 />
                 <IoIosArrowRoundForward
-                  className="absolute w-[22px] h-[22px] text-white transition-transform duration-300 ease-in-out -translate-x-full group-hover:translate-x-0"
+                  className="absolute w-[22px] h-[22px] text-white transition-transform duration-300 ease-in-out -translate-x-10 group-hover:translate-x-0"
                 />
               </span>
             </Link>
           </div>
 
-          {/* Right col — process cards */}
           <div className="flex-1 flex flex-col gap-[35px]">
             {processCards.map((card, i) => (
               <ProcessCard key={i} {...card} />

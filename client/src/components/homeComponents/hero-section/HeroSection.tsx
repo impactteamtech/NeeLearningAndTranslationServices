@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import DecoratorBox from "../DecoratorBox";
 
 const btnDark =
   "inline-flex items-center justify-center gap-3 bg-gradient-to-br from-[#080c18] via-[#0d1f7a] to-[#00209F] " +
@@ -47,7 +46,7 @@ const HeroSection = () => {
         >
           Learn Haitian
           <br />
-          Creole &amp; Frensh
+          Creole &amp; Translate
         </h1>
 
         {/* Description */}
@@ -62,17 +61,14 @@ const HeroSection = () => {
           }}
           className="text-[17px] text-center lg:text-left w-full md:w-[75%] lg:w-[85%] xl:w-[75%] mx-auto lg:mx-0"
         >
-          Master Haitian Creole and English
-          at your own pace with expert
-          lessons and translation support
-          from Nee's.
+        Practical language instruction and professional translation services for students, professionals, and families..
         </p>
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:max-w-[430px] justify-center lg:justify-start relative z-10">
           {/* Primary */}
           <Link to="/contact" className={`${btnDark} w-full sm:w-auto`}>
-            Start Learning
+            Book Your First Lesson
           </Link>
 
           {/* Outline — gradient border via background-clip trick */}
@@ -99,7 +95,7 @@ const HeroSection = () => {
               e.currentTarget.style.boxShadow = "none";
             }}
           >
-            Explore Courses
+            Request a Translation Quote
           </Link>
         </div>
       </div>
