@@ -5,7 +5,7 @@ const HeroSection = () => {
 
   return (
     <section
-      className="flex flex-col lg:flex-row relative items-center pt-10 lg:pt-15 mb-20 lg:mb-30 justify-between gap-12 lg:gap-0 max-w-8xl w-full px-6 lg:px-20"
+      className="flex flex-col lg:flex-row relative items-center pt-10 lg:pt-5 mb-20 lg:mb-30 justify-between gap-12 lg:gap-0 max-w-8xl w-full px-6 lg:px-20"
     >
       <DecoratorBox className="absolute -bottom-20 left-210 -translate-x-1/2 z-20 animate-decorator-slide-up" />
       
@@ -38,7 +38,7 @@ const HeroSection = () => {
             letterSpacing: "-0.02em",
             color: "var(--color-haiti-navy)",
           }}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] xl:text-[8rem] w-full text-center lg:text-left"
+          className="text-5xl md:text-7xl lg:text-8xl xl:text-9xl w-full text-center lg:text-left"
         >
           Learn Haitian
           <br />
