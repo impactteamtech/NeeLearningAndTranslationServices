@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from management.routes import bookings
-from management.routes import services
-from management.routes import availability
+from routes import bookings
+from routes import services
+from routes import availability
 
 
 app = FastAPI(
@@ -23,7 +23,7 @@ app.include_router(
 app.include_router(
     bookings.router,
     prefix="/api/v1/bookings",
-    tags=['Bookings']
+    tags=["Bookings"]
 )
 
 

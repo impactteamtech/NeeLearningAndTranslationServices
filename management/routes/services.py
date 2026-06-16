@@ -1,12 +1,12 @@
 #the function that will handles creating services 
 
 from fastapi import APIRouter, HTTPException
-from management.schemas.service import ServiceCreate, ServiceResponse
-from management.database.database import get_db
+from schemas.service import ServiceCreate, ServiceResponse
+from database.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from fastapi import Depends
-from management.models.service import Service
+from models.service import Service
 router = APIRouter()
 
 
@@ -40,24 +40,29 @@ def get_services(db:Session = Depends(get_db)):
 
 #route to get service ids
 @router.get("/{service_id}", response_model=ServiceResponse)
-def get_service(service_id: int):
-    for service in services_db:
-        if service["id"] == service_id:
-            return service
-
-    raise HTTPException(status_code=404, detail="Service not found")
+def get_service(service_id: int, db:Session = Depends(get_db)):
+    service = db.get(Service, service_id)
+    if not service:
+        raise HTTPException(status_code=404, detail="Service ID not found")
+    return service
 
 #route for updating service id 
 @router.put("/{service_id}", response_model=ServiceResponse)
-def update_service(service_id: int, updated_service: ServiceCreate):
-    for index, service in enumerate(services_db):
-        if service["id"] == service_id:
-            new_data = updated_service.model_dump()
-            new_data["id"] = service_id
-            services_db[index] = new_data
-            return new_data
+def update_service(service_id: int, updated_service: ServiceCreate, db: Session = Depends(get_db())):
+    db_service = db.get(Service, service_id)
+    if not db_service:
+        raise HTTPException(status_code=404, detail="Services cannot be updated")
+    #convert to standard dict 
+    updated_dict = updated_service.model_dump()
+    #loop through the dict so we can update it 
+    for key, value in updated_dict.items():
+        setattr(get_db, key, value)
+    #commit to the db 
+    db.commit()
+    db.refresh(db_service)
+    
+    return db_service
 
-    raise HTTPException(status_code=404, detail="Service not found")
 
 #route for deleting a service id 
 @router.delete("/{service_id}")
