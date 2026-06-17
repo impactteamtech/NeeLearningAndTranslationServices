@@ -51,6 +51,38 @@ Nee's Learning & Translation Services aims to promote Haitian Creole globally wh
 
 ---
 
+## Current Development Status
+
+### Services Module
+
+* [x] Create Service
+* [x] Get All Services
+* [ ] Get Service By ID
+* [ ] Update Service
+* [ ] Delete Service
+
+### Availability Module
+
+* [x] Schema Design
+* [x] Route Design
+* [ ] PostgreSQL Migration
+
+### Booking Module
+
+* [x] Schema Design
+* [x] Route Design
+* [ ] PostgreSQL Migration
+
+### Translation Requests Module
+
+* [ ] In Development
+
+### Authentication & Users
+
+* [ ] Planned
+
+---
+
 ## Project Structure
 
 ```text
