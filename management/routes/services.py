@@ -46,30 +46,36 @@ def get_service(service_id: int, db:Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Service ID not found")
     return service
 
-#route for updating service id 
 @router.put("/{service_id}", response_model=ServiceResponse)
-def update_service(service_id: int, updated_service: ServiceCreate, db: Session = Depends(get_db())):
+def update_service(
+    service_id: int,
+    updated_service: ServiceCreate,
+    db: Session = Depends(get_db)
+):
     db_service = db.get(Service, service_id)
+
     if not db_service:
-        raise HTTPException(status_code=404, detail="Services cannot be updated")
-    #convert to standard dict 
+        raise HTTPException(
+            status_code=404,
+            detail="Service not found")
+
     updated_dict = updated_service.model_dump()
-    #loop through the dict so we can update it 
     for key, value in updated_dict.items():
-        setattr(get_db, key, value)
-    #commit to the db 
+        setattr(db_service, key, value)
     db.commit()
     db.refresh(db_service)
-    
-    return db_service
 
+    return db_service
 
 #route for deleting a service id 
 @router.delete("/{service_id}")
-def delete_service(service_id: int):
-    for service in services_db:
-        if service["id"] == service_id:
-            services_db.remove(service)
-            return {"message": "Service deleted successfully"}
-
-    raise HTTPException(status_code=404, detail="Service not found")
+def delete_service(service_id: int, db: Session = Depends(get_db)):
+    query_obj_id = db.get(Service, service_id)
+    
+    if not query_obj_id:
+        raise HTTPException(status_code=404, detail= "Service object not found")
+    db.delete(query_obj_id)
+    db.commit()
+    return {"message": "Service successfully deleted"}
+    
+    
