@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+/* ── Animated counter hook ── */
 const useCountUp = (target: number, durationMs = 2000) => {
   const [count, setCount] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,18 +15,20 @@ const useCountUp = (target: number, durationMs = 2000) => {
         if (entry.isIntersecting && !started.current) {
           started.current = true;
           const startTime = performance.now();
+
           const animate = (now: number) => {
             const progress = Math.min((now - startTime) / durationMs, 1);
-            // Ease out cubic
             const eased = 1 - Math.pow(1 - progress, 3);
             setCount(Math.round(eased * target));
             if (progress < 1) requestAnimationFrame(animate);
           };
+
           requestAnimationFrame(animate);
         }
       },
       { threshold: 0.4 }
     );
+
     observer.observe(el);
     return () => observer.disconnect();
   }, [target, durationMs]);
@@ -33,211 +36,116 @@ const useCountUp = (target: number, durationMs = 2000) => {
   return { count, containerRef };
 };
 
+/* ─── Section ─── */
 const FactSection = () => {
-  const sat = useCountUp(98, 2000);
-  const rev = useCountUp(80, 2000);
+  const accuracy = useCountUp(96, 2000);
+  const translations = useCountUp(120, 2000);
 
   return (
     <section
       id="results"
+      className="relative w-full overflow-hidden z-[2] flex items-center"
       style={{
-        position: "relative",
-        width: "100%",
-        overflow: "hidden",
-        zIndex: 2,
-        minHeight: "750px",
-        display: "flex",
-        alignItems: "center",
+        paddingTop: "clamp(100px,12vw,180px)",
+        paddingBottom: "clamp(100px,12vw,180px)",
       }}
     >
-      {/* ImageParallax — background with parallax effect */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          zIndex: 0,
-        }}
-      >
+      {/* Background image */}
+      <div className="absolute inset-0 w-full h-full z-0">
         <img
-          src="https://framerusercontent.com/images/XtF2Dn0CFhmqQ1hhZFk9ifmlDQ.jpg"
+          src="/bg-fact-section.jpg"
           alt=""
-          aria-hidden="true"
-          style={{
-            width: "100%",
-            height: "110%",
-            objectFit: "cover",
-            objectPosition: "center",
-            marginTop: "-5%",
-            display: "block",
-          }}
+          className="w-full object-cover object-center block"
+          style={{ height: "120%", marginTop: "-10%" }}
         />
       </div>
 
-      {/* ParallaxOverlay — rgba(19,46,63,0.6) from XML */}
+      {/* Dark overlay */}
       <div
         aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "rgba(19,46,63,0.6)",
-          zIndex: 1,
-        }}
+        className="absolute inset-0 z-[1] bg-[rgba(1,20,35,0.75)]"
       />
 
-      {/* Container — absolute center, max 1320px, padding 0 40px, align start */}
+      {/* Content container */}
       <div
-        ref={sat.containerRef}
-        style={{
-          position: "relative",
-          zIndex: 2,
-          width: "100%",
-          maxWidth: "1320px",
-          marginLeft: "auto",
-          marginRight: "auto",
-          padding: "120px 40px 120px 40px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-        }}
+        ref={accuracy.containerRef}
+        className="relative z-[2] w-full max-w-[1320px] mx-auto px-10 flex flex-col"
       >
-        {/* ContentWrapper — max 550px, gap 45px, align start */}
-        <div
-          style={{
-            maxWidth: "550px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "45px",
-            alignItems: "flex-start",
-          }}
-        >
-          {/* TextWrapper — gap 25px */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
+        {/* Text block */}
+        <div className="max-w-[600px] flex flex-col gap-[45px]">
 
-            {/* Title — Display 1 + Display 1 italic */}
-            <h2
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "flex-start",
-                gap: "4px 17px",
-              }}
+          {/* Title */}
+          <h2 className="flex flex-wrap gap-[10px] m-0">
+            {["Learning", "Haitian", "Creole"].map((w) => (
+              <span
+                key={w}
+                className="font-roxborough font-bold text-white"
+                style={{ fontSize: "clamp(36px,5vw,64px)" }}
+              >
+                {w}
+              </span>
+            ))}
+            <span
+              className="font-roxborough font-bold italic text-[#ff4d4d]"
+              style={{ fontSize: "clamp(36px,5vw,64px)" }}
             >
-              {["Simplifying", "life", "through"].map(w => (
+              &amp; Translation
+            </span>
+          </h2>
+
+          {/* Subtext */}
+          <p className="text-[18px] leading-[1.6] text-white/75 m-0 max-w-[600px] max-md:text-[16px]">
+            Break language barriers with AI-powered Haitian Creole learning and
+            smart document translation. Understand, translate, and communicate
+            naturally across languages.
+          </p>
+
+          {/* Divider */}
+          <div className="w-full h-px bg-white/20" />
+
+          {/* Stats */}
+          <div className="flex gap-[70px] flex-wrap max-md:flex-col max-md:gap-8">
+
+            {/* Stat 1 — accuracy */}
+            <div className="flex flex-col gap-2 items-start">
+              <div className="flex items-baseline">
                 <span
-                  key={w}
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "72px",
-                    fontWeight: 700,
-                    lineHeight: "1.05em",
-                    letterSpacing: "-0.04em",
-                    color: "var(--color-white)",
-                  }}
+                  className="font-roxborough font-extrabold text-white"
+                  style={{ fontSize: "64px" }}
                 >
-                  {w}
+                  {accuracy.count}
                 </span>
-              ))}
-              <span
-                style={{
-                  fontFamily: "var(--font-serif)",
-                  fontStyle: "italic",
-                  fontSize: "72px",
-                  fontWeight: 700,
-                  lineHeight: "0.975em",
-                  letterSpacing: "-0.03em",
-                  color: "var(--color-white)",
-                }}
-              >
-                solutions
-              </span>
-            </h2>
-
-            {/* /Paragraph/Body (Large) — white 0.75 opacity */}
-            <p
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "22px",
-                lineHeight: "1.425em",
-                color: "rgba(255,255,255,0.75)",
-                maxWidth: "500px",
-              }}
-            >
-              Simple ideas, smart execution. We craft meaningful solutions that make a difference where it matters most.
-            </p>
-          </div>
-
-          {/* Border — 1px rgba(255,255,255,0.3) */}
-          <div className="divider-white" />
-
-          {/* Counter — horizontal, gap 70px */}
-          <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
-
-            {/* First — 98% Customer Satisfaction */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-start" }}>
-              <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "52px",
-                  fontWeight: 800,
-                  letterSpacing: "-0.04em",
-                  lineHeight: "1.125em",
-                  color: "var(--color-white)",
-                }}
-              >
-                {sat.count}%
-              </span>
-              {/* /Heading/Heading 5 — 20px white */}
-              <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "20px",
-                  fontWeight: 500,
-                  lineHeight: "1.275em",
-                  letterSpacing: "-0.02em",
-                  color: "rgba(255,255,255,0.8)",
-                }}
-              >
-                Customer Satisfaction
+                <span
+                  className="text-[32px] text-[#ff4d4d] ml-1"
+                >
+                  %
+                </span>
+              </div>
+              <span className="text-[13px] tracking-[0.1em] uppercase text-white/60 font-semibold">
+                Translation Accuracy
               </span>
             </div>
 
-            {/* Vertical border */}
-            <div
-              style={{
-                width: "1px",
-                height: "60px",
-                background: "rgba(255,255,255,0.3)",
-                flexShrink: 0,
-              }}
-            />
+            {/* Divider between stats */}
+            <div className="w-px h-[60px] bg-white/20 self-center max-md:hidden" />
 
-            {/* Second — 80% Increased Revenue */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-start" }}>
-              <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "52px",
-                  fontWeight: 800,
-                  letterSpacing: "-0.04em",
-                  lineHeight: "1.125em",
-                  color: "var(--color-white)",
-                }}
-              >
-                {rev.count}%
-              </span>
-              <span
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "20px",
-                  fontWeight: 500,
-                  lineHeight: "1.275em",
-                  letterSpacing: "-0.02em",
-                  color: "rgba(255,255,255,0.8)",
-                }}
-              >
-                Increased Revenue
+            {/* Stat 2 — translations */}
+            <div className="flex flex-col gap-2 items-start">
+              <div className="flex items-baseline">
+                <span
+                  className="font-roxborough font-extrabold text-white"
+                  style={{ fontSize: "64px" }}
+                >
+                  {translations.count}
+                </span>
+                <span
+                  className="text-[32px] text-[#ff4d4d] ml-1"
+                >
+                  +
+                </span>
+              </div>
+              <span className="text-[13px] tracking-[0.1em] uppercase text-white/60 font-semibold">
+                Supported Translations
               </span>
             </div>
           </div>

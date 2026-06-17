@@ -1,53 +1,77 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { navLinks } from "../../../variables/variables";
 import type { NavLink } from "../../../type/types";
 import GetInTouchButton from "./GetInTouchButton";
 import Logo from "./Logo";
-
+import { HiMenu, HiX } from "react-icons/hi";
 
 const NavBar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+
   return (
-    <nav
-      className="w-full flex items-center justify-between"
-      style={{
-        background: "rgba(249,251,253,0.85)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderRadius: "100px",
-        border: "1px solid rgba(218,226,235,0.8)",
-        padding: "12px 12px 12px 28px",
-        boxShadow: "0 2px 20px rgba(26,59,80,0.06)",
-      }}
-    >
-      {/* Logo */}
-      <Logo />
+    <header className="w-full max-w-7xl mx-auto px-4 py-4 sticky top-0 z-50">
+      <nav className="w-full border rounded-full bg-white/90 backdrop-blur-md border-blue-400/20 flex items-center justify-between py-2.5 px-3 md:px-7 shadow-sm transition-all duration-300">
+        {/* Logo */}
+        <Logo />
 
-      {/* Nav links */}
-      <ul className="flex items-center" style={{ gap: "32px", listStyle: "none" }}>
-        {navLinks.map((link: NavLink) => (
-          <li key={link.id}>
-            <Link
-              to={link.url}
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "1rem",
-                fontWeight: 500,
-                letterSpacing: "-0.02em",
-                color: "var(--color-dark)",
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.color = "var(--color-framer-blue)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "var(--color-dark)")}
-            >
-              {link.title}
-            </Link>
-          </li>
-        ))}
-      </ul>
+        {/* Desktop Nav Links */}
+        <ul className="hidden lg:flex items-center gap-8">
+          {navLinks.map((link: NavLink) => {
+            const isActive = location.pathname === link.url;
+            return (
+              <li key={link.id}>
+                <Link
+                  to={link.url}
+                  className={`font-sans text-[14px] font-semibold tracking-wider uppercase transition-colors duration-200 ${
+                    isActive ? "text-accent" : "text-primary hover:text-accent"
+                  }`}
+                >
+                  {link.title}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
 
-      {/* CTA */}
-      <GetInTouchButton />
-    </nav>
+        {/* Desktop CTA */}
+        <div className="hidden lg:block">
+          <GetInTouchButton />
+        </div>
+
+        {/* Mobile Toggle Button */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="lg:hidden p-2 text-primary hover:text-accent transition-colors focus:outline-none"
+          aria-label="Toggle navigation menu"
+        >
+          {isOpen ? <HiX className="w-6 h-6" /> : <HiMenu className="w-6 h-6" />}
+        </button>
+      </nav>
+
+      {/* Mobile Drawer Overlay */}
+      {isOpen && (
+        <div className="lg:hidden absolute top-20 left-4 right-4 bg-white border border-blue-400/10 rounded-3xl p-6 shadow-xl z-40 animate-fade-in">
+          <ul className="flex flex-col gap-5 text-center mb-6">
+            {navLinks.map((link: NavLink) => (
+              <li key={link.id}>
+                <Link
+                  to={link.url}
+                  onClick={() => setIsOpen(false)}
+                  className="font-sans text-[16px] font-semibold uppercase tracking-wider text-primary hover:text-accent block py-2"
+                >
+                  {link.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div onClick={() => setIsOpen(false)} className="flex justify-center">
+            <GetInTouchButton />
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 

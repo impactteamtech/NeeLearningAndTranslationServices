@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 
 const logos = [
   "United Way",
@@ -10,116 +11,103 @@ const logos = [
   "Diaspora Professionals",
 ];
 
-const ClientsSection = () => (
-  <section
-    id="clients"
-    style={{
-      width: "100%",
-      padding: "130px 40px 0px 40px",
-      background: "var(--color-gray-100)",
-      overflow: "hidden",
-    }}
-  >
-    {/* Container — max 1240px */}
+/* ── Marquee item ── */
+const MarqueeItem = ({ name }: { name: string }) => (
+  <div className="flex-shrink-0 flex items-center gap-2.5 opacity-[0.42] cursor-default transition-[opacity,transform] duration-[250ms] [@media(hover:hover)]:hover:opacity-[0.95] [@media(hover:hover)]:hover:scale-[1.04]">
+    {/* Decorative dot */}
     <div
-      style={{
-        width: "100%",
-        maxWidth: "1240px",
-        marginLeft: "auto",
-        marginRight: "auto",
-        display: "flex",
-        flexDirection: "row",
-        gap: "70px",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      aria-hidden="true"
+      className="w-2 h-2 rounded-full bg-haiti-red flex-shrink-0"
+    />
+    <span className="font-roxborough text-[18px] font-bold tracking-[-0.01em] text-haiti-navy whitespace-nowrap max-[580px]:text-[15px]">
+      {name}
+    </span>
+  </div>
+);
+
+/* ─── Section ─── */
+const ClientsSection = () => {
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section
+      id="clients"
+      className="w-full bg-white overflow-hidden relative max-[580px]:px-0"
+      style={{ padding: "clamp(80px,10vw,130px) 0 clamp(40px,6vw,80px)" }}
+      aria-label="Trusted partners and clients"
     >
-      {/* MainWrapper — 1fr, vertical, gap 45px, center, overflow hidden */}
+      {/* Inner column */}
       <div
+        className="w-full max-w-[1400px] mx-auto flex flex-col items-center overflow-hidden"
         style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
+          paddingLeft: "clamp(20px,5vw,40px)",
+          paddingRight: "clamp(20px,5vw,40px)",
           gap: "45px",
-          alignItems: "center",
-          overflow: "hidden",
-          width: "100%",
         }}
       >
-        {/* /Heading/Heading 6 — 18px */}
-        <p
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "18px",
-            fontWeight: 600,
-            lineHeight: "1.3em",
-            letterSpacing: "-0.02em",
-            color: "var(--color-dark)",
-            textAlign: "center",
-          }}
-        >
-          Trusted by over 500+ students & partners across the world.
-        </p>
-
-        {/* Logos — animated marquee */}
+        {/* Header — scroll-reveal entrance */}
         <div
-          style={{
-            width: "100%",
-            overflow: "hidden",
-            maskImage: "linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)",
-            WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)",
-          }}
+          ref={headerRef}
+          className={`transition-[opacity,transform] duration-[700ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
+            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
+          }`}
+        >
+          <h2
+            className="font-roxborough font-bold leading-[1.3] tracking-[-0.01em] text-haiti-navy text-center m-0"
+            style={{ fontSize: "clamp(18px,2.5vw,24px)" }}
+          >
+            Trusted by over 500+ students &amp; partners across the world.
+          </h2>
+        </div>
+
+        {/* Scrolling marquee — fade-mask edges */}
+        <div
+          className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent_0%,black_10%,black_90%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_10%,black_90%,transparent_100%)] [@media(hover:hover)]:hover:[&_.animate-marquee]:animation-play-state-paused"
+          aria-hidden="true"
         >
           <div
-            className="animate-marquee"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "90px",
-              width: "max-content",
-            }}
+            className="animate-marquee flex items-center max-[580px]:gap-14"
+            style={{ gap: "90px", width: "max-content" }}
           >
-            {/* Double the list for seamless loop */}
             {[...logos, ...logos].map((name, i) => (
-              <div
-                key={i}
-                style={{
-                  flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  opacity: 0.45,
-                }}
-              >
-                {/* Logo dot accent */}
-                <div
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "9999px",
-                    background: "var(--color-brand-sky)",
-                    flexShrink: 0,
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "16px",
-                    fontWeight: 700,
-                    letterSpacing: "-0.015em",
-                    color: "var(--color-dark)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {name}
-                </span>
-              </div>
+              <MarqueeItem
+                key={`${i < logos.length ? "a" : "b"}-${name}`}
+                name={name}
+              />
             ))}
           </div>
         </div>
       </div>
-    </div>
-  </section>
-);
+
+      {/* Visually hidden accessible list */}
+      <ul className="absolute w-px h-px p-0 -m-px overflow-hidden [clip:rect(0,0,0,0)] whitespace-nowrap border-0 list-none">
+        {logos.map((name) => (
+          <li key={name}>{name}</li>
+        ))}
+      </ul>
+    </section>
+  );
+};
 
 export default ClientsSection;
