@@ -1,7 +1,7 @@
 #booking route 
 from fastapi import APIRouter, HTTPException
-from management.schemas.booking import BookingResponse, BookingCreate
-from management.models.booking import booking_db
+from schemas.booking import BookingResponse, BookingCreate
+from models.booking import booking_db
 
 
 router = APIRouter()

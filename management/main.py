@@ -25,7 +25,7 @@ app.include_router(
 app.include_router(
     bookings.router,
     prefix="/api/v1/bookings",
-    tags=['Bookings']
+    tags=["Bookings"]
 )
 app.include_router(
     auth.router,

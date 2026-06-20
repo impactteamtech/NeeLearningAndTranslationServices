@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 
 interface FeatureCardData {
   headline: string;
@@ -7,9 +8,9 @@ interface FeatureCardData {
   point2Title: string;
   point2Body: string;
   top: string;
-  /** x2vCjhHPt = light, p7HksjE3c = dark */
-  variant: "light" | "dark";
+  imagePosition: "left" | "right";
   image: string;
+  imageAlt: string;
 }
 
 const features: FeatureCardData[] = [
@@ -17,38 +18,51 @@ const features: FeatureCardData[] = [
     headline: "Designed for ease, built for real learning outcomes.",
     body: "Skip the confusion and experience structured language learning that works anytime, anywhere. Whether you're starting Kreyòl from scratch, improving English fluency, or helping your child, our programs adapt to your goals.",
     point1Title: "Safe, seamless, and always certified",
-    point1Body: "All lessons are built by bilingual educators and certified translators. Your learning path is always guided, clear, and designed to last.",
+    point1Body:
+      "All lessons are built by bilingual educators and certified translators. Your learning path is always guided, clear, and designed to last.",
     point2Title: "Track every milestone in real time",
-    point2Body: "Instant progress tracking so you always know where you stand and what's coming next on your journey.",
+    point2Body:
+      "Instant progress tracking so you always know where you stand and what's coming next on your journey.",
     top: "130px",
-    variant: "light",
-    image: "https://framerusercontent.com/images/IZLx5S5dEqmgGNkvLXFUprpqweo.jpg",
+    imagePosition: "left",
+    image: "/choose-us-pictures/first-card.jpg",
+    imageAlt:
+      "Student studying language courses on a laptop with interactive lesson panels",
   },
   {
     headline: "Translate with precision, communicate with clarity.",
     body: "Get your documents translated instantly, without waiting. From legal papers to everyday forms, everything is handled smoothly, accurately, and with full cultural sensitivity.",
     point1Title: "Built with advanced, certified expertise",
-    point1Body: "Your translations are handled by native speakers using rigorous review standards. Every word carries accuracy and cultural nuance.",
+    point1Body:
+      "Your translations are handled by native speakers using rigorous review standards. Every word carries accuracy and cultural nuance.",
     point2Title: "Stay updated on every translation instantly",
-    point2Body: "Get live notifications on your document's progress from submission to final delivery.",
+    point2Body:
+      "Get live notifications on your document's progress from submission to final delivery.",
     top: "170px",
-    variant: "dark",
-    image: "https://framerusercontent.com/images/XtF2Dn0CFhmqQ1hhZFk9ifmlDQ.jpg",
+    imagePosition: "right",
+    image: "/choose-us-pictures/second-card (1).jpg",
+    imageAlt:
+      "Document translation preview with professional verification checkmarks",
   },
   {
     headline: "Understand your progress and act with real confidence.",
     body: "Get a clear view of your language journey without overcomplicating your workflow. From tracking performance to spotting patterns, everything is designed to help you move forward with clarity.",
     point1Title: "Clear insights, no more guesswork at all",
-    point1Body: "Understand what's happening at a glance. Focus on what matters most and make informed decisions without getting lost in unnecessary complexity.",
+    point1Body:
+      "Understand what's happening at a glance. Focus on what matters most and make informed decisions without getting lost in unnecessary complexity.",
     point2Title: "Track every session in real time easily",
-    point2Body: "Stay updated as things evolve. Monitor your changes instantly and keep moving in the right direction.",
+    point2Body:
+      "Stay updated as things evolve. Monitor your progress instantly and keep moving in the right direction.",
     top: "210px",
-    variant: "light",
-    image: "https://framerusercontent.com/images/0YLFJEPLwZvkWT4P3c1VnmJEoF0.jpg",
+    imagePosition: "left",
+    image: "/choose-us-pictures/third-card (3).jpg",
+    imageAlt:
+      "Student learning dashboard displaying completed lessons and milestones",
   },
 ];
 
-const PointCheck = ({ dark }: { dark: boolean }) => (
+/* ── Small checkmark SVG ── */
+const PointCheck = () => (
   <svg
     width="20"
     height="20"
@@ -56,15 +70,10 @@ const PointCheck = ({ dark }: { dark: boolean }) => (
     fill="none"
     style={{ flexShrink: 0, marginTop: "2px" }}
   >
-    <circle
-      cx="10"
-      cy="10"
-      r="10"
-      fill={dark ? "rgba(255,255,255,0.12)" : "rgba(26,59,80,0.07)"}
-    />
+    <circle cx="10" cy="10" r="10" fill="rgba(206, 17, 38, 0.08)" />
     <path
       d="M6 10l2.8 2.8 5-5"
-      stroke={dark ? "rgba(255,255,255,0.9)" : "var(--color-dark)"}
+      stroke="var(--color-haiti-red)"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -72,108 +81,79 @@ const PointCheck = ({ dark }: { dark: boolean }) => (
   </svg>
 );
 
-const FeatureCard = ({ f }: { f: FeatureCardData }) => {
-  const dark = f.variant === "dark";
+/* ── Feature Card ── */
+const FeatureCard = ({
+  f,
+  visible,
+  delay,
+}: {
+  f: FeatureCardData;
+  visible: boolean;
+  delay: number;
+}) => {
+  const isRight = f.imagePosition === "right";
+
   return (
     <div
+      className={[
+        "w-full bg-white border-[1.5px] border-[rgba(6,67,159,0.12)] rounded-[20px] overflow-hidden",
+        "shadow-[0_4px_28px_rgba(6,67,159,0.05)] will-change-transform",
+        "transition-[opacity,transform,box-shadow] duration-[650ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)]",
+        "[@media(hover:hover)]:hover:shadow-[0_20px_48px_rgba(6,67,159,0.12)] [@media(hover:hover)]:hover:-translate-y-1",
+        "sticky",
+        // Responsive: stack vertically below 960px
+        "max-[960px]:relative max-[960px]:flex-col max-[960px]:items-stretch",
+        "flex items-center",
+        isRight
+          ? "max-[960px]:flex-col min-[961px]:flex-row-reverse"
+          : "max-[960px]:flex-col min-[961px]:flex-row",
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       style={{
-        position: "sticky",
         top: f.top,
-        width: "100%",
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "80px",
-        alignItems: "center",
-        borderRadius: "20px",
-        border: dark ? "none" : "1px solid var(--color-gray-300)",
-        background: dark ? "var(--color-dark)" : "var(--color-white)",
-        padding: "60px",
-        boxShadow: "0 2px 20px rgba(26,59,80,0.06)",
+        padding: "clamp(24px,4vw,56px)",
+        gap: "clamp(32px,5vw,60px)",
+        transitionDelay: visible ? `${delay}ms` : "0ms",
       }}
     >
-      {/* Left: illustration / UI image */}
-      <div
-        style={{
-          borderRadius: "12px",
-          overflow: "hidden",
-          background: dark ? "rgba(255,255,255,0.06)" : "var(--color-gray-200)",
-          height: "340px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      {/* Image container */}
+      <div className="rounded-[15px] overflow-hidden bg-[rgba(6,67,159,0.03)] flex items-center justify-center relative z-10 border border-[rgba(6,67,159,0.08)] flex-shrink-0 w-[490px] h-[400px] max-[1024px]:w-[400px] max-[1024px]:h-[340px] max-[960px]:w-full max-[960px]:h-[280px] max-[580px]:h-[200px]">
         <img
           src={f.image}
-          alt=""
-          aria-hidden="true"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            opacity: 0.85,
-          }}
+          alt={f.imageAlt}
+          loading="lazy"
+          className="w-full h-full opacity-[0.95] transition-transform duration-[600ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] object-cover [@media(hover:hover)]:group-hover:scale-[1.04]"
         />
       </div>
 
-      {/* Right: text content */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-        {/* Main headline — Display 2 */}
+      {/* Content block */}
+      <div className="flex-1 flex flex-col gap-6 relative z-10">
         <h3
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "38px",
-            fontWeight: 700,
-            lineHeight: "1.15em",
-            letterSpacing: "-0.035em",
-            color: dark ? "var(--color-white)" : "var(--color-dark)",
-          }}
+          className="font-roxborough font-bold leading-[1.2] tracking-[-0.02em] text-haiti-navy m-0"
+          style={{ fontSize: "clamp(24px,3vw,32px)" }}
         >
           {f.headline}
         </h3>
 
-        {/* Main body */}
-        <p
-          style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "18px",
-            lineHeight: "1.5em",
-            color: dark ? "rgba(255,255,255,0.65)" : "var(--color-gray-500)",
-          }}
-        >
+        <p className="font-sans text-base leading-[1.65] text-[#6B7280] m-0">
           {f.body}
         </p>
 
-        {/* Two bullet points */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+        {/* Bullet points */}
+        <div className="flex flex-col gap-5">
           {[
             { title: f.point1Title, body: f.point1Body },
             { title: f.point2Title, body: f.point2Body },
           ].map((pt, j) => (
-            <div key={j} style={{ display: "flex", gap: "14px", alignItems: "flex-start" }}>
-              <PointCheck dark={dark} />
+            <div key={j} className="flex gap-[14px] items-start">
+              <PointCheck />
               <div>
-                <p
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "16px",
-                    fontWeight: 700,
-                    letterSpacing: "-0.015em",
-                    color: dark ? "var(--color-white)" : "var(--color-dark)",
-                    marginBottom: "5px",
-                    lineHeight: "1.3em",
-                  }}
-                >
+                <h4 className="font-roxborough text-[18px] font-bold tracking-[-0.01em] text-haiti-navy m-0 mb-1 leading-[1.3]">
                   {pt.title}
-                </p>
-                <p
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "15px",
-                    lineHeight: "1.55em",
-                    color: dark ? "rgba(255,255,255,0.6)" : "var(--color-gray-500)",
-                  }}
-                >
+                </h4>
+                <p className="font-sans text-[14px] leading-[1.5] text-[#6B7280] m-0">
                   {pt.body}
                 </p>
               </div>
@@ -185,81 +165,84 @@ const FeatureCard = ({ f }: { f: FeatureCardData }) => {
   );
 };
 
-const WhyChooseSection = () => (
-  <section
-    id="why-choose"
-    style={{
-      width: "100%",
-      padding: "160px 40px 160px 40px",
-      background: "var(--color-gray-100)",
-    }}
-  >
-    {/* Container — max 1240px, horizontal */}
-    <div
+/* ─── Section ─── */
+const WhyChooseSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section
+      id="why-choose"
+      ref={sectionRef}
+      className="w-full bg-white relative overflow-hidden"
       style={{
-        width: "100%",
-        maxWidth: "1240px",
-        marginLeft: "auto",
-        marginRight: "auto",
-        display: "flex",
-        flexDirection: "row",
-        gap: "70px",
-        alignItems: "center",
-        justifyContent: "center",
+        paddingTop: "clamp(10px,2vw,12px)",
+        paddingBottom: "clamp(64px,8vw,112px)",
       }}
     >
-      {/* MainWrapper — 1fr, vertical, gap 56px */}
+      {/* Radial glow */}
       <div
+        aria-hidden="true"
+        className="absolute top-[10%] left-[5%] w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,rgba(6,67,159,0.04)_0%,transparent_70%)] pointer-events-none z-0"
+      />
+
+      {/* Container */}
+      <div
+        className="w-full max-w-[1400px] mx-auto flex flex-col items-center relative z-10"
         style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          gap: "56px",
-          alignItems: "center",
+          paddingLeft: "clamp(20px,5vw,40px)",
+          paddingRight: "clamp(20px,5vw,40px)",
+          gap: "clamp(40px,6vw,64px)",
         }}
       >
-        {/* Headline — max 550px, gap 15px, center */}
+        {/* Headline */}
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "15px",
-            maxWidth: "550px",
-            textAlign: "center",
-          }}
+          className={`flex flex-col items-center gap-[15px] max-w-[650px] text-center transition-[opacity,transform] duration-[650ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
+            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"
+          }`}
         >
-          <span className="t-label">Why Choose Nee's?</span>
+          <span className="inline-flex items-center gap-2 bg-[rgba(6,67,159,0.06)] border border-[rgba(6,67,159,0.15)] text-haiti-navy px-[14px] py-1 rounded-full font-sans text-[12px] font-bold tracking-[0.1em] uppercase">
+            Why Choose Nee's?
+          </span>
           <h2
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              alignItems: "flex-start",
-              gap: "0px 11px",
-            }}
+            className="font-roxborough font-bold leading-[1.15] tracking-[-0.02em] text-haiti-navy m-0"
+            style={{ fontSize: "clamp(32px,4.5vw,48px)" }}
           >
-            {["A", "few", "reasons"].map(w => <span key={w} className="t-d2">{w}</span>)}
-            <span className="t-d2i">why</span>
-            {["our", "clients", "choose", "us", "first."].map(w => <span key={w} className="t-d2">{w}</span>)}
+            A few reasons{" "}
+            <em className="italic text-haiti-red">why</em> our clients choose us
+            first.
           </h2>
         </div>
 
-        {/* FeatureCards — vertical stack, gap 40px */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "40px",
-            width: "100%",
-            maxWidth: "1140px",
-          }}
-        >
-          {features.map((f, i) => <FeatureCard key={i} f={f} />)}
+        {/* Feature cards list */}
+        <div className="flex flex-col gap-10 w-full max-w-[1140px]">
+          {features.map((f, i) => (
+            <FeatureCard key={i} f={f} visible={visible} delay={i * 150} />
+          ))}
         </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default WhyChooseSection;

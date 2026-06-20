@@ -1,0 +1,64 @@
+ {/* Image section — gap 40px, zIndex 0 */}
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: "40px",
+                zIndex: 0,
+              }}
+            >
+              {/* Hero image — borderRadius 15px */}
+              <div style={{ position: "relative", width: "100%", borderRadius: "15px", overflow: "hidden" }}>
+                <img
+                  src="https://framerusercontent.com/images/IZLx5S5dEqmgGNkvLXFUprpqweo.jpg"
+                  alt="Nee's Learning & Translation Services"
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    objectFit: "cover",
+                    display: "block",
+                    borderRadius: "15px",
+                  }}
+                />
+
+                {/* PlayIcon — absolute center, 80x80px (nodeId: qT_WlBdrF) */}
+                <button
+                  aria-label="Play video"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "80px",
+                    height: "80px",
+                    borderRadius: "9999px",
+                    background: "rgba(255,255,255,0.92)",
+                    backdropFilter: "blur(10px)",
+                    WebkitBackdropFilter: "blur(10px)",
+                    border: "none",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 8px 40px rgba(26,59,80,0.25)",
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLButtonElement;
+                    el.style.transform = "translate(-50%, -50%) scale(1.1)";
+                    el.style.boxShadow = "0 12px 50px rgba(26,59,80,0.35)";
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLButtonElement;
+                    el.style.transform = "translate(-50%, -50%) scale(1)";
+                    el.style.boxShadow = "0 8px 40px rgba(26,59,80,0.25)";
+                  }}
+                >
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                    <path d="M9 5.5v17l14-8.5L9 5.5z" fill="var(--color-dark)" />
+                  </svg>
+                </button>
+              </div>
+            </div>
