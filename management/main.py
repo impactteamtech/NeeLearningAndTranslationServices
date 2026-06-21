@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from management.routes import bookings
-from management.routes import services
-from management.routes import availability
-from management.routes import auth
+from routes import bookings
+from routes import services
+from routes import availability
+from routes import auth
 
 
 app = FastAPI(

@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Boolean, DateTime
 from datetime import datetime, timezone
-from management.models.service import Base
-from management.database.database import engine
+from models.service import Base
+from database.database import engine
 
 
 # creating the users table

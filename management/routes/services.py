@@ -46,36 +46,38 @@ def get_service(service_id: int, db:Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Service ID not found")
     return service
 
+   # update by id 
+   
 @router.put("/{service_id}", response_model=ServiceResponse)
 def update_service(
     service_id: int,
     updated_service: ServiceCreate,
     db: Session = Depends(get_db)
 ):
+    # first we get the table and the id 
     db_service = db.get(Service, service_id)
-
+    
+    # if we cant find it return none or error code
     if not db_service:
-        raise HTTPException(
-            status_code=404,
-            detail="Service not found")
-
+        raise HTTPException(status_code=404, detail="unable to retrieve service")
+    #then we convert the object db_service to a dictionary to loop and to update
     updated_dict = updated_service.model_dump()
+    #then we loop through it
     for key, value in updated_dict.items():
         setattr(db_service, key, value)
-    db.commit()
-    db.refresh(db_service)
-
+    db.commit() #commiting our change to our db
+    db.refresh(db_service) #refreshing to show our changes 
     return db_service
 
-#route for deleting a service id 
+#deleting a service by id 
 @router.delete("/{service_id}")
-def delete_service(service_id: int, db: Session = Depends(get_db)):
-    query_obj_id = db.get(Service, service_id)
-    
-    if not query_obj_id:
-        raise HTTPException(status_code=404, detail= "Service object not found")
-    db.delete(query_obj_id)
-    db.commit()
-    return {"message": "Service successfully deleted"}
-    
-    
+def delete_service(service_id:int, db:Session = Depends(get_db)):
+    #first we find the table and the obj we want to delete by its id
+    query_obj = db.get(Service, service_id) #Service here is our Service table 
+    if not query_obj:
+        raise HTTPException(status_code=404, detail="unable to find service please try again")
+    #if we find the table and the id we can now delete it 
+    db.delete(query_obj)
+    db.commit() #commit our changes 
+    return {"message": "service successfully deleted!!"} #return a success message once deleted
+
