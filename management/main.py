@@ -4,6 +4,9 @@ from routes import services
 from routes import availability
 from routes import auth
 
+from routes import auth
+from routes import google_auth
+
 
 app = FastAPI(
     title="Nee's Learning Management API",
@@ -30,6 +33,11 @@ app.include_router(
     auth.router,
     prefix="/api/v1/auth",
     tags=["Authentication"]
+)
+app.include_router(
+    google_auth.router,
+    prefix="/api/v1/auth",
+    tags=["Google Authentication"]
 )
 
 
