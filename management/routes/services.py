@@ -79,5 +79,5 @@ def delete_service(service_id:int, db:Session = Depends(get_db)):
     #if we find the table and the id we can now delete it 
     db.delete(query_obj)
     db.commit() #commit our changes 
-    return {"message": "service successfully deleted!!"} #return a success message once deleted
+    return {"message": "service successfully deleted!!"} 
 
