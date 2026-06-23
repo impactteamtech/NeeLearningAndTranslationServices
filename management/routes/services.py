@@ -46,17 +46,16 @@ def get_service(service_id: int, db:Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Service ID not found")
     return service
 
+   
    # update by id 
    
 @router.put("/{service_id}", response_model=ServiceResponse)
 def update_service(
     service_id: int,
     updated_service: ServiceCreate,
-    db: Session = Depends(get_db)
-):
+    db: Session = Depends(get_db)):
     # first we get the table and the id 
     db_service = db.get(Service, service_id)
-    
     # if we cant find it return none or error code
     if not db_service:
         raise HTTPException(status_code=404, detail="unable to retrieve service")

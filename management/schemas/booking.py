@@ -14,6 +14,7 @@ class Status(str, Enum):
 class BookingCreate(BaseModel):
     student_id : int
     service_id : int
+    teacher_id : int
     availability_id : int
     booking_date : date
     start_time : time

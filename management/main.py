@@ -3,7 +3,6 @@ from routes import bookings
 from routes import services
 from routes import availability
 from routes import auth
-
 from routes import auth
 from routes import google_auth
 

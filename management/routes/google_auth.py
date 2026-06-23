@@ -4,11 +4,11 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from management.database.database import get_db
-from management.models.user import User
-from management.schemas.user import UserResponse, Token
-from management.auth.google import get_google_auth_url, exchange_code_for_tokens, get_google_user_info
-from management.auth.token import create_access_token
+from database.database import get_db
+from models.user import User
+from schemas.user import UserResponse, Token
+from auth.google import get_google_auth_url, exchange_code_for_tokens, get_google_user_info
+from auth.token import create_access_token
 
 
 router = APIRouter()
