@@ -1,12 +1,12 @@
 #the function that will handles creating services 
 
 from fastapi import APIRouter, HTTPException
-from management.schemas.service import ServiceCreate, ServiceResponse
-from management.database.database import get_db
+from schemas.service import ServiceCreate, ServiceResponse
+from database.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from fastapi import Depends
-from management.models.service import Service
+from models.service import Service
 router = APIRouter()
 
 
@@ -40,31 +40,42 @@ def get_services(db:Session = Depends(get_db)):
 
 #route to get service ids
 @router.get("/{service_id}", response_model=ServiceResponse)
-def get_service(service_id: int):
-    for service in services_db:
-        if service["id"] == service_id:
-            return service
+def get_service(service_id: int, db:Session = Depends(get_db)):
+    service = db.get(Service, service_id)
+    if not service:
+        raise HTTPException(status_code=404, detail="Service ID not found")
+    return service
 
-    raise HTTPException(status_code=404, detail="Service not found")
-
-#route for updating service id 
 @router.put("/{service_id}", response_model=ServiceResponse)
-def update_service(service_id: int, updated_service: ServiceCreate):
-    for index, service in enumerate(services_db):
-        if service["id"] == service_id:
-            new_data = updated_service.model_dump()
-            new_data["id"] = service_id
-            services_db[index] = new_data
-            return new_data
+def update_service(
+    service_id: int,
+    updated_service: ServiceCreate,
+    db: Session = Depends(get_db)
+):
+    db_service = db.get(Service, service_id)
 
-    raise HTTPException(status_code=404, detail="Service not found")
+    if not db_service:
+        raise HTTPException(
+            status_code=404,
+            detail="Service not found")
+
+    updated_dict = updated_service.model_dump()
+    for key, value in updated_dict.items():
+        setattr(db_service, key, value)
+    db.commit()
+    db.refresh(db_service)
+
+    return db_service
 
 #route for deleting a service id 
 @router.delete("/{service_id}")
-def delete_service(service_id: int):
-    for service in services_db:
-        if service["id"] == service_id:
-            services_db.remove(service)
-            return {"message": "Service deleted successfully"}
-
-    raise HTTPException(status_code=404, detail="Service not found")
+def delete_service(service_id: int, db: Session = Depends(get_db)):
+    query_obj_id = db.get(Service, service_id)
+    
+    if not query_obj_id:
+        raise HTTPException(status_code=404, detail= "Service object not found")
+    db.delete(query_obj_id)
+    db.commit()
+    return {"message": "Service successfully deleted"}
+    
+    

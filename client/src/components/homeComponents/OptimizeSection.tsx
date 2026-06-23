@@ -1,308 +1,206 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { IoIosArrowRoundForward } from "react-icons/io";
 
 const processCards = [
   {
     number: "01",
-    title: "Collect Ideas",
-    desc: "Gather and brainstorm key concepts to lay the foundation for a successful learning strategy.",
+    title: "Intake & Placement",
+    desc: "Begin with a personal language assessment or upload your documents. We evaluate learning goals and translation needs immediately.",
     dark: false,
   },
   {
     number: "02",
-    title: "Data Analysis",
-    desc: "Interpret student data and learning behavior to guide informed, personalized instruction.",
+    title: "Native Translation & Curriculums",
+    desc: "Certified translators draft accurate documents, while bilingual educators construct customized curriculum plans for your lessons.",
     dark: true,
   },
   {
     number: "03",
-    title: "Magic Touch",
-    desc: "Polish your final output with precision to ensure clarity, consistency, and lasting impact.",
+    title: "Expert Review & Coaching",
+    desc: "Translations undergo peer review to ensure cultural nuance, while language learners engage in active conversational coaching.",
     dark: false,
   },
   {
     number: "04",
-    title: "Finalize Program",
-    desc: "Finalize key details and polish the curriculum to meet quality and performance standards.",
+    title: "Secure Delivery & Milestones",
+    desc: "Receive securely delivered, certified translation papers, or reach verified Haitian Creole conversational fluency milestones.",
     dark: true,
   },
 ];
 
 interface ProcessCardProps {
-  number: string;
-  title: string;
-  desc: string;
-  dark: boolean;
+  number?: string;
+  title?: string;
+  desc?: string;
+  dark?: boolean;
 }
 
-const ProcessCard = ({ number, title, desc, dark }: ProcessCardProps) => {
-  const [hovered, setHovered] = useState(false);
+/* ── Process Card ── */
+const ProcessCard = ({
+  number = "00",
+  title = "Workflow Step",
+  desc = "",
+  dark = false,
+}: ProcessCardProps) => (
+  <div
+    className={[
+      "rounded-[20px] flex items-start gap-7 relative overflow-hidden",
+      "transition-[transform,box-shadow] duration-[400ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)]",
+      "max-[580px]:gap-4",
+      dark
+        ? "bg-gradient-to-br from-[#080c18] via-[#0d1f7a] to-[#06439f] border-none shadow-[0_12px_40px_rgba(6,67,159,0.22)] [@media(hover:hover)]:hover:shadow-[0_20px_60px_rgba(6,67,159,0.36)] [@media(hover:hover)]:hover:-translate-y-1"
+        : "bg-white border-[1.5px] border-[rgba(6,67,159,0.12)] shadow-[0_4px_20px_rgba(6,67,159,0.05)] [@media(hover:hover)]:hover:shadow-[0_12px_36px_rgba(6,67,159,0.12)] [@media(hover:hover)]:hover:-translate-y-1",
+    ]
+      .filter(Boolean)
+      .join(" ")}
+    style={{ padding: "clamp(24px,4vw,36px)" }}
+  >
+    {/* Glow blob — dark cards */}
+    {dark && (
+      <div
+        aria-hidden="true"
+        className="absolute -top-8 -right-8 w-[160px] h-[160px] rounded-full bg-[radial-gradient(circle,rgba(206,17,38,0.15)_0%,transparent_70%)] pointer-events-none z-0"
+      />
+    )}
+
+    {/* Large index number */}
+    <span
+      aria-hidden="true"
+      className={`font-roxborough font-extrabold tracking-[-0.05em] leading-none flex-shrink-0 w-16 relative z-10 max-[580px]:w-12 transition-colors duration-300 ${
+        dark ? "text-[rgba(206,17,38,0.35)]" : "text-[rgba(206,17,38,0.15)]"
+      }`}
+      style={{ fontSize: "clamp(2.5rem,4vw,3.5rem)" }}
+    >
+      {number}
+    </span>
+
+    {/* Text */}
+    <div className="flex flex-col gap-2.5 relative z-10">
+      <h3
+        className={`font-roxborough font-bold tracking-[-0.01em] leading-[1.25] m-0 break-words ${
+          dark ? "text-white" : "text-haiti-navy"
+        }`}
+        style={{ fontSize: "clamp(18px,2.5vw,22px)" }}
+      >
+        {title}
+      </h3>
+      <p
+        className={`font-sans text-[15px] leading-[1.6] m-0 break-words ${
+          dark ? "text-white/[0.72]" : "text-[#6B7280]"
+        }`}
+      >
+        {desc}
+      </p>
+    </div>
+  </div>
+);
+
+/* ─── Section ─── */
+const OptimizeSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <section
+      id="optimize"
+      ref={sectionRef}
+      className="w-full bg-white relative overflow-hidden max-[580px]:px-5"
       style={{
-        background: dark
-          ? "linear-gradient(135deg, #080c18 0%, #0d1f7a 45%, #06439f 100%)"
-          : "#ffffff",
-        border: dark ? "none" : "1.5px solid rgba(6,67,159,0.12)",
-        borderRadius: "20px",
-        padding: "36px",
-        display: "flex",
-        alignItems: "flex-start",
-        gap: "28px",
-        boxShadow: dark
-          ? hovered
-            ? "0 20px 60px rgba(6,67,159,0.36)"
-            : "0 12px 40px rgba(6,67,159,0.22)"
-          : hovered
-            ? "0 12px 36px rgba(6,67,159,0.12)"
-            : "0 4px 20px rgba(6,67,159,0.05)",
-        transform: hovered ? "translateY(-4px)" : "translateY(0)",
-        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-        position: "relative",
-        overflow: "hidden",
+        padding: "clamp(80px,12vw,160px) 40px",
       }}
     >
-      {/* Glow decorative blob for dark cards */}
-      {dark && (
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            top: "-30px",
-            right: "-30px",
-            width: "160px",
-            height: "160px",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(206,17,38,0.15) 0%, transparent 70%)",
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        />
-      )}
-
-      {/* Large index number */}
-      <span
-        style={{
-          fontFamily: "var(--font-roxborough)",
-          fontSize: "3rem",
-          fontWeight: 800,
-          letterSpacing: "-0.05em",
-          lineHeight: 1,
-          flexShrink: 0,
-          width: "64px",
-          color: dark ? "rgba(206, 17, 38, 0.35)" : "rgba(206, 17, 38, 0.15)",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        {number}
-      </span>
-
-      {/* Text wrapper */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px", position: "relative", zIndex: 1 }}>
-        <h3
-          style={{
-            fontFamily: "var(--font-roxborough)",
-            fontSize: "20px",
-            fontWeight: 700,
-            letterSpacing: "-0.01em",
-            lineHeight: "1.25em",
-            color: dark ? "#ffffff" : "var(--color-haiti-navy)",
-            margin: 0,
-          }}
-        >
-          {title}
-        </h3>
-        <p
-          style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "15px",
-            lineHeight: "1.6em",
-            color: dark ? "rgba(255,255,255,0.7)" : "var(--color-gray-500)",
-            margin: 0,
-          }}
-        >
-          {desc}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-const OptimizeSection = () => (
-  <section
-    id="optimize"
-    style={{
-      width: "100%",
-      padding: "160px 40px",
-      background: "#ffffff",
-      position: "relative",
-      overflow: "hidden",
-    }}
-  >
-    {/* Background glow */}
-    <div
-      aria-hidden="true"
-      style={{
-        position: "absolute",
-        top: "20%",
-        left: "-10%",
-        width: "600px",
-        height: "600px",
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(6,67,159,0.03) 0%, transparent 70%)",
-        pointerEvents: "none",
-        zIndex: 0,
-      }}
-    />
-
-    {/* Container */}
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "1240px",
-        marginLeft: "auto",
-        marginRight: "auto",
-        display: "flex",
-        flexDirection: "row",
-        gap: "70px",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        zIndex: 1,
-      }}
-    >
-      {/* MainWrapper */}
+      {/* Background glow */}
       <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          gap: "80px",
-          alignItems: "flex-start",
-          width: "100%",
-        }}
-      >
-        {/* Left column ContentWrapper - Sticky */}
-        <div
-          style={{
-            position: "sticky",
-            top: "125px",
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: "35px",
-            alignItems: "flex-start",
-            zIndex: 1,
-          }}
-        >
-          {/* TextWrapper */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "25px", alignItems: "flex-start" }}>
-            {/* Title */}
-            <h2
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "flex-start",
-                gap: "0px 11px",
-                margin: 0,
-              }}
-            >
-              {["We", "refine"].map(w => (
-                <span
-                  key={w}
-                  style={{
-                    fontFamily: "var(--font-roxborough)",
-                    fontSize: "clamp(32px, 4.5vw, 44px)",
-                    fontWeight: 700,
-                    lineHeight: "1.15em",
-                    letterSpacing: "-0.02em",
-                    color: "var(--color-haiti-navy)",
-                  }}
-                >
-                  {w}
-                </span>
-              ))}
-              <span
-                style={{
-                  fontFamily: "var(--font-roxborough)",
-                  fontStyle: "italic",
-                  fontSize: "clamp(32px, 4.5vw, 44px)",
-                  fontWeight: 700,
-                  lineHeight: "1.15em",
-                  letterSpacing: "-0.02em",
-                  color: "var(--color-haiti-red)",
-                }}
-              >
-                flows
-              </span>
-              {["that", "turn", "ideas", "into", "results."].map(w => (
-                <span
-                  key={w}
-                  style={{
-                    fontFamily: "var(--font-roxborough)",
-                    fontSize: "clamp(32px, 4.5vw, 44px)",
-                    fontWeight: 700,
-                    lineHeight: "1.15em",
-                    letterSpacing: "-0.02em",
-                    color: "var(--color-haiti-navy)",
-                  }}
-                >
-                  {w}
-                </span>
-              ))}
-            </h2>
+        aria-hidden="true"
+        className="absolute top-[20%] -left-[10%] w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,rgba(6,67,159,0.03)_0%,transparent_70%)] pointer-events-none z-0"
+      />
 
-            {/* Body paragraph */}
-            <p
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "16px",
-                lineHeight: "1.65em",
-                color: "var(--color-gray-500)",
-                margin: 0,
-                textAlign: "left",
-              }}
+      {/* Container */}
+      <div className="w-full max-w-[1240px] mx-auto relative z-10">
+        {/* Grid */}
+        <div
+          className="flex flex-row items-start w-full max-[1024px]:flex-col max-[1024px]:gap-12"
+          style={{ gap: "clamp(40px,6vw,80px)" }}
+        >
+          {/* Left col — sticky header */}
+          <div
+            className={`sticky top-[125px] flex-1 flex flex-col gap-[35px] items-start z-10 transition-[opacity,transform] duration-[700ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] max-[1024px]:relative max-[1024px]:top-auto max-[1024px]:w-full ${
+              visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"
+            }`}
+          >
+            {/* Header */}
+            <div className="flex flex-col gap-[25px] items-start">
+              <h2
+                className="font-roxborough font-bold leading-[1.15] tracking-[-0.02em] text-haiti-navy m-0"
+                style={{ fontSize: "clamp(32px,4.5vw,44px)" }}
+              >
+                We refine{" "}
+                <em className="italic text-haiti-red">flows</em> that turn ideas
+                into results.
+              </h2>
+              <p className="font-sans text-base leading-[1.65] text-[#6B7280] m-0 text-left">
+                We believe that every successful program starts with a clear
+                structure and focused strategy. That's why we've built a
+                four-step workflow designed to guide your learning from raw ideas
+                to a refined, high-impact outcome.
+              </p>
+            </div>
+
+            <Link
+              to="/services"
+              className="group relative inline-flex items-center gap-3 bg-gradient-to-br from-[#080c18] via-[#0d1f7a] to-[#00209F] text-white py-[15px] px-[34px] rounded-full font-sans text-[13px] font-bold tracking-[0.12em] uppercase cursor-pointer border-none transition-[transform,box-shadow] duration-[400ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] whitespace-nowrap no-underline shadow-[0_4px_20px_rgba(0,32,159,0.40),0_1px_6px_rgba(8,12,24,0.30),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:-translate-y-[3px] hover:shadow-[0_12px_40px_rgba(0,32,159,0.55),0_4px_12px_rgba(8,12,24,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.3)] active:-translate-y-[1px] overflow-hidden"
             >
-              We believe that every successful program starts with a clear structure and focused strategy. That's why we've built a four-step workflow designed to guide your learning from raw ideas to a refined, high-impact outcome.
-            </p>
+              {/* Smooth Hover Gradient Overlay */}
+              <span className="absolute inset-0 bg-gradient-to-br from-[#001278] via-[#00209F] to-[#1a3aff] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full z-0" />
+
+              {/* Shimmer / Glint Effect on Hover */}
+              <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-[150%] group-hover:translate-x-[250%] transition-transform duration-[1000ms] ease-out pointer-events-none z-0" />
+
+              {/* Text content - placed above overlays */}
+              <span className="relative z-10">More Details</span>
+
+              {/* Arrow container - scaled and backgrounds transitioned */}
+              <span className="relative overflow-hidden rounded-full w-[38px] h-[38px] bg-white/[0.14] group-hover:bg-white/[0.24] group-hover:scale-105 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-300 z-10">
+                <IoIosArrowRoundForward
+                  className="absolute w-[22px] h-[22px] text-white transition-transform duration-300 ease-in-out translate-x-0 group-hover:translate-x-10"
+                />
+                <IoIosArrowRoundForward
+                  className="absolute w-[22px] h-[22px] text-white transition-transform duration-300 ease-in-out -translate-x-10 group-hover:translate-x-0"
+                />
+              </span>
+            </Link>
           </div>
 
-          {/* Button CTA */}
-          <Link to="/services" className="btn-dark group">
-            More Details
-            <span className="btn-arrow-circle">
-              <IoIosArrowRoundForward
-                style={{ position: "absolute", width: "22px", height: "22px", color: "white" }}
-                className="transition-transform duration-300 ease-in-out translate-x-0 group-hover:translate-x-full"
-              />
-              <IoIosArrowRoundForward
-                style={{ position: "absolute", width: "22px", height: "22px", color: "white" }}
-                className="transition-transform duration-300 ease-in-out -translate-x-full group-hover:translate-x-0"
-              />
-            </span>
-          </Link>
-        </div>
-
-        {/* Right column ProcessCards wrapper */}
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: "35px",
-          }}
-        >
-          {processCards.map((card, i) => (
-            <ProcessCard key={i} {...card} />
-          ))}
+          <div className="flex-1 flex flex-col gap-[35px]">
+            {processCards.map((card, i) => (
+              <ProcessCard key={i} {...card} />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default OptimizeSection;

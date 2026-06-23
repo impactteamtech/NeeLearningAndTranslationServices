@@ -1,6 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import String
-from management.database.database import engine
+from database.database import engine
 
 
 #setting up the models

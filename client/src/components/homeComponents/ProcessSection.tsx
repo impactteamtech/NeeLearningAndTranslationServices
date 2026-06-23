@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const accordionItems = [
+interface AccordionItem {
+  title: string;
+  body: string;
+}
+
+const accordionItems: AccordionItem[] = [
   {
     title: "Structured path to fluency",
     body: "We design thoughtful systems that reduce complexity, improve performance, and help students move faster with clarity.",
@@ -15,261 +20,178 @@ const accordionItems = [
   },
 ];
 
+/* ── Accordion component ── */
 const Accordion = () => {
   const [openIdx, setOpenIdx] = useState<number>(0);
 
   return (
-    <div style={{ width: "100%" }}>
-      {accordionItems.map((item, i) => (
-        <div key={i}>
-          {/* Top border for first item only */}
-          {i === 0 && (
-            <div style={{ height: "1px", background: "rgba(6, 67, 159, 0.12)", width: "100%" }} />
-          )}
-          <button
-            onClick={() => setOpenIdx(openIdx === i ? -1 : i)}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "20px 0",
-              background: "transparent",
-              border: "none",
-              borderBottom: "1px solid rgba(6, 67, 159, 0.12)",
-              cursor: "pointer",
-              gap: "16px",
-              textAlign: "left",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "var(--font-roxborough)",
-                fontSize: "18px",
-                fontWeight: 700,
-                letterSpacing: "-0.01em",
-                lineHeight: "1.3em",
-                color: "var(--color-haiti-navy)",
-              }}
-            >
-              {item.title}
-            </span>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              style={{
-                flexShrink: 0,
-                transition: "transform 0.3s ease",
-                transform: openIdx === i ? "rotate(45deg)" : "rotate(0deg)",
-              }}
-            >
-              <path
-                d="M10 4v12M4 10h12"
-                stroke="var(--color-haiti-red)"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
+    <div className="w-full">
+      {accordionItems.map((item, i) => {
+        const isOpen = openIdx === i;
+        const panelId = `accordion-panel-${i}`;
+        const triggerId = `accordion-trigger-${i}`;
 
-          {openIdx === i && (
-            <div
-              style={{
-                padding: "16px 0 20px 0",
-                animation: "fadeIn 0.25s ease-out",
-              }}
+        return (
+          <div key={i}>
+            {/* Top border for first item only */}
+            {i === 0 && (
+              <div className="h-px bg-[rgba(6,67,159,0.12)] w-full" />
+            )}
+
+            <button
+              id={triggerId}
+              onClick={() => setOpenIdx(isOpen ? -1 : i)}
+              aria-expanded={isOpen}
+              aria-controls={panelId}
+              className="w-full flex items-center justify-between py-5 bg-transparent border-none border-b border-[rgba(6,67,159,0.12)] cursor-pointer gap-4 text-left transition-colors duration-[250ms] group"
+              style={{ borderBottom: "1px solid rgba(6,67,159,0.12)" }}
             >
-              <p
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "15px",
-                  lineHeight: "1.6em",
-                  color: "var(--color-gray-500)",
-                  margin: 0,
-                }}
+              <span
+                className={`font-roxborough text-[18px] font-bold tracking-[-0.01em] leading-[1.3] transition-colors duration-[250ms] max-[580px]:text-[16px] ${
+                  isOpen
+                    ? "text-haiti-red"
+                    : "text-haiti-navy group-hover:text-haiti-red"
+                }`}
               >
-                {item.body}
-              </p>
+                {item.title}
+              </span>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+                className={`flex-shrink-0 transition-transform duration-[350ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
+                  isOpen ? "rotate-45" : "rotate-0"
+                }`}
+              >
+                <path
+                  d="M10 4v12M4 10h12"
+                  stroke="var(--color-haiti-red)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+
+            {/* Animated panel — CSS grid rows trick */}
+            <div
+              id={panelId}
+              role="region"
+              aria-labelledby={triggerId}
+              className={`grid overflow-hidden transition-[grid-template-rows,opacity,visibility] duration-[350ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
+                isOpen
+                  ? "grid-rows-[1fr] opacity-100 visible"
+                  : "grid-rows-[0fr] opacity-0 invisible"
+              }`}
+            >
+              <div
+                className={`min-h-0 transition-[padding] duration-[350ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
+                  isOpen ? "pt-4 pb-5" : "py-0"
+                }`}
+              >
+                <p className="font-sans text-[15px] leading-[1.6] text-[#6B7280] m-0">
+                  {item.body}
+                </p>
+              </div>
             </div>
-          )}
-        </div>
-      ))}
+          </div>
+        );
+      })}
     </div>
   );
 };
 
-const ProcessSection = () => (
-  <section
-    id="process"
-    style={{
-      width: "100%",
-      padding: "160px 40px 0px 40px",
-      background: "#ffffff",
-      position: "relative",
-      overflow: "hidden",
-    }}
-  >
-    {/* Subtle radial glow */}
-    <div
-      aria-hidden="true"
-      style={{
-        position: "absolute",
-        bottom: "0",
-        right: "0",
-        width: "500px",
-        height: "500px",
-        background: "radial-gradient(circle, rgba(6,67,159,0.03) 0%, transparent 70%)",
-        pointerEvents: "none",
-        zIndex: 0,
-      }}
-    />
+/* ─── Section ─── */
+const ProcessSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
 
-    {/* Container */}
-    <div
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section
+      id="process"
+      ref={sectionRef}
+      className="w-full bg-white relative overflow-hidden px-10 max-[580px]:px-5"
       style={{
-        width: "100%",
-        maxWidth: "1240px",
-        marginLeft: "auto",
-        marginRight: "auto",
-        display: "flex",
-        flexDirection: "row",
-        gap: "70px",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        zIndex: 1,
+        paddingTop: "clamp(60px,8vw,100px)",
+        paddingBottom: "clamp(60px,8vw,100px)",
       }}
     >
-      {/* MainWrapper */}
+      {/* Radial glow */}
       <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          gap: "80px",
-          alignItems: "center",
-          width: "100%",
-        }}
-      >
-        {/* Image wrapper */}
-        <div style={{ flexShrink: 0 }}>
-          <img
-            src="https://framerusercontent.com/images/XtF2Dn0CFhmqQ1hhZFk9ifmlDQ.jpg"
-            alt="Our approach"
-            style={{
-              width: "580px",
-              height: "696px",
-              objectFit: "cover",
-              borderRadius: "15px",
-              display: "block",
-              boxShadow: "0 20px 50px rgba(6, 67, 159, 0.08)",
-              border: "1.5px solid rgba(6, 67, 159, 0.12)",
-            }}
-          />
-        </div>
+        aria-hidden="true"
+        className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(6,67,159,0.03)_0%,transparent_70%)] pointer-events-none z-0"
+      />
 
-        {/* ContentWrapper */}
+      {/* Inner container */}
+      <div className="w-full max-w-[1240px] mx-auto relative z-10">
+        {/* Grid — image left, content right (stacks on tablet) */}
         <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: "35px",
-            alignItems: "flex-start",
-          }}
+          className="flex flex-row items-center w-full max-[1024px]:flex-col max-[1024px]:gap-12"
+          style={{ gap: "clamp(40px,6vw,80px)" }}
         >
-          {/* TextWrapper */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "25px", alignItems: "flex-start" }}>
-            {/* Title */}
-            <h2
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "flex-start",
-                gap: "0px 11px",
-                margin: 0,
-              }}
-            >
-              {["We", "make", "learning"].map(w => (
-                <span
-                  key={w}
-                  style={{
-                    fontFamily: "var(--font-roxborough)",
-                    fontSize: "clamp(32px, 4.5vw, 44px)",
-                    fontWeight: 700,
-                    lineHeight: "1.15em",
-                    letterSpacing: "-0.02em",
-                    color: "var(--color-haiti-navy)",
-                  }}
-                >
-                  {w}
-                </span>
-              ))}
-              <span
-                style={{
-                  fontFamily: "var(--font-roxborough)",
-                  fontStyle: "italic",
-                  fontSize: "clamp(32px, 4.5vw, 44px)",
-                  fontWeight: 700,
-                  lineHeight: "1.15em",
-                  letterSpacing: "-0.02em",
-                  color: "var(--color-haiti-red)",
-                }}
-              >
-                stress
-              </span>
-              <span
-                style={{
-                  fontFamily: "var(--font-roxborough)",
-                  fontStyle: "italic",
-                  fontSize: "clamp(32px, 4.5vw, 44px)",
-                  fontWeight: 700,
-                  lineHeight: "1.15em",
-                  letterSpacing: "-0.02em",
-                  color: "var(--color-haiti-red)",
-                }}
-              >
-                free
-              </span>
-              {["so", "you", "have", "the", "perfect", "control."].map(w => (
-                <span
-                  key={w}
-                  style={{
-                    fontFamily: "var(--font-roxborough)",
-                    fontSize: "clamp(32px, 4.5vw, 44px)",
-                    fontWeight: 700,
-                    lineHeight: "1.15em",
-                    letterSpacing: "-0.02em",
-                    color: "var(--color-haiti-navy)",
-                  }}
-                >
-                  {w}
-                </span>
-              ))}
-            </h2>
-
-            {/* Paragraph body */}
-            <p
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "16px",
-                lineHeight: "1.65em",
-                color: "var(--color-gray-500)",
-                margin: 0,
-                textAlign: "left",
-              }}
-            >
-              Our team delivers fast, reliable, and student-focused solutions designed to simplify the learning journey and enhance everyday experiences. With a strong focus on adaptability and innovation, we turn complex challenges into seamless, intuitive results.
-            </p>
+          {/* Image */}
+          <div className="flex-shrink-0 max-[1024px]:w-full">
+            <img
+              src="/process-section.jpg"
+              alt="Professional classroom and student learning environment"
+              loading="lazy"
+              decoding="async"
+              className="w-[580px] h-[696px] rounded-[15px] block border border-blue-700/20 shadow-xs transition-[transform,box-shadow] duration-[600ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] [@media(hover:hover)]:hover:-translate-y-0.5 max-[1024px]:w-full max-[1024px]:h-auto max-[1024px]:max-h-[480px] max-[1024px]:object-cover max-[580px]:max-h-[320px]"
+            />
           </div>
 
-          {/* Accordion */}
-          <Accordion />
+          {/* Content */}
+          <div
+            className={`flex-1 flex flex-col gap-[35px] items-start transition-[opacity,transform] duration-[700ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
+              visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"
+            }`}
+          >
+            {/* Header */}
+            <div className="flex flex-col gap-[25px] items-start">
+              <h2
+                className="font-roxborough font-bold leading-[1.15] tracking-[-0.02em] text-haiti-navy m-0"
+                style={{ fontSize: "clamp(32px,4.5vw,44px)" }}
+              >
+                We make learning{" "}
+                <em className="italic text-haiti-red">stress free</em> so you
+                have the perfect control.
+              </h2>
+              <p className="font-sans text-base leading-[1.65] text-[#6B7280] m-0 text-left">
+                Our team delivers fast, reliable, and student-focused solutions
+                designed to simplify the learning journey and enhance everyday
+                experiences. With a strong focus on adaptability and innovation,
+                we turn complex challenges into seamless, intuitive results.
+              </p>
+            </div>
+
+            {/* Accordion */}
+            <Accordion />
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default ProcessSection;

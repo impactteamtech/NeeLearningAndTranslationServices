@@ -1,250 +1,213 @@
 import { Link } from "react-router-dom";
-import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/fa";
+import {
+  FaFacebookF,
+  FaXTwitter,
+  FaInstagram,
+  FaLinkedinIn,
+} from "react-icons/fa6";
+import { IoMailOutline, IoCallOutline } from "react-icons/io5";
+import Logo from "./navbar/Logo";
 
+/* ─── Module-level constant — never re-computed on render ─── */
+const CURRENT_YEAR = new Date().getFullYear();
+
+/* ─── Link data ─── */
+const serviceLinks = [
+  { label: "Language Learning",    href: "#courses" },
+  { label: "Translation Services", href: "#courses" },
+  { label: "Cultural Integration", href: "#courses" },
+];
+
+const companyLinks = [
+  { label: "About Us",   href: "#about"   },
+  { label: "Pricing",    href: "#pricing" },
+  { label: "Contact Us", href: "#contact" },
+  { label: "FAQ",        href: "#faq"     },
+];
+
+const socialLinks = [
+  {
+    icon: <FaFacebookF aria-hidden="true" />,
+    href: "https://facebook.com",
+    label: "Follow us on Facebook",
+  },
+  {
+    icon: <FaXTwitter aria-hidden="true" />,
+    href: "https://x.com",
+    label: "Follow us on X (Twitter)",
+  },
+  {
+    icon: <FaInstagram aria-hidden="true" />,
+    href: "https://instagram.com",
+    label: "Follow us on Instagram",
+  },
+  {
+    icon: <FaLinkedinIn aria-hidden="true" />,
+    href: "https://linkedin.com",
+    label: "Connect on LinkedIn",
+  },
+];
+
+/* ─── Footer ─── */
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-
   return (
     <footer
+      className="w-full relative overflow-hidden bg-gradient-to-br from-[#080c18] via-[#0b1245] to-[#06439f]"
       style={{
-        width: "100%",
-        padding: "80px 40px 40px 40px",
-        background: "#ffffff",
-        borderTop: "1.5px solid rgba(6,67,159,0.12)",
-        position: "relative",
-        overflow: "hidden",
+        paddingTop: "clamp(64px,8vw,96px)",
+        paddingBottom: "clamp(32px,4vw,48px)",
       }}
+      aria-label="Site footer"
     >
-      {/* Background glow blobs */}
+      {/* Decorative radial glows */}
       <div
         aria-hidden="true"
-        style={{
-          position: "absolute",
-          bottom: "-100px",
-          left: "10%",
-          width: "400px",
-          height: "400px",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(6,67,159,0.03) 0%, transparent 70%)",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
+        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none z-0 -bottom-[200px] -left-[100px] bg-[radial-gradient(circle,rgba(6,67,159,0.25)_0%,transparent_70%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none z-0 -top-[100px] -right-[100px] bg-[radial-gradient(circle,rgba(206,17,38,0.10)_0%,transparent_70%)]"
       />
 
+      {/* Inner container */}
       <div
+        className="w-full max-w-[1400px] mx-auto relative z-10 flex flex-col"
         style={{
-          width: "100%",
-          maxWidth: "1240px",
-          marginLeft: "auto",
-          marginRight: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: "50px",
-          position: "relative",
-          zIndex: 1,
+          paddingLeft: "clamp(20px,5vw,40px)",
+          paddingRight: "clamp(20px,5vw,40px)",
+          gap: "clamp(40px,5vw,56px)",
         }}
       >
-        {/* Top footer row: Brand info & Link columns */}
+        {/* ── Top row ── */}
         <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            flexWrap: "wrap",
-            gap: "40px",
-          }}
+          className="flex flex-row items-start w-full max-[900px]:flex-col max-[900px]:gap-12"
+          style={{ gap: "clamp(40px,6vw,80px)" }}
         >
           {/* Brand block */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px", maxWidth: "320px" }}>
-            <Link to="/" style={{ textDecoration: "none" }}>
-              <span
-                style={{
-                  fontFamily: "var(--font-roxborough)",
-                  fontSize: "28px",
-                  fontWeight: 700,
-                  color: "var(--color-haiti-navy)",
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                Nee's
-              </span>
-            </Link>
-            <p
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "15px",
-                lineHeight: "1.6em",
-                color: "var(--color-gray-500)",
-                margin: 0,
-              }}
-            >
-              Empowering learners through structured Haitian Creole & English courses and certified translation services.
+          <div className="flex flex-col gap-5 max-w-[280px] flex-shrink-0 max-[900px]:max-w-full">
+            <Logo variant="light" />
+
+            <p className="font-sans text-[14px] leading-[1.65] text-white/60 m-0">
+              Empowering learners through structured Haitian Kreyòl &amp; 
+              certified translation services.
             </p>
+
+            {/* Social icons */}
+            <div
+              className="flex flex-row gap-2.5 items-center flex-wrap"
+              role="list"
+              aria-label="Social media links"
+            >
+              {socialLinks.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  aria-label={s.label}
+                  role="listitem"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full border-[1.5px] border-white/[0.18] flex items-center justify-center text-white/70 text-[14px] no-underline flex-shrink-0 transition-[background,border-color,color,transform] duration-[250ms] [@media(hover:hover)]:hover:bg-haiti-red [@media(hover:hover)]:hover:border-haiti-red [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 focus-visible:outline-offset-[3px] focus-visible:rounded-full"
+                >
+                  {s.icon}
+                </a>
+              ))}
+            </div>
           </div>
 
-          {/* Quick links block */}
-          <div style={{ display: "flex", gap: "80px", flexWrap: "wrap" }}>
-            {/* Column 1 */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <span
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "var(--color-haiti-navy)",
-                }}
-              >
+          {/* Link columns */}
+          <div
+            className="flex-1 flex flex-row flex-wrap items-start justify-end gap-[clamp(32px,5vw,64px)] max-[900px]:justify-start max-[580px]:flex-col max-[580px]:gap-8"
+          >
+            {/* Services column */}
+            <nav aria-label="Services links" className="flex flex-col gap-4 min-w-[120px]">
+              <h3 className="font-sans text-[11px] font-bold tracking-[0.12em] uppercase text-white/50 m-0 leading-[1.4]">
                 Services
-              </span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-                {[
-                  { label: "Language Learning", path: "/services" },
-                  { label: "Translation Services", path: "/services" },
-                  { label: "Cultural Integration", path: "/services" },
-                ].map((l, i) => (
-                  <li key={i}>
-                    <Link
-                      to={l.path}
-                      style={{
-                        fontFamily: "var(--font-sans)",
-                        fontSize: "14px",
-                        color: "var(--color-gray-500)",
-                        textDecoration: "none",
-                        transition: "color 0.2s ease",
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.color = "var(--color-haiti-red)";
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.color = "var(--color-gray-500)";
-                      }}
+              </h3>
+              <ul className="list-none p-0 m-0 flex flex-col gap-[11px]">
+                {serviceLinks.map((l) => (
+                  <li key={l.label}>
+                    <a
+                      href={l.href}
+                      className="font-sans text-[14px] text-white/65 no-underline leading-[1.4] transition-colors duration-200 [@media(hover:hover)]:hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/50 focus-visible:outline-offset-[2px] focus-visible:rounded-[2px] focus-visible:text-white"
                     >
                       {l.label}
-                    </Link>
+                    </a>
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
 
-            {/* Column 2 */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <span
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "var(--color-haiti-navy)",
-                }}
-              >
+            {/* Company column */}
+            <nav aria-label="Company links" className="flex flex-col gap-4 min-w-[120px]">
+              <h3 className="font-sans text-[11px] font-bold tracking-[0.12em] uppercase text-white/50 m-0 leading-[1.4]">
                 Company
-              </span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-                {[
-                  { label: "About Us", path: "/services" },
-                  { label: "Blog", path: "/blog" },
-                  { label: "Pricing Plan", path: "/services" },
-                  { label: "Contact Us", path: "/contact" },
-                ].map((l, i) => (
-                  <li key={i}>
-                    <Link
-                      to={l.path}
-                      style={{
-                        fontFamily: "var(--font-sans)",
-                        fontSize: "14px",
-                        color: "var(--color-gray-500)",
-                        textDecoration: "none",
-                        transition: "color 0.2s ease",
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.color = "var(--color-haiti-red)";
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.color = "var(--color-gray-500)";
-                      }}
+              </h3>
+              <ul className="list-none p-0 m-0 flex flex-col gap-[11px]">
+                {companyLinks.map((l) => (
+                  <li key={l.label}>
+                    <a
+                      href={l.href}
+                      className="font-sans text-[14px] text-white/65 no-underline leading-[1.4] transition-colors duration-200 [@media(hover:hover)]:hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/50 focus-visible:outline-offset-[2px] focus-visible:rounded-[2px] focus-visible:text-white"
                     >
                       {l.label}
-                    </Link>
+                    </a>
                   </li>
                 ))}
               </ul>
+            </nav>
+
+            {/* Contact column */}
+            <div aria-label="Contact information" className="flex flex-col gap-4 min-w-[120px]">
+              <h3 className="font-sans text-[11px] font-bold tracking-[0.12em] uppercase text-white/50 m-0 leading-[1.4]">
+                Get in Touch
+              </h3>
+              <ul className="list-none p-0 m-0 flex flex-col gap-[11px]">
+                <li>
+                  <a
+                    href="mailto:info@neeslearning.com"
+                    className="flex items-center gap-2 font-sans text-[14px] text-white/65 no-underline leading-[1.4] transition-colors duration-200 [@media(hover:hover)]:hover:text-white"
+                    aria-label="Email us at info@neeslearning.com"
+                  >
+                    <IoMailOutline aria-hidden="true" className="text-[16px] flex-shrink-0 opacity-80" />
+                    info@neeslearning.com
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="tel:+15551234567"
+                    className="flex items-center gap-2 font-sans text-[14px] text-white/65 no-underline leading-[1.4] transition-colors duration-200 [@media(hover:hover)]:hover:text-white"
+                    aria-label="Call us at +1 555 123 4567"
+                  >
+                    <IoCallOutline aria-hidden="true" className="text-[16px] flex-shrink-0 opacity-80" />
+                    +1 (555) 123-4567
+                  </a>
+                </li>
+              </ul>
+
+              {/* CTA pill */}
+              <Link
+                to="/contact"
+                aria-label="Book a free consultation"
+                className="inline-flex items-center justify-center mt-2 px-[22px] py-[10px] rounded-full bg-white/[0.10] border-[1.5px] border-white/[0.22] font-sans text-[12px] font-bold tracking-[0.08em] uppercase text-white/85 no-underline whitespace-nowrap transition-[background,border-color,color,transform] duration-[250ms] [@media(hover:hover)]:hover:bg-haiti-red [@media(hover:hover)]:hover:border-haiti-red [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 focus-visible:outline-offset-[3px]"
+              >
+                Book a Free Consultation
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* Divider */}
+        {/* ── Divider ── */}
         <div
-          style={{
-            height: "1px",
-            background: "rgba(6,67,159,0.12)",
-            width: "100%",
-          }}
+          aria-hidden="true"
+          className="w-full h-px bg-white/[0.10] flex-shrink-0"
         />
 
-        {/* Bottom row: Copyright & Social media */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "20px",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "14px",
-              color: "var(--color-gray-500)",
-            }}
-          >
-            &copy; {currentYear} NeeLearning. All rights reserved.
-          </span>
-
-          {/* Social Icons */}
-          <div style={{ display: "flex", gap: "16px" }}>
-            {[
-              { icon: <FaFacebookF />, url: "#" },
-              { icon: <FaTwitter />, url: "#" },
-              { icon: <FaInstagram />, url: "#" },
-              { icon: <FaLinkedinIn />, url: "#" },
-            ].map((s, i) => (
-              <a
-                key={i}
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  border: "1.5px solid rgba(6,67,159,0.12)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--color-haiti-navy)",
-                  fontSize: "14px",
-                  transition: "all 0.25s ease",
-                  textDecoration: "none",
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = "var(--color-haiti-red)";
-                  e.currentTarget.style.color = "#ffffff";
-                  e.currentTarget.style.borderColor = "var(--color-haiti-red)";
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "var(--color-haiti-navy)";
-                  e.currentTarget.style.borderColor = "rgba(6,67,159,0.12)";
-                }}
-              >
-                {s.icon}
-              </a>
-            ))}
-          </div>
+        {/* ── Bottom row ── */}
+        <div className="flex flex-row items-center justify-between flex-wrap gap-4 max-[580px]:flex-col max-[580px]:items-start max-[580px]:gap-3">
+          <p className="font-sans text-[13px] text-white/40 m-0 leading-[1.5]">
+            &copy; {CURRENT_YEAR} Nee&apos;s Learning &amp; Translation Services.
+            All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

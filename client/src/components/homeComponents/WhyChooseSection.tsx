@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface FeatureCardData {
   headline: string;
@@ -10,6 +10,7 @@ interface FeatureCardData {
   top: string;
   imagePosition: "left" | "right";
   image: string;
+  imageAlt: string;
 }
 
 const features: FeatureCardData[] = [
@@ -17,37 +18,50 @@ const features: FeatureCardData[] = [
     headline: "Designed for ease, built for real learning outcomes.",
     body: "Skip the confusion and experience structured language learning that works anytime, anywhere. Whether you're starting Kreyòl from scratch, improving English fluency, or helping your child, our programs adapt to your goals.",
     point1Title: "Safe, seamless, and always certified",
-    point1Body: "All lessons are built by bilingual educators and certified translators. Your learning path is always guided, clear, and designed to last.",
+    point1Body:
+      "All lessons are built by bilingual educators and certified translators. Your learning path is always guided, clear, and designed to last.",
     point2Title: "Track every milestone in real time",
-    point2Body: "Instant progress tracking so you always know where you stand and what's coming next on your journey.",
+    point2Body:
+      "Instant progress tracking so you always know where you stand and what's coming next on your journey.",
     top: "130px",
     imagePosition: "left",
-    image: "https://framerusercontent.com/images/IZLx5S5dEqmgGNkvLXFUprpqweo.jpg",
+    image: "/choose-us-pictures/first-card.jpg",
+    imageAlt:
+      "Student studying language courses on a laptop with interactive lesson panels",
   },
   {
     headline: "Translate with precision, communicate with clarity.",
     body: "Get your documents translated instantly, without waiting. From legal papers to everyday forms, everything is handled smoothly, accurately, and with full cultural sensitivity.",
     point1Title: "Built with advanced, certified expertise",
-    point1Body: "Your translations are handled by native speakers using rigorous review standards. Every word carries accuracy and cultural nuance.",
+    point1Body:
+      "Your translations are handled by native speakers using rigorous review standards. Every word carries accuracy and cultural nuance.",
     point2Title: "Stay updated on every translation instantly",
-    point2Body: "Get live notifications on your document's progress from submission to final delivery.",
+    point2Body:
+      "Get live notifications on your document's progress from submission to final delivery.",
     top: "170px",
     imagePosition: "right",
-    image: "https://framerusercontent.com/images/XtF2Dn0CFhmqQ1hhZFk9ifmlDQ.jpg",
+    image: "/choose-us-pictures/second-card (1).jpg",
+    imageAlt:
+      "Document translation preview with professional verification checkmarks",
   },
   {
     headline: "Understand your progress and act with real confidence.",
     body: "Get a clear view of your language journey without overcomplicating your workflow. From tracking performance to spotting patterns, everything is designed to help you move forward with clarity.",
     point1Title: "Clear insights, no more guesswork at all",
-    point1Body: "Understand what's happening at a glance. Focus on what matters most and make informed decisions without getting lost in unnecessary complexity.",
+    point1Body:
+      "Understand what's happening at a glance. Focus on what matters most and make informed decisions without getting lost in unnecessary complexity.",
     point2Title: "Track every session in real time easily",
-    point2Body: "Stay updated as things evolve. Monitor your progress instantly and keep moving in the right direction.",
+    point2Body:
+      "Stay updated as things evolve. Monitor your progress instantly and keep moving in the right direction.",
     top: "210px",
     imagePosition: "left",
-    image: "https://framerusercontent.com/images/0YLFJEPLwZvkWT4P3c1VnmJEoF0.jpg",
+    image: "/choose-us-pictures/third-card (3).jpg",
+    imageAlt:
+      "Student learning dashboard displaying completed lessons and milestones",
   },
 ];
 
+/* ── Small checkmark SVG ── */
 const PointCheck = () => (
   <svg
     width="20"
@@ -56,12 +70,7 @@ const PointCheck = () => (
     fill="none"
     style={{ flexShrink: 0, marginTop: "2px" }}
   >
-    <circle
-      cx="10"
-      cy="10"
-      r="10"
-      fill="rgba(206, 17, 38, 0.08)"
-    />
+    <circle cx="10" cy="10" r="10" fill="rgba(206, 17, 38, 0.08)" />
     <path
       d="M6 10l2.8 2.8 5-5"
       stroke="var(--color-haiti-red)"
@@ -72,136 +81,79 @@ const PointCheck = () => (
   </svg>
 );
 
-const FeatureCard = ({ f }: { f: FeatureCardData }) => {
-  const [hovered, setHovered] = useState(false);
+/* ── Feature Card ── */
+const FeatureCard = ({
+  f,
+  visible,
+  delay,
+}: {
+  f: FeatureCardData;
+  visible: boolean;
+  delay: number;
+}) => {
   const isRight = f.imagePosition === "right";
 
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className={[
+        "w-full bg-white border-[1.5px] border-[rgba(6,67,159,0.12)] rounded-[20px] overflow-hidden",
+        "shadow-[0_4px_28px_rgba(6,67,159,0.05)] will-change-transform",
+        "transition-[opacity,transform,box-shadow] duration-[650ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)]",
+        "[@media(hover:hover)]:hover:shadow-[0_20px_48px_rgba(6,67,159,0.12)] [@media(hover:hover)]:hover:-translate-y-1",
+        "sticky",
+        // Responsive: stack vertically below 960px
+        "max-[960px]:relative max-[960px]:flex-col max-[960px]:items-stretch",
+        "flex items-center",
+        isRight
+          ? "max-[960px]:flex-col min-[961px]:flex-row-reverse"
+          : "max-[960px]:flex-col min-[961px]:flex-row",
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       style={{
-        position: "sticky",
         top: f.top,
-        width: "100%",
-        display: "flex",
-        flexDirection: isRight ? "row-reverse" : "row",
-        gap: "60px",
-        alignItems: "center",
-        borderRadius: "15px",
-        border: "1.5px solid rgba(6,67,159,0.12)",
-        background: "#ffffff",
-        padding: "60px",
-        boxShadow: hovered
-          ? "0 20px 48px rgba(6,67,159,0.12)"
-          : "0 4px 28px rgba(6,67,159,0.05)",
-        transform: hovered ? "translateY(-4px)" : "translateY(0)",
-        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-        overflow: "hidden",
+        padding: "clamp(24px,4vw,56px)",
+        gap: "clamp(32px,5vw,60px)",
+        transitionDelay: visible ? `${delay}ms` : "0ms",
       }}
     >
-      {/* Left/Right: illustration / UI image */}
-      <div
-        style={{
-          width: "480px",
-          height: "400px",
-          borderRadius: "15px",
-          overflow: "hidden",
-          background: "rgba(6,67,159,0.03)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          position: "relative",
-          zIndex: 1,
-          border: "1px solid rgba(6,67,159,0.08)",
-          flexShrink: 0,
-        }}
-      >
+      {/* Image container */}
+      <div className="rounded-[15px] overflow-hidden bg-[rgba(6,67,159,0.03)] flex items-center justify-center relative z-10 border border-[rgba(6,67,159,0.08)] flex-shrink-0 w-[490px] h-[400px] max-[1024px]:w-[400px] max-[1024px]:h-[340px] max-[960px]:w-full max-[960px]:h-[280px] max-[580px]:h-[200px]">
         <img
           src={f.image}
-          alt=""
-          aria-hidden="true"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            opacity: 0.95,
-            transition: "transform 0.5s ease",
-            transform: hovered ? "scale(1.03)" : "scale(1)",
-          }}
+          alt={f.imageAlt}
+          loading="lazy"
+          className="w-full h-full opacity-[0.95] transition-transform duration-[600ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] object-cover [@media(hover:hover)]:group-hover:scale-[1.04]"
         />
       </div>
 
-      {/* Right/Left: text content */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          gap: "24px",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        {/* Main headline */}
+      {/* Content block */}
+      <div className="flex-1 flex flex-col gap-6 relative z-10">
         <h3
-          style={{
-            fontFamily: "var(--font-roxborough)",
-            fontSize: "clamp(24px, 3vw, 32px)",
-            fontWeight: 700,
-            lineHeight: "1.2em",
-            letterSpacing: "-0.02em",
-            color: "var(--color-haiti-navy)",
-            margin: 0,
-          }}
+          className="font-roxborough font-bold leading-[1.2] tracking-[-0.02em] text-haiti-navy m-0"
+          style={{ fontSize: "clamp(24px,3vw,32px)" }}
         >
           {f.headline}
         </h3>
 
-        {/* Main body */}
-        <p
-          style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "16px",
-            lineHeight: "1.6em",
-            color: "var(--color-gray-500)",
-            margin: 0,
-          }}
-        >
+        <p className="font-sans text-base leading-[1.65] text-[#6B7280] m-0">
           {f.body}
         </p>
 
-        {/* Two bullet points */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        {/* Bullet points */}
+        <div className="flex flex-col gap-5">
           {[
             { title: f.point1Title, body: f.point1Body },
             { title: f.point2Title, body: f.point2Body },
           ].map((pt, j) => (
-            <div key={j} style={{ display: "flex", gap: "14px", alignItems: "flex-start" }}>
+            <div key={j} className="flex gap-[14px] items-start">
               <PointCheck />
               <div>
-                <p
-                  style={{
-                    fontFamily: "var(--font-roxborough)",
-                    fontSize: "18px",
-                    fontWeight: 700,
-                    letterSpacing: "-0.01em",
-                    color: "var(--color-haiti-navy)",
-                    margin: "0 0 4px 0",
-                    lineHeight: "1.3em",
-                  }}
-                >
+                <h4 className="font-roxborough text-[18px] font-bold tracking-[-0.01em] text-haiti-navy m-0 mb-1 leading-[1.3]">
                   {pt.title}
-                </p>
-                <p
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "14px",
-                    lineHeight: "1.5em",
-                    color: "var(--color-gray-500)",
-                    margin: 0,
-                  }}
-                >
+                </h4>
+                <p className="font-sans text-[14px] leading-[1.5] text-[#6B7280] m-0">
                   {pt.body}
                 </p>
               </div>
@@ -213,162 +165,84 @@ const FeatureCard = ({ f }: { f: FeatureCardData }) => {
   );
 };
 
-const WhyChooseSection = () => (
-  <section
-    id="why-choose"
-    style={{
-      width: "100%",
-      padding: "160px 40px",
-      background: "#ffffff",
-      position: "relative",
-      overflow: "hidden",
-    }}
-  >
-    {/* Radial glow background */}
-    <div
-      aria-hidden="true"
-      style={{
-        position: "absolute",
-        top: "10%",
-        left: "5%",
-        width: "600px",
-        height: "600px",
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(6,67,159,0.04) 0%, transparent 70%)",
-        pointerEvents: "none",
-        zIndex: 0,
-      }}
-    />
+/* ─── Section ─── */
+const WhyChooseSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
 
-    {/* Container */}
-    <div
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section
+      id="why-choose"
+      ref={sectionRef}
+      className="w-full bg-white relative overflow-hidden"
       style={{
-        width: "100%",
-        maxWidth: "1240px",
-        marginLeft: "auto",
-        marginRight: "auto",
-        display: "flex",
-        flexDirection: "row",
-        gap: "70px",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        zIndex: 1,
+        paddingTop: "clamp(10px,2vw,12px)",
+        paddingBottom: "clamp(64px,8vw,112px)",
       }}
     >
+      {/* Radial glow */}
       <div
+        aria-hidden="true"
+        className="absolute top-[10%] left-[5%] w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,rgba(6,67,159,0.04)_0%,transparent_70%)] pointer-events-none z-0"
+      />
+
+      {/* Container */}
+      <div
+        className="w-full max-w-[1400px] mx-auto flex flex-col items-center relative z-10"
         style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          gap: "56px",
-          alignItems: "center",
+          paddingLeft: "clamp(20px,5vw,40px)",
+          paddingRight: "clamp(20px,5vw,40px)",
+          gap: "clamp(40px,6vw,64px)",
         }}
       >
         {/* Headline */}
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "15px",
-            maxWidth: "550px",
-            textAlign: "center",
-          }}
+          className={`flex flex-col items-center gap-[15px] max-w-[650px] text-center transition-[opacity,transform] duration-[650ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
+            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"
+          }`}
         >
-          {/* Label Pill */}
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              background: "rgba(6, 67, 159, 0.06)",
-              border: "1px solid rgba(6, 67, 159, 0.15)",
-              color: "var(--color-haiti-navy)",
-              padding: "4px 14px",
-              borderRadius: "9999px",
-              fontSize: "12px",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-            }}
-          >
+          <span className="inline-flex items-center gap-2 bg-[rgba(6,67,159,0.06)] border border-[rgba(6,67,159,0.15)] text-haiti-navy px-[14px] py-1 rounded-full font-sans text-[12px] font-bold tracking-[0.1em] uppercase">
             Why Choose Nee's?
           </span>
-
           <h2
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              alignItems: "flex-start",
-              gap: "0px 11px",
-              margin: 0,
-            }}
+            className="font-roxborough font-bold leading-[1.15] tracking-[-0.02em] text-haiti-navy m-0"
+            style={{ fontSize: "clamp(32px,4.5vw,48px)" }}
           >
-            {["A", "few", "reasons"].map(w => (
-              <span
-                key={w}
-                style={{
-                  fontFamily: "var(--font-roxborough)",
-                  fontSize: "clamp(32px, 4.5vw, 48px)",
-                  fontWeight: 700,
-                  lineHeight: 1.15,
-                  letterSpacing: "-0.02em",
-                  color: "var(--color-haiti-navy)",
-                }}
-              >
-                {w}
-              </span>
-            ))}
-            <span
-              style={{
-                fontFamily: "var(--font-roxborough)",
-                fontStyle: "italic",
-                fontSize: "clamp(32px, 4.5vw, 48px)",
-                fontWeight: 700,
-                lineHeight: 1.15,
-                letterSpacing: "-0.02em",
-                color: "var(--color-haiti-red)",
-              }}
-            >
-              why
-            </span>
-            {["our", "clients", "choose", "us", "first."].map(w => (
-              <span
-                key={w}
-                style={{
-                  fontFamily: "var(--font-roxborough)",
-                  fontSize: "clamp(32px, 4.5vw, 48px)",
-                  fontWeight: 700,
-                  lineHeight: 1.15,
-                  letterSpacing: "-0.02em",
-                  color: "var(--color-haiti-navy)",
-                }}
-              >
-                {w}
-              </span>
-            ))}
+            A few reasons{" "}
+            <em className="italic text-haiti-red">why</em> our clients choose us
+            first.
           </h2>
         </div>
 
-        {/* FeatureCards */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "40px",
-            width: "100%",
-            maxWidth: "1140px",
-          }}
-        >
+        {/* Feature cards list */}
+        <div className="flex flex-col gap-10 w-full max-w-[1140px]">
           {features.map((f, i) => (
-            <FeatureCard key={i} f={f} />
+            <FeatureCard key={i} f={f} visible={visible} delay={i * 150} />
           ))}
         </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default WhyChooseSection;

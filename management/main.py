@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from management.routes import bookings
 from management.routes import services
 from management.routes import availability
+from management.routes import auth
 
 
 app = FastAPI(
@@ -23,7 +24,12 @@ app.include_router(
 app.include_router(
     bookings.router,
     prefix="/api/v1/bookings",
-    tags=['Bookings']
+    tags=["Bookings"]
+)
+app.include_router(
+    auth.router,
+    prefix="/api/v1/auth",
+    tags=["Authentication"]
 )
 
 

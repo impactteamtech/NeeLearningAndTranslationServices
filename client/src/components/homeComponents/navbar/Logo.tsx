@@ -1,6 +1,14 @@
 import { Link } from 'react-router-dom';
 
-const Logo = () => {
+interface LogoProps {
+  /** 'dark' (default) — for white/light backgrounds (Navbar)
+   *  'light'           — for dark backgrounds (Footer)  */
+  variant?: 'dark' | 'light';
+}
+
+const Logo = ({ variant = 'dark' }: LogoProps) => {
+  const isLight = variant === 'light';
+
   return (
     <Link to="/" className="flex items-center gap-2.5 group">
       <img
@@ -8,8 +16,14 @@ const Logo = () => {
         src="/logo.png"
         alt="Nee's Learning logo"
       />
-      <span className="font-sans font-bold text-xl tracking-tight text-primary">
-        Nee<span className="text-accent">'s</span> Learning
+      <span
+        className={`font-sans font-bold text-xl tracking-tight ${
+          isLight ? 'text-white' : 'text-dark'
+        }`}
+      >
+        Nee
+        <span className={isLight ? 'text-white/70' : 'text-accent'}>'s</span>{' '}
+        Learning
       </span>
     </Link>
   );
