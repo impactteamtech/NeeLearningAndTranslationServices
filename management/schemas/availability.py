@@ -15,7 +15,7 @@ class Day(str, Enum):
     
 #availability creation
 class AvailabilityCreate(BaseModel):
-    tutors: str
+    teacher_id: int
     day: Day
     start_time: time
     end_time: time
