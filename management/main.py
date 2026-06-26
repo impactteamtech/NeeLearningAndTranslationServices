@@ -5,6 +5,7 @@ from routes import availability
 from routes import auth
 from routes import auth
 from routes import google_auth
+from routes import translation_req
 
 
 app = FastAPI(
@@ -37,6 +38,11 @@ app.include_router(
     google_auth.router,
     prefix="/api/v1/auth",
     tags=["Google Authentication"]
+)
+app.include_router(
+    translation_req.router,
+    prefix="/api/v1/translate",
+    tags=["Translation"]
 )
 
 
