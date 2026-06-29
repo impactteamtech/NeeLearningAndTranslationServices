@@ -132,33 +132,6 @@ def get_teacher_bookings(teacher_id: int, db:Session = Depends(get_db)):
 
 
 
-
-
-
-
-#get booking by id 
-@router.get("/{booking_id}", response_model=BookingResponse)
-def get_booking_by_id(booking_id:int):
-    for booking in booking_db:
-        if booking["id"] == booking_id:
-            return booking
-    raise HTTPException(status_code=404, detail="unable to find booking with such ID")
-
-#update booking 
-@router.put("/{booking_id}", response_model=BookingResponse)
-def update_booking(booking_id: int, update_booking:BookingCreate):
-    for index, booking in enumerate(booking_db):
-        if booking["id"] == booking_id:
-            new_booking = update_booking.model_dump()
-            new_booking["id"] = booking_id
-            booking_db[index] = new_booking
-            return new_booking 
-    raise HTTPException(status_code=404, detail="unable to update booking at this time.")
-
-
-#delete booking 
-@router.delete("/{booking_id}")
-def delete_booking(booking_id:int):
     for booking in booking_db:
         if booking["id"] == booking_id:
             booking_db.remove(booking)
