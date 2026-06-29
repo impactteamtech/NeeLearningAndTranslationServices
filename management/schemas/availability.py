@@ -1,17 +1,10 @@
 #Availability schema 
 
 from pydantic import BaseModel
-from enum import Enum
+from enums.enums import Day
 from datetime import time
 #days validation
-class Day(str, Enum):
-    MONDAY = "Monday"
-    TUESDAY = "Tuesday"
-    WEDNESDAY = "Wednesday"
-    THURSDAY = "Thursday"
-    FRIDAY = "Friday"
-    SATURDAY = "Saturday"
-    SUNDAY = "Sunday"
+
     
 #availability creation
 class AvailabilityCreate(BaseModel):
