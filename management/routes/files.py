@@ -32,14 +32,15 @@ async def upload_file(file:UploadFile = File(), uploaded_by_user_id: int = Form(
     #create a unique file name 
     unique_filename = uuid.uuid4().hex
     storage_filename = f"{unique_filename}{extension}"
+    storage_path = f"translation_requests/{related_translation_request_id}/{storage_filename}"
     
     #upload to supabase storage 
+    BUCKET_NAME = "uploads"
     try:
-        BUCKET_NAME = "uploads"
         
         supabase.storage.from_(BUCKET_NAME).upload(
             file=file_content,
-            path = storage_filename,
+            path = storage_path,
             file_options = {
                 "content-type": file_type,
                 "cache-control": "3600"
@@ -48,10 +49,9 @@ async def upload_file(file:UploadFile = File(), uploaded_by_user_id: int = Form(
     except Exception as supabase_error:
         raise HTTPException(status_code=500, detail=f"storage upload failed: {str(supabase_error)}")
     #create the file storage url since our bucket is private
-    storage_path = f"translation_requests/{related_translation_request_id}/{storage_filename}"
     new_file_record = FileUpload(
         file_name=file_name,
-        storage_path=storage_filename,
+        file_type= file_type,
         file_url=storage_path,
         file_size=file_size,
         uploaded_by_user_id=uploaded_by_user_id,
