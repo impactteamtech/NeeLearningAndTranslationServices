@@ -62,3 +62,7 @@ async def upload_file(file:UploadFile = File(), uploaded_by_user_id: int = Form(
     db.refresh(new_file_record)
     
     return new_file_record #return the record to the frontend
+
+
+
+#get files route is next 
