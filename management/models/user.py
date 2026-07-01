@@ -4,7 +4,7 @@ from sqlalchemy import String, Boolean, DateTime, text
 from datetime import datetime, timezone
 from models.service import Base
 from database.database import engine
-
+from enums.enums import UserRole
 
 # creating the users table
 class User(Base):
@@ -16,7 +16,7 @@ class User(Base):
     hashed_password: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     auth_provider: Mapped[str] = mapped_column(String(20), default="local", server_default="local")
     full_name: Mapped[str] = mapped_column(String(100))
-    role: Mapped[str] = mapped_column(String(20), default="user")
+    role: Mapped[UserRole] = mapped_column(String(20), default="user")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(
     DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
