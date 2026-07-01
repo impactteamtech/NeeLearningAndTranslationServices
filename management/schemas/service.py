@@ -1,7 +1,7 @@
 #Service schema is about how the data should look like 
 
 from pydantic import BaseModel
-
+from enums.enums import LanguageCode
 # schema for service being created 
 class ServiceCreate(BaseModel):
     name: str
@@ -10,6 +10,8 @@ class ServiceCreate(BaseModel):
     price: float
     duration_minutes: int
     is_active: bool = True
+    language: LanguageCode
+   
     
 #example responses for service response   
 class ServiceResponse(ServiceCreate):

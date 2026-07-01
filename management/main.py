@@ -1,10 +1,7 @@
 from fastapi import FastAPI
-from routes import bookings
-from routes import services
-from routes import availability
-from routes import auth
-from routes import auth
+from routes import bookings, services, availability, auth, google_auth, files
 from routes import google_auth
+from routes import translation_req
 
 
 app = FastAPI(
@@ -38,6 +35,18 @@ app.include_router(
     prefix="/api/v1/auth",
     tags=["Google Authentication"]
 )
+app.include_router(
+    files.router,
+    prefix="/api/v1/files",
+    tags=["Files"])
+app.include_router(
+    translation_req.router,
+    prefix="/api/v1/translate",
+    tags=["Translation"]
+    
+)
+    
+
 
 
 @app.get("/")
