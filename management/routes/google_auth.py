@@ -9,7 +9,7 @@ from models.user import User
 from schemas.user import UserResponse, Token
 from auth.google import get_google_auth_url, exchange_code_for_tokens, get_google_user_info
 from auth.token import create_access_token
-
+from enums.enums import UserRole
 
 router = APIRouter()
 
@@ -70,7 +70,7 @@ def google_callback(code: str, db: Session = Depends(get_db)):
             hashed_password=None,
             full_name=full_name,
             auth_provider="google",
-            role="user",
+            role=UserRole, #from enums YP
         )
         db.add(user)
         db.commit()

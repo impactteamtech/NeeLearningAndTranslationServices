@@ -3,7 +3,7 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from database.database import engine
 from datetime import datetime
-from sqlalchemy import func
+from sqlalchemy import func, ForeignKey
 
 
 
@@ -13,7 +13,7 @@ class Base(DeclarativeBase):
 class FileUpload(Base):
     __tablename__ = "files"
     id: Mapped[int] = mapped_column(primary_key=True)
-    uploaded_by_user_id: Mapped[int] = mapped_column()
+    uploaded_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     file_name: Mapped[str] = mapped_column()
     file_size: Mapped[int] = mapped_column()
     file_url: Mapped[str] = mapped_column()

@@ -8,7 +8,6 @@ from datetime import time
     
 #availability creation
 class AvailabilityCreate(BaseModel):
-    teacher_id: int
     day: Day
     start_time: time
     end_time: time

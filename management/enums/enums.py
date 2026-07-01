@@ -27,3 +27,13 @@ class AllowedFileTypes(str, Enum):
     TXT = ".txt"
     JPG = ".jpg"
     PNG = ".png"
+    
+class LanguageCode(str, Enum):
+    ES = "Espanol"
+    HT = "Haitian-Creole"
+    EN = "English"
+    
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    TUTOR = "tutor"
+    LEARNER = "learner"
