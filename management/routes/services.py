@@ -15,10 +15,10 @@ router = APIRouter()
 #route for creating a new service
 @router.post("/", response_model=ServiceResponse)
 def create_service(service: ServiceCreate, current_user: User = Depends(get_current_user), db:Session = Depends(get_db)):
-    if current_user.role != "tutor":
+    if current_user.role not in ["tutor", "admin"]:
         raise HTTPException(
             status_code=403,
-            detail="Only tutors can create services."
+            detail="Only tutors and admins can create services."
         )
 
     new_service = Service(
@@ -41,8 +41,8 @@ def create_service(service: ServiceCreate, current_user: User = Depends(get_curr
 @router.post("/bulk", response_model=list[ServiceResponse])
 def create_bulk_services(services: list[ServiceCreate], current_user: User = Depends(get_current_user), db:Session = Depends(get_db)):
     
-    if current_user.role != "tutor":
-        raise HTTPException(status_code=403, detail="Only tutors can create services.")
+    if current_user.role not in ["tutor", "admin"]:
+        raise HTTPException(status_code=403, detail="Only tutors and admins can create services.")
     new_services = []
     for item in services:
         
@@ -107,7 +107,7 @@ def update_service(
     if not db_service:
         raise HTTPException(status_code=404, detail="unable to retrieve service")
     #then we convert the object db_service to a dictionary to loop and to update
-    if db_service.teacher_id != current_user.id:
+    if current_user.role != "admin" and db_service.teacher_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only update your own services.")
 
     updated_dict = updated_service.model_dump()
@@ -133,7 +133,7 @@ def delete_service(service_id:int, current_user: User = Depends(get_current_user
     query_obj = db.get(Service, service_id) #Service here is our Service table 
     if not query_obj:
         raise HTTPException(status_code=404, detail="unable to find service please try again")
-    if query_obj.teacher_id != current_user.id:
+    if current_user.role != "admin" and query_obj.teacher_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only delete your own services.")
     #if we find the table and the id we can now delete it 
     db.delete(query_obj)

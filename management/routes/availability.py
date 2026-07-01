@@ -53,8 +53,8 @@ def get_all_availability( db:Session=Depends(get_db)):
 @router.post("/bulk", response_model=list[AvailabilityResponse])
 def create_availability(availability: list[AvailabilityCreate], current_user: User = Depends(get_current_user), db:Session=Depends(get_db)):
     
-    if current_user.role != "tutor":
-        raise HTTPException(status_code=403, detail="Only tutors can create availability.")
+    if current_user.role not in ["tutor", "admin"]:
+        raise HTTPException(status_code=403, detail="Only tutors and admins can create availability.")
     avail_lst = []
     
     for avail in availability:
@@ -107,7 +107,7 @@ def update_availabilty(availability_id:int, updated_availability:AvailabilityCre
     avail_service = db.get(Availability, availability_id)
     if not avail_service:
         raise HTTPException(status_code= 404, detail="unable to find availability id please try again")
-    if availability.teacher_id != current_user.id:
+    if current_user.role != "admin" and avail_service.teacher_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only update your own availability.")
     avail_dict = updated_availability.model_dump()
     for key, value in avail_dict.items():
@@ -132,7 +132,7 @@ def delete_availability(availability_id:int, current_user: User = Depends(get_cu
     search_avail = db.get(Availability, availability_id)
     if not search_avail:
         raise HTTPException(status_code= 404, detail="unable to delete availability id please try again")
-    if search_avail.teacher_id != current_user.id:
+    if current_user.role != "admin" and search_avail.teacher_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only delete your own availability.")
     db.delete(search_avail)
     db.commit()
