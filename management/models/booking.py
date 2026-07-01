@@ -13,9 +13,9 @@ class Booking(Base):
     #define our columns
     id: Mapped[int] = mapped_column(primary_key=True)
     service_id: Mapped[int] = mapped_column()
-    availability_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    student_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    teacher_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    availability_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    student_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    teacher_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     status: Mapped[str] = mapped_column(String(50))
     notes: Mapped[str | None] = mapped_column(String(250), nullable=True)
     start_time: Mapped[time] = mapped_column()

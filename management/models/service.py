@@ -13,7 +13,7 @@ class Service(Base):
     __tablename__ = "services" #the name of our table
     #define our columns
     id: Mapped[int] = mapped_column(primary_key=True)
-    teacher_id: Mapped[int] = mapped_column(ForeignKey("user.id"), unique=True)
+    teacher_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
     name: Mapped[str] = mapped_column(String(50), unique=True)
     description: Mapped[str] = mapped_column(String(250))
     category: Mapped[str] = mapped_column(String(50))
