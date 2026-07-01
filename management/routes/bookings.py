@@ -52,6 +52,47 @@ def create_booking(booking: BookingCreate, db:Session=Depends(get_db)):
     db.refresh(new_booking) #refresh our db
     return new_booking # send the new booking back 
 
+# ============================================================================
+# BOOKING DASHBOARD API
+# ----------------------------------------------------------------------------
+# booking endpoints used by the Student and Teacher dashboards.
+#
+# Purpose:
+# - Retrieve bookings for a specific student
+# - Retrieve bookings for a specific teacher
+# - Support dashboard views, schedules, and booking history
+#
+# Endpoints:
+# - GET /bookings/student/{student_id}
+# - GET /bookings/teacher/{teacher_id}
+# ============================================================================
+
+@router.get("/student/{student_id}", response_model=list[BookingResponse])
+def get_student_bookings(student_id: int, db:Session = Depends(get_db)):
+    booking_list = select(Booking).where(Booking.student_id == student_id)
+    result = db.scalars(booking_list).all()
+    return result
+    
+    
+@router.get("/teacher/{teacher_id}", response_model=list[BookingResponse])
+def get_teacher_bookings(teacher_id: int, db:Session = Depends(get_db)):
+    booking_list = select(Booking).where(Booking.teacher_id == teacher_id)
+    result = db.scalars(booking_list).all()
+    return result
+    
+
+
+# ============================================================================
+# BOOKING DASHBOARD API
+# ----------------------------------------------------------------------------
+# User-facing booking endpoints used by student and teacher dashboards.
+#
+# Features:
+# - View bookings for a specific student
+# - View bookings for a specific teacher
+# - Support schedules, booking history, and dashboard views
+# ============================================================================
+
 
 #get booking by ID
 @router.get("/{booking_id}", response_model=BookingResponse)
@@ -96,34 +137,6 @@ def delete_booking(booking_id:int, db:Session = Depends(get_db)):
     db.commit()
     return {"message": "Booking successfully deleted"}
 
-# ============================================================================
-# BOOKING DASHBOARD API
-# ----------------------------------------------------------------------------
-# booking endpoints used by the Student and Teacher dashboards.
-#
-# Purpose:
-# - Retrieve bookings for a specific student
-# - Retrieve bookings for a specific teacher
-# - Support dashboard views, schedules, and booking history
-#
-# Endpoints:
-# - GET /bookings/student/{student_id}
-# - GET /bookings/teacher/{teacher_id}
-# ============================================================================
-
-@router.get("/student/{student_id}", response_model=list[BookingResponse])
-def get_student_bookings(student_id: int, db:Session = Depends(get_db)):
-    booking_list = select(Booking).where(Booking.student_id == student_id)
-    result = db.scalars(booking_list).all()
-    return result
-    
-    
-@router.get("/teacher/{teacher_id}", response_model=list[BookingResponse])
-def get_teacher_bookings(teacher_id: int, db:Session = Depends(get_db)):
-    booking_list = select(Booking).where(Booking.teacher_id == teacher_id)
-    result = db.scalars(booking_list).all()
-    return result
-    
     
         
 
@@ -132,8 +145,3 @@ def get_teacher_bookings(teacher_id: int, db:Session = Depends(get_db)):
 
 
 
-    for booking in booking_db:
-        if booking["id"] == booking_id:
-            booking_db.remove(booking)
-            return {"message": "booking successfully deleted"}
-    raise HTTPException(status_code=404, detail="unable to delete booking at this time.")
