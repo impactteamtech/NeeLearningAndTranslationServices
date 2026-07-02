@@ -10,10 +10,9 @@ class TutorMiniResponse(BaseModel):
     full_name: str
     email: str
     bio: str | None = None
-    meeting_platform: str | None = None
+    meeting_platform: list[str] | None = None
     native_language: str | None = None
-    years_experience: str | None = None
-
+    years_experience: int | None = None
     class Config:
         from_attributes = True
 
