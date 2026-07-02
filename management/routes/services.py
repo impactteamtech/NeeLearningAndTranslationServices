@@ -1,7 +1,7 @@
 #the function that will handles creating services 
 
 from fastapi import APIRouter, HTTPException
-from schemas.service import ServiceCreate, ServiceResponse
+from schemas.service import ServiceCreate, TutorMiniResponse, ServiceWithTutorResponse, ServiceResponse
 from database.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -64,13 +64,6 @@ def create_bulk_services(services: list[ServiceCreate], current_user: User = Dep
         db.refresh(service_obj)
     return new_services
 
-#route to get service bu teacher_ids
-@router.get("/teacher/{teacher_id}", response_model=list[ServiceResponse])
-def get_service_by_teacher_id(teacher_id: int, db:Session = Depends(get_db)):
-    services = select(Service).where(Service.teacher_id == teacher_id)
-    results = db.scalars(services).all()
-    return results
-
 #route to get services
 @router.get("/", response_model=list[ServiceResponse])
 def get_services(db:Session = Depends(get_db)):
@@ -79,6 +72,46 @@ def get_services(db:Session = Depends(get_db)):
     services = result.scalars().all()
 
     return services
+
+#route to get services with tutors info
+@router.get("/with-tutors", response_model=list[ServiceWithTutorResponse])
+def get_services_with_tutors(db:Session = Depends(get_db)):
+    
+    list_tutors = []
+    query_tutors_info = select(Service, User).join(User, Service.teacher_id == User.id)
+    results = db.execute(query_tutors_info).all()
+    for service, tutor in results:
+        new_list = ServiceWithTutorResponse(
+            id = service.id,
+            name= service.name,
+            category = service.category,
+            description = service.description,
+            price = service.price,
+            language = service.language,
+            is_active= service.is_active,
+            duration_minutes = service.duration_minutes, 
+            tutor = TutorMiniResponse(
+                id = tutor.id,
+                full_name = tutor.full_name,
+                email = tutor.email,
+                bio = tutor.bio,
+                meeting_platform= tutor.meeting_platform,
+                years_experience = tutor.years_experience,
+                native_language = tutor.native_language
+                
+            )
+        )
+        list_tutors.append(new_list)
+    return list_tutors
+#route to get service bu teacher_ids
+@router.get("/teacher/{teacher_id}", response_model=list[ServiceResponse])
+def get_service_by_teacher_id(teacher_id: int, db:Session = Depends(get_db)):
+    services = select(Service).where(Service.teacher_id == teacher_id)
+    results = db.scalars(services).all()
+    return results
+
+    
+
 
 
 #route to get service ids
