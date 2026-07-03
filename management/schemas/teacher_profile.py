@@ -7,9 +7,10 @@ from datetime import datetime
 
 class TeacherProfileCreate(BaseModel):
     bio: Optional[str] = None
-    specialization: Optional[str] = None
+    specialization: Optional[list[str]] = None
     years_of_experience: Optional[int] = None
     hourly_rate: Optional[float] = None
+    meeting_platform: Optional[list[str]] = None
 
 
 class TeacherProfileUpdate(TeacherProfileCreate):

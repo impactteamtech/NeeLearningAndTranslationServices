@@ -1,12 +1,11 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import  Mapped, mapped_column
 from sqlalchemy import String
 from database.database import engine
 from enums.enums import LanguageCode
 from sqlalchemy import ForeignKey
-
+from database.base import Base
 #setting up the models
-class Base(DeclarativeBase):
-    pass
+
 
 #creating the service table
 class Service(Base):

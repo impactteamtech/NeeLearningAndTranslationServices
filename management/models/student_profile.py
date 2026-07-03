@@ -5,14 +5,12 @@
 # Every new user gets a student profile automatically at registration.
 # ============================================================================
 
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import  Mapped, mapped_column
 from sqlalchemy import String, ForeignKey, DateTime, func
 from database.database import engine
 from datetime import datetime
+from database.base import Base
 
-
-class Base(DeclarativeBase):
-    pass
 
 
 class StudentProfile(Base):

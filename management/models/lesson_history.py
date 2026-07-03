@@ -6,15 +6,14 @@
 # Links to the student, teacher, and the original booking.
 # ============================================================================
 
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import  Mapped, mapped_column
 from sqlalchemy import String, ForeignKey, DateTime, func, Text
 from database.database import engine
 from datetime import datetime, date, time
 from enums.enums import LessonStatus
+from database.base import Base
 
 
-class Base(DeclarativeBase):
-    pass
 
 
 class LessonHistory(Base):

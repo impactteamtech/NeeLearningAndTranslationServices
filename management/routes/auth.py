@@ -45,6 +45,11 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this email already exists",
         )
+    if user.role == "admin": #admin validation
+        raise HTTPException(
+            status_code=403,
+            detail="Admin accounts cannot be created through registration."
+    )
 
     # every new account is a learner — role is not user-selectable at registration
     new_user = User(
