@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 from enums.enums import LanguageCode
 
@@ -10,9 +12,12 @@ class TutorMiniResponse(BaseModel):
     full_name: str
     email: str
     bio: str | None = None
+    specialization: Optional[list[str]] | None = None
+    years_of_experience: int | None = None
+    hourly_rate: float | None = None
     meeting_platform: list[str] | None = None
-    native_language: str | None = None
-    years_experience: int | None = None
+    is_verified: bool | None = None
+
     class Config:
         from_attributes = True
 

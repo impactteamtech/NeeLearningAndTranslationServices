@@ -8,6 +8,7 @@ from sqlalchemy import select
 from fastapi import Depends
 from models.service import Service
 from models.user import User
+from models.teacher_profile import TeacherProfile
 from auth.dependencies import get_current_user
 router = APIRouter()
 
@@ -78,9 +79,9 @@ def get_services(db:Session = Depends(get_db)):
 def get_services_with_tutors(db:Session = Depends(get_db)):
     
     list_tutors = []
-    query_tutors_info = select(Service, User).join(User, Service.teacher_id == User.id)
+    query_tutors_info = select(Service, User, TeacherProfile).join(User, Service.teacher_id == User.id).outerjoin(TeacherProfile, TeacherProfile.user_id == User.id)
     results = db.execute(query_tutors_info).all()
-    for service, tutor in results:
+    for service, tutor, profile in results:
         new_list = ServiceWithTutorResponse(
             id = service.id,
             name= service.name,
@@ -94,10 +95,12 @@ def get_services_with_tutors(db:Session = Depends(get_db)):
                 id = tutor.id,
                 full_name = tutor.full_name,
                 email = tutor.email,
-                bio = tutor.bio,
-                meeting_platform= tutor.meeting_platform,
-                years_experience = tutor.years_experience,
-                native_language = tutor.native_language
+                bio = profile.bio if profile else None,
+                specialization=profile.specialization if profile else None,
+                years_of_experience=profile.years_of_experience if profile else None,
+                hourly_rate=profile.hourly_rate if profile else None,
+                meeting_platform=profile.meeting_platform if profile else None,
+                is_verified=profile.is_verified if profile else None,
                 
             )
         )

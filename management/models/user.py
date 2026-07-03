@@ -1,8 +1,8 @@
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Boolean, DateTime, text, ARRAY
+from sqlalchemy import String, Boolean, DateTime, text
 from datetime import datetime, timezone
-from models.service import Base
+from database.base import Base
 from database.database import engine
 from enums.enums import UserRole
 
@@ -18,10 +18,6 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(100))
     role: Mapped[UserRole] = mapped_column(String(20), default="user")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    bio: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    meeting_platform: Mapped[list[str] | None] =  mapped_column(ARRAY(String), nullable=True)
-    native_language: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    years_experience: Mapped[int | None] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(
     DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
