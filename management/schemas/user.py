@@ -10,6 +10,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
+    role: UserRole
 
 
 # schema for user login
