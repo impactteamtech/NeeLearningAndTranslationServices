@@ -18,7 +18,7 @@ from sqlalchemy import select
 
 from database.database import get_db
 from models.user import User
-from models.student_profile import StudentProfile
+from models.learner_profile import StudentProfile
 from schemas.user import Token
 from auth.google import get_google_auth_url, exchange_code_for_tokens, get_google_user_info
 from auth.token import create_access_token

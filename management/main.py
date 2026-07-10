@@ -48,13 +48,13 @@ app.include_router(
 )
 app.include_router(
     student_profiles.router,
-    prefix="/api/v1/student-profiles",
-    tags=["Student Profiles"]
+    prefix="/api/v1/learner-profiles",
+    tags=["Learner Profiles"]
 )
 app.include_router(
     teacher_profiles.router,
-    prefix="/api/v1/teacher-profiles",
-    tags=["Teacher Profiles"]
+    prefix="/api/v1/tutor-profiles",
+    tags=["Tutor Profiles"]
 )
 app.include_router(
     lesson_history.router,

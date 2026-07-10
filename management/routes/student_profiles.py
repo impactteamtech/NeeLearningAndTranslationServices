@@ -5,9 +5,9 @@
 #        Manage student profile data linked to a user account.       #
 #        A profile is auto-created at registration.                  #
 #                                                                     #
-#        - GET  /student-profiles/me                → own profile    #
-#        - GET  /student-profiles/{user_id}         → by user id     #
-#        - PUT  /student-profiles/me                → update own     #
+#        - GET  /learner-profiles/me                → own profile    #
+#        - GET  /learner-profiles/{user_id}         → by user id     #
+#        - PUT  /learner-profiles/me                → update own     #
 #                                                                     #
 #######################################################################
 
@@ -17,9 +17,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 from database.database import get_db
-from models.student_profile import StudentProfile
+from models.learner_profile import StudentProfile
 from models.user import User
-from schemas.student_profile import StudentProfileUpdate, StudentProfileResponse
+from schemas.learner_profile import StudentProfileUpdate, StudentProfileResponse
 from auth.dependencies import get_current_user
 
 router = APIRouter()

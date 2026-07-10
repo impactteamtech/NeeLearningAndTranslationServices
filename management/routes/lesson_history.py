@@ -89,19 +89,19 @@ def get_lesson_history_by_student(
     return records
 
 
-# ─── Get lesson history for a specific teacher ───────────────────────
-@router.get("/teacher/{teacher_id}", response_model=list[LessonHistoryResponse])
+# ─── Get lesson history for a specific tutor ───────────────────────
+@router.get("/tutor/{tutor_id}", response_model=list[LessonHistoryResponse])
 def get_lesson_history_by_teacher(
-    teacher_id: int,
+    tutor_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # tutors can only view their own history; admins can view anyone's
-    if current_user.role == UserRole.TUTOR and current_user.id != teacher_id:
+    if current_user.role == UserRole.TUTOR and current_user.id != tutor_id:
         raise HTTPException(status_code=403, detail="You can only view your own lesson history")
 
     records = db.execute(
-        select(LessonHistory).where(LessonHistory.teacher_id == teacher_id)
+        select(LessonHistory).where(LessonHistory.tutor_id == tutor_id)
     ).scalars().all()
     return records
 
@@ -122,7 +122,7 @@ def get_lesson_history_by_id(
         raise HTTPException(status_code=403, detail="Access denied")
 
     # tutors can only see records they are part of
-    if current_user.role == UserRole.TUTOR and record.teacher_id != current_user.id:
+    if current_user.role == UserRole.TUTOR and record.tutor_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
 
     return record
@@ -147,7 +147,7 @@ def update_lesson_history(
         allowed = {"student_notes", "student_rating"}
         update_data = {k: v for k, v in updates.model_dump(exclude_unset=True).items() if k in allowed}
     elif current_user.role == UserRole.TUTOR:
-        if record.teacher_id != current_user.id:
+        if record.tutor_id != current_user.id:
             raise HTTPException(status_code=403, detail="You can only update your own lesson records")
         update_data = updates.model_dump(exclude_unset=True)
     else:

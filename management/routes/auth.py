@@ -14,16 +14,16 @@
 #######################################################################
 
 
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 from database.database import get_db
 from models.user import User
-from models.student_profile import StudentProfile
-from models.teacher_profile import TeacherProfile
+from models.learner_profile import StudentProfile
+from models.tutor_profile import TeacherProfile
 from schemas.user import UserCreate, UserLogin, UserResponse, Token, BecomeTeacherRequest
-from schemas.teacher_profile import TeacherProfileResponse
+from schemas.tutor_profile import TeacherProfileResponse
 from auth.hashing import hash_password, verify_password
 from auth.token import create_access_token
 from auth.dependencies import get_current_user
@@ -105,16 +105,16 @@ def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-# ─── Become a teacher ───────────────────────────────────────────────
-@router.post("/become-teacher", response_model=TeacherProfileResponse, status_code=status.HTTP_201_CREATED)
-def become_teacher(
+# ─── Become a tutor ───────────────────────────────────────────────
+@router.post("/become-tutor", response_model=TeacherProfileResponse, status_code=status.HTTP_201_CREATED)
+def become_tutor(
     payload: BecomeTeacherRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Allows a learner to upgrade their account to a tutor role.
-    - Creates a teacher_profile row for the user.
+    - Creates a tutor_profile row for the user.
     - Updates the user's role from learner → tutor.
     - The student_profile row is kept (history is preserved).
     """
@@ -139,14 +139,21 @@ def become_teacher(
     current_user.role = UserRole.TUTOR
 
     # create the teacher profile
-    teacher_profile = TeacherProfile(
+    tutor_profile = TeacherProfile(
         user_id=current_user.id,
         bio=payload.bio,
         specialization=payload.specialization,
         years_of_experience=payload.years_of_experience,
         hourly_rate=payload.hourly_rate,
     )
-    db.add(teacher_profile)
+    db.add(tutor_profile)
     db.commit()
-    db.refresh(teacher_profile)
-    return teacher_profile
+    db.refresh(tutor_profile)
+    return tutor_profile
+
+
+#logout endpoint 
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(response: Response):
+    response.delete_cookie(key="access_token", httponly=True, samesite="lax")
+    return {"Successfully logged out"}

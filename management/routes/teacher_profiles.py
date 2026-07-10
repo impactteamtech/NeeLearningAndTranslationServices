@@ -19,25 +19,25 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 from database.database import get_db
-from models.teacher_profile import TeacherProfile
+from models.tutor_profile import TeacherProfile
 from models.user import User
-from schemas.teacher_profile import TeacherProfileUpdate, TeacherProfileResponse
+from schemas.tutor_profile import TeacherProfileUpdate, TeacherProfileResponse
 from auth.dependencies import get_current_user
 from enums.enums import UserRole
 
 router = APIRouter()
 
 
-# ─── Get all teacher profiles ───────────────────────────────────────
+# ─── Get all tutor profiles ───────────────────────────────────────
 @router.get("/", response_model=list[TeacherProfileResponse])
-def get_all_teacher_profiles(db: Session = Depends(get_db)):
+def get_all_tutor_profiles(db: Session = Depends(get_db)):
     profiles = db.execute(select(TeacherProfile)).scalars().all()
     return profiles
 
 
-# ─── Get own teacher profile ────────────────────────────────────────
+# ─── Get own tutor profile ────────────────────────────────────────
 @router.get("/me", response_model=TeacherProfileResponse)
-def get_my_teacher_profile(
+def get_my_tutor_profile(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -67,7 +67,7 @@ def get_teacher_profile_by_user_id(user_id: int, db: Session = Depends(get_db)):
 
 # ─── Update own teacher profile ─────────────────────────────────────
 @router.put("/me", response_model=TeacherProfileResponse)
-def update_my_teacher_profile(
+def update_my_tutor_profile(
     updates: TeacherProfileUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -80,7 +80,7 @@ def update_my_teacher_profile(
     ).scalars().first()
 
     if not profile:
-        raise HTTPException(status_code=404, detail="Teacher profile not found")
+        raise HTTPException(status_code=404, detail="Tutor profile not found")
 
     update_data = updates.model_dump(exclude_unset=True)
     for key, value in update_data.items():

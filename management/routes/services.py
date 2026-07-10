@@ -8,7 +8,7 @@ from sqlalchemy import select
 from fastapi import Depends
 from models.service import Service
 from models.user import User
-from models.teacher_profile import TeacherProfile
+from models.tutor_profile import TeacherProfile
 from auth.dependencies import get_current_user
 router = APIRouter()
 
@@ -49,7 +49,7 @@ def create_bulk_services(services: list[ServiceCreate], current_user: User = Dep
         
        new_service_obj = Service(
        name=item.name,
-       teacher_id = current_user.id,
+       tutor_id = current_user.id,
        description=item.description,
        category=item.category,
        price=item.price,
@@ -169,7 +169,7 @@ def delete_service(service_id:int, current_user: User = Depends(get_current_user
     query_obj = db.get(Service, service_id) #Service here is our Service table 
     if not query_obj:
         raise HTTPException(status_code=404, detail="unable to find service please try again")
-    if current_user.role != "admin" and query_obj.teacher_id != current_user.id:
+    if current_user.role != "admin" and query_obj.tutor_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only delete your own services.")
     #if we find the table and the id we can now delete it 
     db.delete(query_obj)

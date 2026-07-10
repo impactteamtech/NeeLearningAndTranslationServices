@@ -21,16 +21,16 @@ class LessonHistory(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     booking_id: Mapped[int] = mapped_column(ForeignKey("bookings.id"), index=True)
-    student_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
-    teacher_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    learner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    tutor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     service_id: Mapped[int] = mapped_column(ForeignKey("services.id"))
     lesson_date: Mapped[date] = mapped_column()
     start_time: Mapped[time] = mapped_column()
     end_time: Mapped[time] = mapped_column()
     duration_minutes: Mapped[int] = mapped_column()
     status: Mapped[LessonStatus] = mapped_column(String(20))
-    student_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    teacher_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    learner_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    tutor_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     student_rating: Mapped[int | None] = mapped_column(nullable=True)  # 1–5
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
