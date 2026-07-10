@@ -56,7 +56,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         email=user.email,
         hashed_password=hash_password(user.password),
         full_name=user.full_name,
-        role=UserRole.LEARNER,
+        role=user.role,
     )
     db.add(new_user)
     db.flush()  # get new_user.id without committing yet
