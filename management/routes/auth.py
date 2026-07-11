@@ -45,13 +45,18 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this email already exists",
         )
+    # if user.role == "admin": #admin validation
+    #     raise HTTPException(
+    #         status_code=403,
+    #         detail="Admin accounts cannot be created through registration."
+    # )
 
     # every new account is a learner — role is not user-selectable at registration
     new_user = User(
         email=user.email,
         hashed_password=hash_password(user.password),
         full_name=user.full_name,
-        role=UserRole.LEARNER,
+        role=user.role,
     )
     db.add(new_user)
     db.flush()  # get new_user.id without committing yet
@@ -62,7 +67,6 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     return new_user
-
 
 # ─── Login ──────────────────────────────────────────────────────────
 @router.post("/login", response_model=Token)
