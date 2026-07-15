@@ -30,7 +30,7 @@ def create_service(service: ServiceCreate, current_user: User = Depends(get_curr
        duration_minutes=service.duration_minutes,
        is_active=service.is_active,
        language=service.language,
-       teacher_id = current_user.id
+       tutor_id = current_user.id
         )
     db.add(new_service)
     db.commit()
@@ -92,7 +92,7 @@ def get_services_with_tutors(db:Session = Depends(get_db)):
             is_active= service.is_active,
             duration_minutes = service.duration_minutes, 
             tutor = TutorMiniResponse(
-                id = tutor.id,
+                tutor_id = tutor.tutor_id,
                 full_name = tutor.full_name,
                 email = tutor.email,
                 bio = profile.bio if profile else None,
@@ -107,7 +107,7 @@ def get_services_with_tutors(db:Session = Depends(get_db)):
         list_tutors.append(new_list)
     return list_tutors
 #route to get service bu teacher_ids
-@router.get("/teacher/{tutor_id}", response_model=list[ServiceResponse])
+@router.get("/tutor/{tutor_id}", response_model=list[ServiceResponse])
 def get_service_by_teacher_id(tutor_id: int, db:Session = Depends(get_db)):
     services = select(Service).where(Service.tutor_id == tutor_id)
     results = db.scalars(services).all()
