@@ -79,7 +79,7 @@ def get_services(db:Session = Depends(get_db)):
 def get_services_with_tutors(db:Session = Depends(get_db)):
     
     list_tutors = []
-    query_tutors_info = select(Service, User, TeacherProfile).join(User, Service.teacher_id == User.id).outerjoin(TeacherProfile, TeacherProfile.user_id == User.id)
+    query_tutors_info = select(Service, User, TeacherProfile).join(User, Service.tutor_id == User.id).outerjoin(TeacherProfile, TeacherProfile.user_id == User.id)
     results = db.execute(query_tutors_info).all()
     for service, tutor, profile in results:
         new_list = ServiceWithTutorResponse(
@@ -107,9 +107,9 @@ def get_services_with_tutors(db:Session = Depends(get_db)):
         list_tutors.append(new_list)
     return list_tutors
 #route to get service bu teacher_ids
-@router.get("/teacher/{teacher_id}", response_model=list[ServiceResponse])
-def get_service_by_teacher_id(teacher_id: int, db:Session = Depends(get_db)):
-    services = select(Service).where(Service.teacher_id == teacher_id)
+@router.get("/teacher/{tutor_id}", response_model=list[ServiceResponse])
+def get_service_by_teacher_id(tutor_id: int, db:Session = Depends(get_db)):
+    services = select(Service).where(Service.tutor_id == tutor_id)
     results = db.scalars(services).all()
     return results
 
