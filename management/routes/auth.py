@@ -6,10 +6,12 @@
 #        A student profile row is created at registration.           #
 #        Tutors get a teacher profile via /become-teacher.           #
 #                                                                     #
-#        - POST /register        → create account (learner)          #
-#        - POST /login           → return JWT                        #
-#        - GET  /me              → current user info                 #
-#        - POST /become-teacher  → upgrade learner → tutor           #
+#        - POST /register         → create account (learner)         #
+#        - POST /login            → return JWT                       #
+#        - GET  /me               → current user info                #
+#        - POST /become-teacher   → upgrade learner → tutor          #
+#        - POST /forgot-password  → send reset link to email         #
+#        - POST /reset-password   → reset password with token        #
 #                                                                     #
 #######################################################################
 
@@ -17,15 +19,20 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from jose import JWTError
 
 from database.database import get_db
 from models.user import User
 from models.student_profile import StudentProfile
 from models.teacher_profile import TeacherProfile
-from schemas.user import UserCreate, UserLogin, UserResponse, Token, BecomeTeacherRequest
+from schemas.user import (
+    UserCreate, UserLogin, UserResponse, Token,
+    BecomeTeacherRequest, ForgotPasswordRequest, ResetPasswordRequest,
+)
 from schemas.teacher_profile import TeacherProfileResponse
 from auth.hashing import hash_password, verify_password
-from auth.token import create_access_token
+from auth.token import create_access_token, create_reset_token, verify_reset_token
+from auth.email import send_password_reset_email, send_welcome_email
 from auth.dependencies import get_current_user
 from enums.enums import UserRole
 
@@ -66,6 +73,13 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.add(student_profile)
     db.commit()
     db.refresh(new_user)
+
+    # send a welcome email — don't block registration if it fails
+    try:
+        send_welcome_email(to_email=new_user.email, full_name=new_user.full_name)
+    except Exception as exc:
+        print(f"[warn] failed to send welcome email to {new_user.email}: {exc}")
+
     return new_user
 
 # ─── Login ──────────────────────────────────────────────────────────
@@ -149,3 +163,64 @@ def become_teacher(
     db.commit()
     db.refresh(teacher_profile)
     return teacher_profile
+
+
+# ─── Forgot password ────────────────────────────────────────────────
+@router.post("/forgot-password")
+def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Sends a password reset link to the user's email.
+    Always returns 200 even if the email doesn't exist (security best practice).
+    """
+    user = db.execute(
+        select(User).where(User.email == payload.email)
+    ).scalars().first()
+
+    if user:
+        # only allow reset for local auth users (Google users have no password)
+        if user.auth_provider == "google":
+            # still return 200 to not leak info
+            return {"message": "If an account with that email exists, a reset link has been sent."}
+
+        # generate a short-lived reset token and email it
+        reset_token = create_reset_token(email=user.email)
+        try:
+            send_password_reset_email(to_email=user.email, reset_token=reset_token)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to send reset email. Please try again later.",
+            )
+
+    # always return same message whether user exists or not
+    return {"message": "If an account with that email exists, a reset link has been sent."}
+
+
+# ─── Reset password ─────────────────────────────────────────────────
+@router.post("/reset-password")
+def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Resets the user's password using the token from the reset email.
+    """
+    try:
+        email = verify_reset_token(payload.token)
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token.",
+        )
+
+    user = db.execute(
+        select(User).where(User.email == email)
+    ).scalars().first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    # update password
+    user.hashed_password = hash_password(payload.new_password)
+    db.commit()
+    return {"message": "Password has been reset successfully."}
