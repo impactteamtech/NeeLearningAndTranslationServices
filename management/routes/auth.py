@@ -3,13 +3,13 @@
 #                    AUTHENTICATION API                               #
 #                                                                     #
 #        Role-based auth: every new account is a learner.            #
-#        A student profile row is created at registration.           #
-#        Tutors get a teacher profile via /become-teacher.           #
+#        A learner profile row is created at registration.           #
+#        Tutors get a tutor profile via /become-tutor.               #
 #                                                                     #
 #        - POST /register         → create account (learner)         #
 #        - POST /login            → return JWT                       #
 #        - GET  /me               → current user info                #
-#        - POST /become-teacher   → upgrade learner → tutor          #
+#        - POST /become-tutor     → upgrade learner → tutor          #
 #        - POST /forgot-password  → send reset link to email         #
 #        - POST /reset-password   → reset password with token        #
 #                                                                     #
@@ -23,13 +23,13 @@ from jose import JWTError
 
 from database.database import get_db
 from models.user import User
-from models.student_profile import StudentProfile
-from models.teacher_profile import TeacherProfile
+from models.learner_profile import LearnerProfile
+from models.tutor_profile import TutorProfile
 from schemas.user import (
     UserCreate, UserLogin, UserResponse, Token,
-    BecomeTeacherRequest, ForgotPasswordRequest, ResetPasswordRequest,
+    BecomeTutorRequest, ForgotPasswordRequest, ResetPasswordRequest,
 )
-from schemas.teacher_profile import TeacherProfileResponse
+from schemas.tutor_profile import TutorProfileResponse
 from auth.hashing import hash_password, verify_password
 from auth.token import create_access_token, create_reset_token, verify_reset_token
 from auth.email import send_password_reset_email, send_welcome_email
@@ -52,11 +52,6 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this email already exists",
         )
-    # if user.role == "admin": #admin validation
-    #     raise HTTPException(
-    #         status_code=403,
-    #         detail="Admin accounts cannot be created through registration."
-    # )
 
     # every new account is a learner — role is not user-selectable at registration
     new_user = User(
@@ -68,9 +63,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.flush()  # get new_user.id without committing yet
 
-    # automatically create a blank student profile for every new user
-    student_profile = StudentProfile(user_id=new_user.id)
-    db.add(student_profile)
+    # automatically create a blank learner profile for every new user
+    learner_profile = LearnerProfile(user_id=new_user.id)
+    db.add(learner_profile)
     db.commit()
     db.refresh(new_user)
 
@@ -118,51 +113,51 @@ def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-# ─── Become a teacher ───────────────────────────────────────────────
-@router.post("/become-teacher", response_model=TeacherProfileResponse, status_code=status.HTTP_201_CREATED)
-def become_teacher(
-    payload: BecomeTeacherRequest,
+# ─── Become a tutor ─────────────────────────────────────────────────
+@router.post("/become-tutor", response_model=TutorProfileResponse, status_code=status.HTTP_201_CREATED)
+def become_tutor(
+    payload: BecomeTutorRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Allows a learner to upgrade their account to a tutor role.
-    - Creates a teacher_profile row for the user.
+    - Creates a tutor_profile row for the user.
     - Updates the user's role from learner → tutor.
-    - The student_profile row is kept (history is preserved).
+    - The learner_profile row is kept (history is preserved).
     """
     # only learners can request this upgrade
     if current_user.role != UserRole.LEARNER:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only learners can become teachers. You are already a tutor or admin.",
+            detail="Only learners can become tutors. You are already a tutor or admin.",
         )
 
-    # guard against duplicate teacher profiles
+    # guard against duplicate tutor profiles
     existing = db.execute(
-        select(TeacherProfile).where(TeacherProfile.user_id == current_user.id)
+        select(TutorProfile).where(TutorProfile.user_id == current_user.id)
     ).scalars().first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A teacher profile already exists for this account.",
+            detail="A tutor profile already exists for this account.",
         )
 
     # upgrade the role in the users table
     current_user.role = UserRole.TUTOR
 
-    # create the teacher profile
-    teacher_profile = TeacherProfile(
+    # create the tutor profile
+    tutor_profile = TutorProfile(
         user_id=current_user.id,
         bio=payload.bio,
         specialization=payload.specialization,
         years_of_experience=payload.years_of_experience,
         hourly_rate=payload.hourly_rate,
     )
-    db.add(teacher_profile)
+    db.add(tutor_profile)
     db.commit()
-    db.refresh(teacher_profile)
-    return teacher_profile
+    db.refresh(tutor_profile)
+    return tutor_profile
 
 
 # ─── Forgot password ────────────────────────────────────────────────

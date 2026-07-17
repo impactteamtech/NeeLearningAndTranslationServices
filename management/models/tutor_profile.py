@@ -1,8 +1,8 @@
 # ============================================================================
-# STUDENT PROFILE MODEL
+# TUTOR PROFILE MODEL
 # ----------------------------------------------------------------------------
-# Separate profile table for students linked to the users table.
-# Every new user gets a student profile automatically at registration.
+# Separate profile table for tutors linked to the users table.
+# A learner can request to become a tutor — this table is created then.
 # ============================================================================
 
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -15,14 +15,16 @@ class Base(DeclarativeBase):
     pass
 
 
-class StudentProfile(Base):
-    __tablename__ = "student_profiles"
+class TutorProfile(Base):
+    __tablename__ = "tutor_profiles"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True, index=True)
     bio: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    learning_goals: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    preferred_language: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    specialization: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    years_of_experience: Mapped[int | None] = mapped_column(nullable=True)
+    hourly_rate: Mapped[float | None] = mapped_column(nullable=True)
+    is_verified: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 

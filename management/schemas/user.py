@@ -39,7 +39,7 @@ class Token(BaseModel):
 
 
 # schema used when a learner requests to become a tutor
-class BecomeTeacherRequest(BaseModel):
+class BecomeTutorRequest(BaseModel):
     bio: Optional[str] = None
     specialization: Optional[str] = None
     years_of_experience: Optional[int] = None
