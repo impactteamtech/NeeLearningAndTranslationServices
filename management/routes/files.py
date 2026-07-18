@@ -1,7 +1,7 @@
 import os
 import uuid
 import httpx
-from fastapi import APIRouter, HTTPException, Depends, File, Form, UploadFile
+from fastapi import APIRouter, HTTPException, Depends, File, Form, UploadFile, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from urllib.parse import quote
@@ -103,6 +103,17 @@ def get_file_by_id(file_id:int, db:Session = Depends(get_db)):
     return file_query
 
 
+@router.delete("/{file_id}", status_code=204)
+def delete_file_by_id(file_id: int, db: Session = Depends(get_db)):
+    file_query = db.get(FileUpload, file_id)
+    if not file_query:
+        raise HTTPException(status_code=404, detail="unable to retrieve id")
+
+    db.delete(file_query)
+    db.commit()
+    return Response(status_code=204)
+
+
 @router.get("/translation-request/{related_translation_request_id}", response_model=list[FileResponse])
 def get_file_by_trans_req(related_translation_request_id: int, db:Session = Depends(get_db)):
       file_query = select(FileUpload).where(FileUpload.related_translation_request_id == related_translation_request_id)
@@ -110,3 +121,4 @@ def get_file_by_trans_req(related_translation_request_id: int, db:Session = Depe
       if not results:
         raise HTTPException(status_code=404, detail="unable to retrieve id")
       return results
+

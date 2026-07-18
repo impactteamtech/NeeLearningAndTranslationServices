@@ -13,16 +13,16 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 /* ─── Link data ─── */
 const serviceLinks = [
-  { label: "Language Learning",    href: "#courses" },
-  { label: "Translation Services", href: "#courses" },
-  { label: "Cultural Integration", href: "#courses" },
+  { label: "Language Learning",    href: "/#courses" },
+  { label: "Translation Services", href: "/#courses" },
+  { label: "Cultural Integration", href: "/#courses" },
 ];
 
 const companyLinks = [
-  { label: "About Us",   href: "#about"   },
-  { label: "Pricing",    href: "#pricing" },
-  { label: "Contact Us", href: "#contact" },
-  { label: "FAQ",        href: "#faq"     },
+  { label: "About Us",   href: "/about"   },
+  { label: "Pricing",    href: "/#pricing" },
+  { label: "Contact Us", href: "/#contact" },
+  { label: "FAQ",        href: "/#faq"     },
 ];
 
 const socialLinks = [
@@ -186,7 +186,7 @@ const Footer = () => {
 
               {/* CTA pill */}
               <Link
-                to="/contact"
+                to="/#contact"
                 aria-label="Book a free consultation"
                 className="inline-flex items-center justify-center mt-2 px-[22px] py-[10px] rounded-full bg-white/[0.10] border-[1.5px] border-white/[0.22] font-sans text-[12px] font-bold tracking-[0.08em] uppercase text-white/85 no-underline whitespace-nowrap transition-[background,border-color,color,transform] duration-[250ms] [@media(hover:hover)]:hover:bg-haiti-red [@media(hover:hover)]:hover:border-haiti-red [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 focus-visible:outline-offset-[3px]"
               >

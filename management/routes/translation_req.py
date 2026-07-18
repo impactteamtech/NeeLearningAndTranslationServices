@@ -219,7 +219,7 @@ async def _translate_rapidapi(
 async def _translate_mymemory(
     texts: list[str],
     target: str,
-    source: str = "auto",
+    source: str = "en",
 ) -> list[TranslationItem]:
     """
     Translate texts sequentially using the MyMemory API.
@@ -230,6 +230,16 @@ async def _translate_mymemory(
     async with httpx.AsyncClient(timeout=30.0) as client:
         for i, text in enumerate(texts):
             try:
+                if source.lower() == target.lower():
+                    results.append(
+                        TranslationItem(
+                            original=text,
+                            translated=text,
+                            provider="mymemory",
+                        )
+                    )
+                    continue
+
                 params = {
                     "q": text,
                     "langpair": f"{source}|{target}",

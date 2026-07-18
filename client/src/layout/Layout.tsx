@@ -4,9 +4,9 @@ import Footer from "../components/homeComponents/Footer";
 
 const Layout = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen  bg-white">
       {/* Sticky navbar header */}
-      <header className="w-full sticky top-0 z-50 bg-transparent px-4 py-4 sm:px-8 md:px-20 lg:px-30">
+      <header className="w-full fixed z-50 bg-transparent px-4 py-4 sm:px-8 md:px-20 lg:px-30">
         <Navbar />
       </header>
 

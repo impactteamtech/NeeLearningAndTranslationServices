@@ -5,14 +5,15 @@ import WhyChooseSection from "../../components/homeComponents/WhyChooseSection";
 import FactSection from "../../components/homeComponents/FactSection";
 import ProcessSection from "../../components/homeComponents/ProcessSection";
 import OptimizeSection from "../../components/homeComponents/OptimizeSection";
-import ClientsSection from "../../components/homeComponents/ClientsSection";
 import PricingSection from "../../components/homeComponents/PricingSection";
-import TestimonialSection from "../../components/homeComponents/TestimonialSection";
+import ContactSection from "../../components/homeComponents/ContactSection";
+import TickerForLanguage from "../../components/homeComponents/TickerForLanguage";
 
 const Home = () => {
   return (
     <main className="flex flex-col">
       <HeroSection />
+      <TickerForLanguage />
       <VideoSection />
       <ServicesSection />
       <WhyChooseSection />
@@ -20,8 +21,7 @@ const Home = () => {
       <ProcessSection />
       <OptimizeSection />
       <PricingSection />
-      <ClientsSection />
-      <TestimonialSection />
+      <ContactSection />
     </main>
   );
 };

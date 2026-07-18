@@ -11,7 +11,7 @@ const btnDark =
 
 const HeroSection = () => {
   return (
-    <section className="flex flex-col lg:flex-row relative items-center pt-10 lg:pt-5 mb-20 lg:mb-30 justify-between gap-12 lg:gap-0 max-w-8xl w-full px-6 lg:px-20">
+    <section className="flex flex-col lg:flex-row relative items-center pt-10 lg:pt-20 mb-20 lg:mb-30 justify-between gap-12 lg:gap-0 max-w-8xl w-full px-6 lg:px-20">
 
       <img
         src="/grid-background.png"

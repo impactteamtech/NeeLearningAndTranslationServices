@@ -22,14 +22,14 @@ const NavBar = () => {
             const isActive = location.pathname === link.url;
             return (
               <li key={link.id}>
-                <Link
-                  to={link.url}
+                <a
+                  href={link.url}
                   className={`font-sans text-[14px] font-semibold tracking-wider uppercase transition-colors duration-200 ${
                     isActive ? "text-accent" : "text-primary hover:text-accent"
                   }`}
                 >
                   {link.title}
-                </Link>
+                </a>
               </li>
             );
           })}
