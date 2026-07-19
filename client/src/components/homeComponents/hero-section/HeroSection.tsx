@@ -36,7 +36,7 @@ const HeroSection = () => {
         <h1
           style={{
             fontFamily: "var(--font-roxborough)",
-            fontWeight: 600,
+            fontWeight: 900,
             lineHeight: 1.2,
             letterSpacing: "-0.02em",
             color: "var(--color-haiti-navy)",
@@ -45,7 +45,7 @@ const HeroSection = () => {
         >
           Learn Haitian
           <br />
-          Creole &amp; Translate
+          Creole
         </h1>
 
         {/* Description */}
@@ -53,14 +53,14 @@ const HeroSection = () => {
           style={{
             fontFamily: "var(--font-sans)",
             fontWeight: 600,
-            lineHeight: 1.9,
+            lineHeight: 2.5,
             letterSpacing: "0.18em",
             textTransform: "uppercase",
             color: "#555e6c",
           }}
           className="text-[17px] text-center lg:text-left w-full md:w-[75%] lg:w-[85%] xl:w-[75%] mx-auto lg:mx-0"
         >
-        Practical language instruction and professional translation services for students, professionals, and families..
+        Language learning and translation support for school, work, and everyday life.
         </p>
 
         {/* CTA Buttons */}

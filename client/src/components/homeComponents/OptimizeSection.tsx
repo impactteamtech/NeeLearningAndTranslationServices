@@ -5,19 +5,19 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 const processCards = [
   {
     number: "01",
-    title: "Intake & Placement",
+    title: "Placement",
     desc: "Begin with a personal language assessment or upload your documents. We evaluate learning goals and translation needs immediately.",
     dark: false,
   },
   {
     number: "02",
-    title: "Native Translation & Curriculums",
+    title: "Native Translation",
     desc: "Certified translators draft accurate documents, while bilingual educators construct customized curriculum plans for your lessons.",
     dark: true,
   },
   {
     number: "03",
-    title: "Expert Review & Coaching",
+    title: "Expert Review",
     desc: "Translations undergo peer review to ensure cultural nuance, while language learners engage in active conversational coaching.",
     dark: false,
   },

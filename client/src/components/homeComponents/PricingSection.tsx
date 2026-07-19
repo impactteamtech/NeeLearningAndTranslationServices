@@ -49,9 +49,9 @@ const bulletItems = [
 
 const plans = [
   {
-    name: "Starter",
+    name: "Learner",
     price: "$49",
-    period: "/month",
+    period: "/session",
     desc: "Perfect for individuals beginning their language journey.",
     features: [
       "2 live sessions/week",
@@ -63,7 +63,7 @@ const plans = [
     highlight: false,
   },
   {
-    name: "Professional",
+    name: "Tutor",
     price: "$99",
     period: "/month",
     desc: "Ideal for learners who want to accelerate their progress.",
