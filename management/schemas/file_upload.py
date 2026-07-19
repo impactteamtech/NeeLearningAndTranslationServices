@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 
 
@@ -25,3 +26,15 @@ class FileResponse(BaseModel):
 class FileUpdate(BaseModel):
     file_name: str | None = None
     related_translation_request_id: int | None = None
+class TranslationRequestSummaryResponse(BaseModel):
+    id: int
+    learner_id: int
+    learner_name: Optional[str] = None
+    learner_email: Optional[str] = None
+    status: str = "pending"
+    created_at: datetime
+    updated_at: datetime
+    file_count: int
+
+    class Config:
+        from_attributes = True

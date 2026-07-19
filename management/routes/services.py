@@ -8,7 +8,7 @@ from sqlalchemy import select
 from fastapi import Depends
 from models.service import Service
 from models.user import User
-from models.teacher_profile import TeacherProfile
+from models.tutor_profile import TeacherProfile
 from auth.dependencies import get_current_user
 router = APIRouter()
 
@@ -23,15 +23,15 @@ def create_service(service: ServiceCreate, current_user: User = Depends(get_curr
         )
 
     new_service = Service(
-        name=service.name,
-        description=service.description,
-        category=service.category,
-        price=service.price,
-        duration_minutes=service.duration_minutes,
-        is_active=service.is_active,
-        language=service.language,
-        tutor_id=current_user.id,
-    )
+       name=service.name,
+       description=service.description,
+       category=service.category,
+       price=service.price,
+       duration_minutes=service.duration_minutes,
+       is_active=service.is_active,
+       language=service.language,
+       tutor_id = current_user.id
+        )
     db.add(new_service)
     db.commit()
     db.refresh(new_service)
@@ -63,8 +63,6 @@ def create_bulk_services(services: list[ServiceCreate], current_user: User = Dep
         db.refresh(service_obj)
     return new_services
 
-<<<<<<< HEAD
-=======
 #route to get services by tutor id
 @router.get("/tutor/{tutor_id}", response_model=list[ServiceResponse])
 def get_service_by_tutor_id(tutor_id: int, db: Session = Depends(get_db)):
@@ -72,7 +70,6 @@ def get_service_by_tutor_id(tutor_id: int, db: Session = Depends(get_db)):
     results = db.scalars(services).all()
     return results
 
->>>>>>> a410fb1cc9c005a8bf32d34c48783177ed717005
 #route to get services
 @router.get("/", response_model=list[ServiceResponse])
 def get_services(db: Session = Depends(get_db)):
@@ -86,7 +83,7 @@ def get_services(db: Session = Depends(get_db)):
 def get_services_with_tutors(db:Session = Depends(get_db)):
     
     list_tutors = []
-    query_tutors_info = select(Service, User, TeacherProfile).join(User, Service.teacher_id == User.id).outerjoin(TeacherProfile, TeacherProfile.user_id == User.id)
+    query_tutors_info = select(Service, User, TeacherProfile).join(User, Service.tutor_id == User.id).outerjoin(TeacherProfile, TeacherProfile.user_id == User.id)
     results = db.execute(query_tutors_info).all()
     for service, tutor, profile in results:
         new_list = ServiceWithTutorResponse(
@@ -99,7 +96,7 @@ def get_services_with_tutors(db:Session = Depends(get_db)):
             is_active= service.is_active,
             duration_minutes = service.duration_minutes, 
             tutor = TutorMiniResponse(
-                id = tutor.id,
+                tutor_id = tutor.id,
                 full_name = tutor.full_name,
                 email = tutor.email,
                 bio = profile.bio if profile else None,
@@ -114,9 +111,9 @@ def get_services_with_tutors(db:Session = Depends(get_db)):
         list_tutors.append(new_list)
     return list_tutors
 #route to get service bu teacher_ids
-@router.get("/teacher/{teacher_id}", response_model=list[ServiceResponse])
-def get_service_by_teacher_id(teacher_id: int, db:Session = Depends(get_db)):
-    services = select(Service).where(Service.teacher_id == teacher_id)
+@router.get("/tutor/{tutor_id}", response_model=list[ServiceResponse])
+def get_service_by_teacher_id(tutor_id: int, db:Session = Depends(get_db)):
+    services = select(Service).where(Service.tutor_id == tutor_id)
     results = db.scalars(services).all()
     return results
 

@@ -16,13 +16,14 @@
 #######################################################################
 
 
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from jose import JWTError
 
 from database.database import get_db
 from models.user import User
+<<<<<<< HEAD
 from models.learner_profile import LearnerProfile
 from models.tutor_profile import TutorProfile
 from schemas.user import (
@@ -30,6 +31,12 @@ from schemas.user import (
     BecomeTutorRequest, ForgotPasswordRequest, ResetPasswordRequest,
 )
 from schemas.tutor_profile import TutorProfileResponse
+=======
+from models.learner_profile import StudentProfile
+from models.tutor_profile import TeacherProfile
+from schemas.user import UserCreate, UserLogin, UserResponse, Token, BecomeTeacherRequest
+from schemas.tutor_profile import TeacherProfileResponse
+>>>>>>> main
 from auth.hashing import hash_password, verify_password
 from auth.token import create_access_token, create_reset_token, verify_reset_token
 from auth.email import send_password_reset_email, send_welcome_email
@@ -52,11 +59,11 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this email already exists",
         )
-    if user.role == "admin": #admin validation
-        raise HTTPException(
-            status_code=403,
-            detail="Admin accounts cannot be created through registration."
-    )
+    # if user.role == "admin": #admin validation
+    #     raise HTTPException(
+    #         status_code=403,
+    #         detail="Admin accounts cannot be created through registration."
+    # )
 
     # every new account is a learner — role is not user-selectable at registration
     new_user = User(
@@ -118,10 +125,17 @@ def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
+<<<<<<< HEAD
 # ─── Become a tutor ─────────────────────────────────────────────────
 @router.post("/become-tutor", response_model=TutorProfileResponse, status_code=status.HTTP_201_CREATED)
 def become_tutor(
     payload: BecomeTutorRequest,
+=======
+# ─── Become a tutor ───────────────────────────────────────────────
+@router.post("/become-tutor", response_model=TeacherProfileResponse, status_code=status.HTTP_201_CREATED)
+def become_tutor(
+    payload: BecomeTeacherRequest,
+>>>>>>> main
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -151,8 +165,13 @@ def become_tutor(
     # upgrade the role in the users table
     current_user.role = UserRole.TUTOR
 
+<<<<<<< HEAD
     # create the tutor profile
     tutor_profile = TutorProfile(
+=======
+    # create the teacher profile
+    tutor_profile = TeacherProfile(
+>>>>>>> main
         user_id=current_user.id,
         bio=payload.bio,
         specialization=payload.specialization,
@@ -165,6 +184,7 @@ def become_tutor(
     return tutor_profile
 
 
+<<<<<<< HEAD
 # ─── Forgot password ────────────────────────────────────────────────
 @router.post("/forgot-password")
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
@@ -224,3 +244,10 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
     user.hashed_password = hash_password(payload.new_password)
     db.commit()
     return {"message": "Password has been reset successfully."}
+=======
+#logout endpoint 
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(response: Response):
+    response.delete_cookie(key="access_token", httponly=True, samesite="lax")
+    return {"Successfully logged out"}
+>>>>>>> main

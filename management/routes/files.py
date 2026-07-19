@@ -132,7 +132,16 @@ def get_file_by_id(file_id: int, db: Session = Depends(get_db)):
     return file_query
 
 
-# ─── Get all files for a translation request ────────────────────────
+#delete by id 
+@router.delete("/{file_id}")
+def delete_file_by_id(file_id:int, db:Session = Depends(get_db)):
+    file_quer = db.get(FileUpload, file_id)
+    if not file_quer:
+        raise HTTPException(status_code=404, detail="file already deleted")
+    db.delete(file_quer)
+    db.commit()
+    return {"message": "File has been deleted!"}
+
 @router.get("/translation-request/{related_translation_request_id}", response_model=list[FileResponse])
 def get_file_by_trans_req(related_translation_request_id: int, db: Session = Depends(get_db)):
     file_query = select(FileUpload).where(

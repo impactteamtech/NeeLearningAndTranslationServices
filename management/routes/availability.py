@@ -59,11 +59,19 @@ def create_availability(availability: list[AvailabilityCreate], current_user: Us
     
     for avail in availability:
         new_avail = Availability(
+<<<<<<< HEAD
             tutor_id=current_user.id,
             start_time=avail.start_time,
             end_time=avail.end_time,
             day=avail.day,
             is_active=avail.is_active
+=======
+            tutor_id = current_user.id,
+            start_time = avail.start_time,
+            end_time = avail.end_time,
+            day = avail.day,
+            is_active = avail.is_active
+>>>>>>> main
         )
     
         avail_lst.append(new_avail)
@@ -81,10 +89,17 @@ def create_availability(availability: list[AvailabilityCreate], current_user: Us
 # Used by learners during booking and by tutors managing their schedule.
 # ============================================================================
 
+<<<<<<< HEAD
 @router.get("/tutor/{tutor_id}", response_model=list[AvailabilityResponse])
 def get_tutor_avail(tutor_id: int, db: Session = Depends(get_db)):
     tutor_avail = select(Availability).where(Availability.tutor_id == tutor_id)
     results = db.scalars(tutor_avail).all()
+=======
+@router.get("/teacher/{tutor_id}", response_model=list[AvailabilityResponse])
+def get_teacher_avail(tutor_id:int, db:Session = Depends(get_db)):
+    teacher_avail = select(Availability).where(Availability.tutor_id == tutor_id)
+    results = db.scalars(teacher_avail).all()
+>>>>>>> main
     return results
 
 
@@ -103,7 +118,11 @@ def update_availabilty(availability_id: int, updated_availability: AvailabilityC
     
     avail_service = db.get(Availability, availability_id)
     if not avail_service:
+<<<<<<< HEAD
         raise HTTPException(status_code=404, detail="unable to find availability id please try again")
+=======
+        raise HTTPException(status_code= 404, detail="unable to find availability id please try again")
+>>>>>>> main
     if current_user.role != "admin" and avail_service.tutor_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only update your own availability.")
     avail_dict = updated_availability.model_dump()
@@ -127,7 +146,11 @@ def delete_availability(availability_id: int, current_user: User = Depends(get_c
     
     search_avail = db.get(Availability, availability_id)
     if not search_avail:
+<<<<<<< HEAD
         raise HTTPException(status_code=404, detail="unable to delete availability id please try again")
+=======
+        raise HTTPException(status_code= 404, detail="unable to delete availability id please try again")
+>>>>>>> main
     if current_user.role != "admin" and search_avail.tutor_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only delete your own availability.")
     db.delete(search_avail)

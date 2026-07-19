@@ -129,7 +129,7 @@ const ProcessSection = () => {
 
   return (
     <section
-      id="process"
+      id="faq"
       ref={sectionRef}
       className="w-full bg-white relative overflow-hidden px-10 max-[580px]:px-5"
       style={{
@@ -150,7 +150,6 @@ const ProcessSection = () => {
           className="flex flex-row items-center w-full max-[1024px]:flex-col max-[1024px]:gap-12"
           style={{ gap: "clamp(40px,6vw,80px)" }}
         >
-          {/* Image */}
           <div className="flex-shrink-0 max-[1024px]:w-full">
             <img
               src="/process-section.jpg"

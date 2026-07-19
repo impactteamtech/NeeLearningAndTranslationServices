@@ -13,7 +13,11 @@ from database.base import Base
 
 
 
+<<<<<<< HEAD
 class TutorProfile(Base):
+=======
+class TeacherProfile(Base):
+>>>>>>> main
     __tablename__ = "tutor_profiles"
 
     id: Mapped[int] = mapped_column(primary_key=True)

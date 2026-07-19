@@ -20,6 +20,9 @@ from database.database import get_db
 from models.learner_profile import LearnerProfile
 from models.user import User
 from schemas.learner_profile import LearnerProfileUpdate, LearnerProfileResponse
+from models.learner_profile import StudentProfile
+from models.user import User
+from schemas.learner_profile import StudentProfileUpdate, StudentProfileResponse
 from auth.dependencies import get_current_user
 
 router = APIRouter()

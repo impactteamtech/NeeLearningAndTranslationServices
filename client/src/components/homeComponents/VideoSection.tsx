@@ -16,7 +16,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({
   return (
     <section
       id="video"
-      className="w-full bg-white pb-16 md:pb-24 px-4 sm:px-8 md:px-16 lg:px-16 relative overflow-hidden"
+      className="w-full bg-white pb-16 md:pb-24 px-4 sm:px-8 md:px-16 lg:px-30 relative overflow-hidden"
     >
       <div className="section-container relative z-10">
         
