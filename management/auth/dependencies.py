@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from jose import JWTError
 
-from management.database.database import get_db
-from management.auth.token import verify_access_token
-from management.models.user import User
+from database.database import get_db
+from auth.token import verify_access_token
+from models.user import User
 
 
 # this tells FastAPI where to look for the token (Authorization: Bearer <token>)
