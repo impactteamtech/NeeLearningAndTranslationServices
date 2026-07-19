@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from routes import bookings, services, availability, auth, google_auth, files
-from routes import google_auth
 from routes import translation_req
-from routes import student_profiles, teacher_profiles, lesson_history
+from routes import learner_profiles, tutor_profiles, lesson_history
 
 
 app = FastAPI(
@@ -47,14 +46,14 @@ app.include_router(
     tags=["Translation"]
 )
 app.include_router(
-    student_profiles.router,
-    prefix="/api/v1/student-profiles",
-    tags=["Student Profiles"]
+    learner_profiles.router,
+    prefix="/api/v1/learner-profiles",
+    tags=["Learner Profiles"]
 )
 app.include_router(
-    teacher_profiles.router,
-    prefix="/api/v1/teacher-profiles",
-    tags=["Teacher Profiles"]
+    tutor_profiles.router,
+    prefix="/api/v1/tutor-profiles",
+    tags=["Tutor Profiles"]
 )
 app.include_router(
     lesson_history.router,

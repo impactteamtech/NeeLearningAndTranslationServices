@@ -3,13 +3,15 @@
 #                    AUTHENTICATION API                               #
 #                                                                     #
 #        Role-based auth: every new account is a learner.            #
-#        A student profile row is created at registration.           #
-#        Tutors get a teacher profile via /become-teacher.           #
+#        A learner profile row is created at registration.           #
+#        Tutors get a tutor profile via /become-tutor.               #
 #                                                                     #
-#        - POST /register        → create account (learner)          #
-#        - POST /login           → return JWT                        #
-#        - GET  /me              → current user info                 #
-#        - POST /become-teacher  → upgrade learner → tutor           #
+#        - POST /register         → create account (learner)         #
+#        - POST /login            → return JWT                       #
+#        - GET  /me               → current user info                #
+#        - POST /become-tutor     → upgrade learner → tutor          #
+#        - POST /forgot-password  → send reset link to email         #
+#        - POST /reset-password   → reset password with token        #
 #                                                                     #
 #######################################################################
 
@@ -17,15 +19,20 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from jose import JWTError
 
 from database.database import get_db
 from models.user import User
-from models.student_profile import StudentProfile
-from models.teacher_profile import TeacherProfile
-from schemas.user import UserCreate, UserLogin, UserResponse, Token, BecomeTeacherRequest
-from schemas.teacher_profile import TeacherProfileResponse
+from models.learner_profile import LearnerProfile
+from models.tutor_profile import TutorProfile
+from schemas.user import (
+    UserCreate, UserLogin, UserResponse, Token,
+    BecomeTutorRequest, ForgotPasswordRequest, ResetPasswordRequest,
+)
+from schemas.tutor_profile import TutorProfileResponse
 from auth.hashing import hash_password, verify_password
-from auth.token import create_access_token
+from auth.token import create_access_token, create_reset_token, verify_reset_token
+from auth.email import send_password_reset_email, send_welcome_email
 from auth.dependencies import get_current_user
 from enums.enums import UserRole
 
@@ -56,18 +63,24 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         email=user.email,
         hashed_password=hash_password(user.password),
         full_name=user.full_name,
-        role=UserRole.LEARNER,
+        role=user.role,
     )
     db.add(new_user)
     db.flush()  # get new_user.id without committing yet
 
-    # automatically create a blank student profile for every new user
-    student_profile = StudentProfile(user_id=new_user.id)
-    db.add(student_profile)
+    # automatically create a blank learner profile for every new user
+    learner_profile = LearnerProfile(user_id=new_user.id)
+    db.add(learner_profile)
     db.commit()
     db.refresh(new_user)
-    return new_user
 
+    # send a welcome email — don't block registration if it fails
+    try:
+        send_welcome_email(to_email=new_user.email, full_name=new_user.full_name)
+    except Exception as exc:
+        print(f"[warn] failed to send welcome email to {new_user.email}: {exc}")
+
+    return new_user
 
 # ─── Login ──────────────────────────────────────────────────────────
 @router.post("/login", response_model=Token)
@@ -105,48 +118,109 @@ def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-# ─── Become a teacher ───────────────────────────────────────────────
-@router.post("/become-teacher", response_model=TeacherProfileResponse, status_code=status.HTTP_201_CREATED)
-def become_teacher(
-    payload: BecomeTeacherRequest,
+# ─── Become a tutor ─────────────────────────────────────────────────
+@router.post("/become-tutor", response_model=TutorProfileResponse, status_code=status.HTTP_201_CREATED)
+def become_tutor(
+    payload: BecomeTutorRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Allows a learner to upgrade their account to a tutor role.
-    - Creates a teacher_profile row for the user.
+    - Creates a tutor_profile row for the user.
     - Updates the user's role from learner → tutor.
-    - The student_profile row is kept (history is preserved).
+    - The learner_profile row is kept (history is preserved).
     """
     # only learners can request this upgrade
     if current_user.role != UserRole.LEARNER:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only learners can become teachers. You are already a tutor or admin.",
+            detail="Only learners can become tutors. You are already a tutor or admin.",
         )
 
-    # guard against duplicate teacher profiles
+    # guard against duplicate tutor profiles
     existing = db.execute(
-        select(TeacherProfile).where(TeacherProfile.user_id == current_user.id)
+        select(TutorProfile).where(TutorProfile.user_id == current_user.id)
     ).scalars().first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A teacher profile already exists for this account.",
+            detail="A tutor profile already exists for this account.",
         )
 
     # upgrade the role in the users table
     current_user.role = UserRole.TUTOR
 
-    # create the teacher profile
-    teacher_profile = TeacherProfile(
+    # create the tutor profile
+    tutor_profile = TutorProfile(
         user_id=current_user.id,
         bio=payload.bio,
         specialization=payload.specialization,
         years_of_experience=payload.years_of_experience,
         hourly_rate=payload.hourly_rate,
     )
-    db.add(teacher_profile)
+    db.add(tutor_profile)
     db.commit()
-    db.refresh(teacher_profile)
-    return teacher_profile
+    db.refresh(tutor_profile)
+    return tutor_profile
+
+
+# ─── Forgot password ────────────────────────────────────────────────
+@router.post("/forgot-password")
+def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Sends a password reset link to the user's email.
+    Always returns 200 even if the email doesn't exist (security best practice).
+    """
+    user = db.execute(
+        select(User).where(User.email == payload.email)
+    ).scalars().first()
+
+    if user:
+        # only allow reset for local auth users (Google users have no password)
+        if user.auth_provider == "google":
+            # still return 200 to not leak info
+            return {"message": "If an account with that email exists, a reset link has been sent."}
+
+        # generate a short-lived reset token and email it
+        reset_token = create_reset_token(email=user.email)
+        try:
+            send_password_reset_email(to_email=user.email, reset_token=reset_token)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to send reset email. Please try again later.",
+            )
+
+    # always return same message whether user exists or not
+    return {"message": "If an account with that email exists, a reset link has been sent."}
+
+
+# ─── Reset password ─────────────────────────────────────────────────
+@router.post("/reset-password")
+def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Resets the user's password using the token from the reset email.
+    """
+    try:
+        email = verify_reset_token(payload.token)
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token.",
+        )
+
+    user = db.execute(
+        select(User).where(User.email == email)
+    ).scalars().first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    # update password
+    user.hashed_password = hash_password(payload.new_password)
+    db.commit()
+    return {"message": "Password has been reset successfully."}

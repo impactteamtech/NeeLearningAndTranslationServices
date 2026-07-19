@@ -39,8 +39,19 @@ class Token(BaseModel):
 
 
 # schema used when a learner requests to become a tutor
-class BecomeTeacherRequest(BaseModel):
+class BecomeTutorRequest(BaseModel):
     bio: Optional[str] = None
     specialization: Optional[str] = None
     years_of_experience: Optional[int] = None
     hourly_rate: Optional[float] = None
+
+
+# schema for forgot password request
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+# schema for reset password request
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
