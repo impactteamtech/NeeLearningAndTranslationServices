@@ -105,7 +105,7 @@ export const learnerApi = {
   },
 
   getAvailabilityById: (availabilityId: number) =>
-    apiRequest<AvailabilitySlot>(`/api/v1/availability/${availabilityId}/`),
+    apiRequest<AvailabilitySlot>(`/api/v1/availability/${availabilityId}`),
 
   getSupportedLanguages: () =>
     apiRequest<SupportedLanguagesResponse>("/api/v1/translate/languages"),
