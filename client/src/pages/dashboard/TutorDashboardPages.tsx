@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
+  FiArrowRight,
+  FiAlertCircle,
   FiBookOpen,
   FiCalendar,
   FiCheckCircle,
   FiClock,
   FiEdit3,
+  FiEye,
+  FiEyeOff,
+  FiKey,
   FiRefreshCw,
   FiTrash2,
+  FiUser,
 } from "react-icons/fi";
 import { useCurrentUser } from "../../features/auth/authQueries";
 import {
@@ -23,12 +29,12 @@ import {
 import { tutorServiceSchema, type TutorServiceFormValues } from "../../features/tutor/tutorSchemas";
 import type { ServicePayload, TutorBooking, TutorService } from "../../features/tutor/tutorTypes";
 import {
+  AdminSectionHeader,
   DataTable,
   DetailsDrawer,
   EmptyState,
   ErrorState,
   LoadingSkeleton,
-  PageHeader,
   SearchInput,
   SelectFilter,
   StatCard,
@@ -58,9 +64,87 @@ const toPayload = (values: TutorServiceFormValues): ServicePayload => ({
 });
 
 const statusName = (status?: string) => status?.trim() || "Unknown";
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isUpcoming = (booking: TutorBooking) => {
   const parsed = Date.parse(`${booking.booking_date}T${booking.end_time}`);
   return Number.isFinite(parsed) && parsed >= Date.now();
+};
+
+const getDisplayName = (name?: string) => {
+  const normalizedName = name?.trim();
+
+  if (!normalizedName || ["null", "undefined"].includes(normalizedName.toLowerCase())) {
+    return undefined;
+  }
+
+  return normalizedName;
+};
+
+const TutorWelcomeBanner = ({
+  tutorName,
+  isLoading,
+}: {
+  tutorName?: string;
+  isLoading?: boolean;
+}) => {
+  const displayName = getDisplayName(tutorName);
+
+  return (
+    <header className="relative isolate overflow-hidden rounded-2xl border border-haiti-navy/10 bg-haiti-navy px-5 py-6 shadow-sm sm:px-7 sm:py-7 lg:px-8">
+      <div className="relative grid min-w-0 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(13rem,36%)] md:items-center md:gap-8">
+        <div className="min-w-0 space-y-5">
+          <div>
+            <span className="text-xs font-extrabold uppercase tracking-[0.18em] text-white/80">
+              Tutor Overview
+            </span>
+            <h1
+              aria-busy={isLoading}
+              className="mt-2 flex min-h-9 flex-wrap items-center gap-x-2 text-2xl font-extrabold tracking-tight text-white sm:text-3xl"
+            >
+              <span>Welcome back{isLoading || displayName ? "," : ""}</span>
+              {isLoading ? (
+                <span
+                  aria-label="Loading tutor name"
+                  className="inline-block h-7 w-36 animate-pulse rounded-md bg-white/15 sm:h-8 sm:w-48"
+                />
+              ) : displayName ? (
+                <span className="break-words text-blue-100">{displayName}</span>
+              ) : null}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm font-semibold leading-6 text-slate-100">
+              Track your services, availability slots, booking requests, and upcoming teaching sessions.
+            </p>
+          </div>
+
+          <nav aria-label="Tutor dashboard shortcuts" className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link
+              to="/dashboard/tutor/services"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-blue-700/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-haiti-navy"
+            >
+              Manage Services
+              <FiArrowRight className="size-3.5" />
+            </Link>
+            <Link
+              to="/dashboard/tutor/bookings"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border bg-white px-4 py-2.5 text-xs font-extrabold text-haiti-navy shadow-sm transition hover:border-haiti-navy/25 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-haiti-navy"
+            >
+              View Bookings
+            </Link>
+          </nav>
+        </div>
+
+        <div className="flex min-w-0 justify-center md:justify-end">
+          <div className="relative flex h-40 w-full max-w-64 items-center justify-center md:h-44">
+            <img
+              src="/tutor-related-pictures/tutor.png"
+              alt="Tutor dashboard illustration"
+              className="relative h-full max-h-44 w-auto max-w-full object-contain"
+            />
+          </div>
+        </div>
+      </div>
+    </header>
+  );
 };
 
 const FieldError = ({ message }: { message?: string }) =>
@@ -120,66 +204,126 @@ const ServiceForm = ({
   return (
     <form
       onSubmit={handleSubmit(submit)}
-      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+      className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.06)]"
     >
-      <h2 className="text-base font-extrabold text-slate-950">
-        {service ? "Edit service" : "Add service"}
-      </h2>
+      <div className="border-b border-slate-100 bg-slate-50/70 px-5 py-5 sm:px-6">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+          <div className="min-w-0">
+            <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.16em] text-haiti-red">
+              Service setup
+            </p>
+            <h2 className="mt-1 text-xl font-extrabold text-slate-950">
+              {service ? "Edit service" : "Add service"}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+              Define what learners will see when they browse your tutor services.
+            </p>
+          </div>
+          <span className="inline-flex w-fit items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-extrabold text-haiti-navy">
+            <FiBookOpen className="size-4" />
+            Tutor service
+          </span>
+        </div>
+      </div>
+
+      <div className="p-5 sm:p-6">
       {mutation.error ? (
-        <div className="mt-4">
+        <div className="mb-5">
           <ErrorState message={getErrorMessage(mutation.error)} />
         </div>
       ) : null}
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
+
+      <div className="grid gap-5 md:grid-cols-2">
         <label>
-          <span className="text-xs font-extrabold uppercase tracking-wide text-slate-400">Name</span>
-          <input {...register("name")} className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-haiti-navy focus:ring-4 focus:ring-blue-100" />
+          <span className="text-xs font-extrabold uppercase tracking-wide text-slate-400">Service name</span>
+          <input
+            {...register("name")}
+            className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-4 text-sm font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-haiti-navy focus:bg-white focus:ring-4 focus:ring-blue-100"
+            placeholder="Haitian Creole conversation coaching"
+          />
           <FieldError message={errors.name?.message} />
         </label>
         <label>
           <span className="text-xs font-extrabold uppercase tracking-wide text-slate-400">Category</span>
-          <input {...register("category")} className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-haiti-navy focus:ring-4 focus:ring-blue-100" />
+          <input
+            {...register("category")}
+            className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-4 text-sm font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-haiti-navy focus:bg-white focus:ring-4 focus:ring-blue-100"
+            placeholder="Language learning"
+          />
           <FieldError message={errors.category?.message} />
         </label>
         <label>
           <span className="text-xs font-extrabold uppercase tracking-wide text-slate-400">Language</span>
-          <input {...register("language")} className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-haiti-navy focus:ring-4 focus:ring-blue-100" />
+          <input
+            {...register("language")}
+            className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-4 text-sm font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-haiti-navy focus:bg-white focus:ring-4 focus:ring-blue-100"
+            placeholder="Haitian Creole"
+          />
           <FieldError message={errors.language?.message} />
         </label>
         <label>
           <span className="text-xs font-extrabold uppercase tracking-wide text-slate-400">Duration minutes</span>
-          <input {...register("duration_minutes")} type="number" min="0" className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-haiti-navy focus:ring-4 focus:ring-blue-100" />
+          <input
+            {...register("duration_minutes")}
+            type="number"
+            min="0"
+            className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-4 text-sm font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-haiti-navy focus:bg-white focus:ring-4 focus:ring-blue-100"
+            placeholder="60"
+          />
           <FieldError message={errors.duration_minutes?.message} />
         </label>
         <label>
           <span className="text-xs font-extrabold uppercase tracking-wide text-slate-400">Price</span>
-          <input {...register("price")} type="number" min="0" step="0.01" className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm font-semibold outline-none focus:border-haiti-navy focus:ring-4 focus:ring-blue-100" />
+          <input
+            {...register("price")}
+            type="number"
+            min="0"
+            step="0.01"
+            className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 px-4 text-sm font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-haiti-navy focus:bg-white focus:ring-4 focus:ring-blue-100"
+            placeholder="45"
+          />
           <FieldError message={errors.price?.message} />
         </label>
-        <label className="flex items-center gap-2 self-end rounded-lg border border-slate-200 px-3 py-3 text-sm font-bold text-slate-700">
-          <input {...register("is_active")} type="checkbox" className="size-4" />
-          Active service
+        <label className="flex min-h-12 items-center justify-between gap-4 self-end rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3 text-sm font-bold text-slate-700">
+          <span>
+            Active service
+            <span className="mt-0.5 block text-xs font-semibold text-slate-400">
+              Visible to learners when enabled.
+            </span>
+          </span>
+          <input {...register("is_active")} type="checkbox" className="size-5 accent-haiti-navy" />
         </label>
         <label className="md:col-span-2">
           <span className="text-xs font-extrabold uppercase tracking-wide text-slate-400">Description</span>
-          <textarea {...register("description")} className="mt-2 min-h-24 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold outline-none focus:border-haiti-navy focus:ring-4 focus:ring-blue-100" />
+          <textarea
+            {...register("description")}
+            className="mt-2 min-h-32 w-full resize-y rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3 text-sm font-semibold leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-haiti-navy focus:bg-white focus:ring-4 focus:ring-blue-100"
+            placeholder="Briefly explain the goals, format, and ideal learner for this service."
+          />
           <FieldError message={errors.description?.message} />
         </label>
       </div>
-      <button
-        type="submit"
-        disabled={mutation.isPending}
-        className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-haiti-navy text-sm font-extrabold text-white disabled:cursor-wait disabled:opacity-60"
-      >
-        {mutation.isPending ? <FiRefreshCw className="size-4 animate-spin" /> : null}
-        {service ? "Save service" : "Create service"}
-      </button>
+
+        <div className="mt-6 flex flex-col justify-between gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center">
+          <p className="text-xs font-semibold leading-5 text-slate-400">
+            Review the details before publishing. You can edit this service later.
+          </p>
+          <button
+            type="submit"
+            disabled={mutation.isPending}
+            className="inline-flex h-12 min-w-44 items-center justify-center gap-2 rounded-xl bg-haiti-navy px-5 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(6,67,159,.18)] transition hover:bg-haiti-navy-dark disabled:cursor-wait disabled:opacity-60"
+          >
+            {mutation.isPending ? <FiRefreshCw className="size-4 animate-spin" /> : <FiCheckCircle className="size-4" />}
+            {service ? "Save service" : "Create service"}
+          </button>
+        </div>
+      </div>
     </form>
   );
 };
 
 export const TutorOverview = () => {
-  const { data: user } = useCurrentUser();
+  const { data: user, isPending: isUserPending } = useCurrentUser();
   const services = useTutorServices(user?.id, user?.email);
   const availability = useTutorAvailability(user?.id);
   const bookings = useTutorBookings(user?.id);
@@ -191,11 +335,7 @@ export const TutorOverview = () => {
 
   return (
     <section className="space-y-6">
-      <PageHeader
-        eyebrow="Tutor overview"
-        title={`Welcome, ${user?.full_name ?? "Tutor"}`}
-        description="Your workload summary from your services, availability slots, and tutor bookings."
-      />
+      <TutorWelcomeBanner tutorName={user?.full_name} isLoading={isUserPending} />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard label="My services" value={serviceData.length} icon={FiBookOpen} />
         <StatCard label="Active services" value={serviceData.filter((item) => item.is_active !== false).length} icon={FiCheckCircle} />
@@ -258,7 +398,11 @@ export const TutorServices = () => {
 
   return (
     <section className="space-y-6">
-      <PageHeader eyebrow="Tutor workspace" title="My Services" description="Create and manage only your own service offerings." />
+      <AdminSectionHeader
+        eyebrow="Tutor workspace"
+        title="My Services"
+        description="Create and manage only your own service offerings."
+      />
       <ServiceForm />
       <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
         <SearchInput value={search} onChange={setSearch} placeholder="Search my services" />
@@ -286,7 +430,7 @@ export const TutorAvailability = () => {
   const items = query.data ?? [];
   return (
     <section className="space-y-6">
-      <PageHeader
+      <AdminSectionHeader
         eyebrow="Tutor workspace"
         title="My Availability"
         description="Read your availability slots from the backend. Create/update availability requires the exact bulk payload schema, so mutation controls stay disabled until confirmed."
@@ -355,7 +499,11 @@ export const TutorBookings = () => {
 
   return (
     <section className="space-y-6">
-      <PageHeader eyebrow="Tutor workspace" title="Bookings" description="Review tutor bookings and change status only if the backend authorizes it." />
+      <AdminSectionHeader
+        eyebrow="Tutor workspace"
+        title="Bookings"
+        description="Review tutor bookings and change status only if the backend authorizes it."
+      />
       <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm sm:flex-row">
         <SelectFilter label="All statuses" value={status} onChange={setStatus} options={statuses} />
         <SelectFilter label="View" value={view === "all" ? "" : view} onChange={(value) => setParams(value ? { view: value } : {})} options={["requests", "upcoming", "history"]} />
@@ -393,7 +541,7 @@ export const TutorBookings = () => {
 
 export const TutorFiles = () => (
   <section className="space-y-6">
-    <PageHeader
+    <AdminSectionHeader
       eyebrow="Tutor workspace"
       title="Files"
       description="The PDF documents file lookup endpoints, but does not define how translation requests are assigned to tutors. Keep this page informational until that workflow is documented."
@@ -406,25 +554,258 @@ export const TutorFiles = () => (
 );
 
 export const TutorAccount = () => {
-  const { data: user } = useCurrentUser();
+  const userQuery = useCurrentUser();
+  const user = userQuery.data;
+  const [infoDraft, setInfoDraft] = useState<{ fullName?: string; email?: string }>({});
+  const [infoErrors, setInfoErrors] = useState<Record<string, string>>({});
+  const [infoSubmitPending, setInfoSubmitPending] = useState(false);
+  const [infoSubmitNotice, setInfoSubmitNotice] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
+  const [passwordSubmitPending, setPasswordSubmitPending] = useState(false);
+  const [passwordSubmitNotice, setPasswordSubmitNotice] = useState("");
+
+  const fullName = infoDraft.fullName ?? user?.full_name ?? "";
+  const email = infoDraft.email ?? user?.email ?? "";
+
+  const resetInfoForm = () => {
+    setInfoDraft({});
+    setInfoErrors({});
+    setInfoSubmitNotice("");
+  };
+
+  const resetPasswordForm = () => {
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setPasswordErrors({});
+    setPasswordSubmitNotice("");
+  };
+
+  const handleSaveInfo = (event: FormEvent) => {
+    event.preventDefault();
+    if (infoSubmitPending) return;
+
+    const errors: Record<string, string> = {};
+    if (!fullName.trim()) errors.fullName = "Full name is required";
+    else if (fullName.trim().length < 2) errors.fullName = "Full name must contain at least 2 characters";
+
+    if (!email.trim()) errors.email = "Email is required";
+    else if (!EMAIL_REGEX.test(email.trim())) errors.email = "Please enter a valid email address";
+
+    if (Object.keys(errors).length) {
+      setInfoErrors(errors);
+      setInfoSubmitNotice("");
+      return;
+    }
+
+    setInfoErrors({});
+    setInfoSubmitNotice("");
+    setInfoSubmitPending(true);
+    window.setTimeout(() => {
+      setInfoSubmitPending(false);
+      setInfoSubmitNotice("Profile editing is not available yet because the backend update API has not been implemented.");
+    }, 800);
+  };
+
+  const handleUpdatePassword = (event: FormEvent) => {
+    event.preventDefault();
+    if (passwordSubmitPending) return;
+
+    const errors: Record<string, string> = {};
+    if (!currentPassword) errors.currentPassword = "Current password is required";
+    if (!newPassword) {
+      errors.newPassword = "New password is required";
+    } else {
+      const rules = [
+        [newPassword.length < 8, "New password must contain at least 8 characters"],
+        [!/[A-Z]/.test(newPassword), "Must contain at least one uppercase letter"],
+        [!/[a-z]/.test(newPassword), "Must contain at least one lowercase letter"],
+        [!/[0-9]/.test(newPassword), "Must contain at least one number"],
+      ] as const;
+      errors.newPassword = rules.filter(([failed]) => failed).map(([, message]) => message).join(". ");
+      if (!errors.newPassword) delete errors.newPassword;
+    }
+    if (!confirmPassword) errors.confirmPassword = "Confirm password is required";
+    else if (confirmPassword !== newPassword) errors.confirmPassword = "Passwords do not match";
+    if (newPassword && currentPassword && newPassword === currentPassword) {
+      errors.newPassword = "The new password must not be the same as the current password";
+    }
+
+    if (Object.keys(errors).length) {
+      setPasswordErrors(errors);
+      setPasswordSubmitNotice("");
+      return;
+    }
+
+    setPasswordErrors({});
+    setPasswordSubmitNotice("");
+    setPasswordSubmitPending(true);
+    window.setTimeout(() => {
+      setPasswordSubmitPending(false);
+      setPasswordSubmitNotice("Password updates are not available yet because the backend change-password API has not been implemented.");
+    }, 800);
+  };
+
   return (
     <section className="space-y-6">
-      <PageHeader eyebrow="Account" title="My Account" description="Read-only account details from GET /auth/me." />
-      <dl className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2">
-        {[
-          ["Full name", user?.full_name],
-          ["Email", user?.email],
-          ["Role", user?.role],
-          ["Authentication provider", user?.auth_provider],
-          ["Active state", user?.is_active],
-          ["Created date", user?.created_at],
-        ].map(([label, value]) => (
-          <div key={String(label)} className="rounded-lg bg-slate-50 p-3">
-            <dt className="text-xs font-extrabold uppercase tracking-wide text-slate-400">{label}</dt>
-            <dd className="mt-1 text-sm font-bold text-slate-800">{formatValue(value)}</dd>
-          </div>
-        ))}
-      </dl>
+      <AdminSectionHeader
+        eyebrow="Account settings"
+        title="Tutor Settings"
+        description="Manage your tutor profile and account security."
+      />
+
+      {userQuery.isLoading ? (
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="h-96 animate-pulse rounded-3xl bg-slate-100" />
+          <div className="h-96 animate-pulse rounded-3xl bg-slate-100" />
+        </div>
+      ) : userQuery.isError ? (
+        <ErrorState title="Could not load settings data" message={getErrorMessage(userQuery.error)} onRetry={() => userQuery.refetch()} />
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <article className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+            <form onSubmit={handleSaveInfo} className="flex flex-1 flex-col justify-between space-y-6">
+              <div>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-haiti-red">Personal info</span>
+                    <h2 className="mt-1 text-lg font-extrabold text-slate-900">Personal Information</h2>
+                    <p className="mt-1.5 text-xs font-semibold text-slate-400">Update your display name and registered email address.</p>
+                  </div>
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-blue-50 text-haiti-navy">
+                    <FiUser className="size-5" />
+                  </span>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">Full Name</span>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(event) => {
+                        setInfoDraft((current) => ({ ...current, fullName: event.target.value }));
+                        if (infoErrors.fullName) {
+                          setInfoErrors((current) => {
+                            const copy = { ...current };
+                            delete copy.fullName;
+                            return copy;
+                          });
+                        }
+                      }}
+                      className={`h-11 w-full rounded-xl border px-4 text-sm font-semibold text-slate-700 outline-none transition ${infoErrors.fullName ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-50" : "border-slate-200 bg-slate-50/50 hover:border-slate-300 focus:border-haiti-navy focus:bg-white"}`}
+                      placeholder="Enter your full name"
+                    />
+                    {infoErrors.fullName ? <p className="mt-1.5 flex items-center gap-1 text-xs font-bold text-red-500"><FiAlertCircle />{infoErrors.fullName}</p> : null}
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">Email Address</span>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(event) => {
+                        setInfoDraft((current) => ({ ...current, email: event.target.value }));
+                        if (infoErrors.email) {
+                          setInfoErrors((current) => {
+                            const copy = { ...current };
+                            delete copy.email;
+                            return copy;
+                          });
+                        }
+                      }}
+                      className={`h-11 w-full rounded-xl border px-4 text-sm font-semibold text-slate-700 outline-none transition ${infoErrors.email ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-50" : "border-slate-200 bg-slate-50/50 hover:border-slate-300 focus:border-haiti-navy focus:bg-white"}`}
+                      placeholder="Enter your email"
+                    />
+                    {infoErrors.email ? <p className="mt-1.5 flex items-center gap-1 text-xs font-bold text-red-500"><FiAlertCircle />{infoErrors.email}</p> : null}
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-6 border-t border-slate-100 pt-5">
+                {infoSubmitNotice ? <div className="mb-4 flex gap-2.5 rounded-xl border border-blue-100 bg-blue-50/40 p-4 text-xs font-semibold text-haiti-navy"><FiAlertCircle className="size-4 shrink-0 text-blue-600" /><span>{infoSubmitNotice}</span></div> : null}
+                <div className="flex flex-wrap gap-3">
+                  <button type="submit" disabled={infoSubmitPending} className="inline-flex min-h-11 min-w-[7.5rem] items-center justify-center rounded-xl bg-haiti-navy px-5 text-sm font-bold text-white shadow-xs transition hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50">
+                    {infoSubmitPending ? <span className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : "Save Changes"}
+                  </button>
+                  <button type="button" onClick={resetInfoForm} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 shadow-xs transition hover:border-slate-300 hover:bg-slate-50">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </form>
+          </article>
+
+          <article className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+            <form onSubmit={handleUpdatePassword} className="flex flex-1 flex-col justify-between space-y-6">
+              <div>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-haiti-red">Security</span>
+                    <h2 className="mt-1 text-lg font-extrabold text-slate-900">Password and Security</h2>
+                    <p className="mt-1.5 text-xs font-semibold text-slate-400">Change your password to keep your tutor account safe.</p>
+                  </div>
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-purple-50 text-purple-600">
+                    <FiKey className="size-5" />
+                  </span>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  {[
+                    ["Current Password", currentPassword, setCurrentPassword, showCurrent, setShowCurrent, "currentPassword"],
+                    ["New Password", newPassword, setNewPassword, showNew, setShowNew, "newPassword"],
+                    ["Confirm New Password", confirmPassword, setConfirmPassword, showConfirm, setShowConfirm, "confirmPassword"],
+                  ].map(([label, value, setValue, shown, setShown, key]) => (
+                    <label key={String(key)} className="block">
+                      <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">{String(label)}</span>
+                      <div className="relative">
+                        <input
+                          type={shown ? "text" : "password"}
+                          value={String(value)}
+                          onChange={(event) => {
+                            (setValue as (value: string) => void)(event.target.value);
+                            if (passwordErrors[String(key)]) {
+                              setPasswordErrors((current) => {
+                                const copy = { ...current };
+                                delete copy[String(key)];
+                                return copy;
+                              });
+                            }
+                          }}
+                          className={`h-11 w-full rounded-xl border pl-4 pr-11 text-sm font-semibold text-slate-700 outline-none transition ${passwordErrors[String(key)] ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-50" : "border-slate-200 bg-slate-50/50 hover:border-slate-300 focus:border-haiti-navy focus:bg-white"}`}
+                          placeholder="Password"
+                        />
+                        <button type="button" onClick={() => (setShown as (value: boolean) => void)(!shown)} className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600" aria-label={`${shown ? "Hide" : "Show"} ${String(label).toLowerCase()}`}>
+                          {shown ? <FiEyeOff className="size-4" /> : <FiEye className="size-4" />}
+                        </button>
+                      </div>
+                      {passwordErrors[String(key)] ? <p className="mt-1.5 flex items-start gap-1 text-xs font-bold leading-snug text-red-500"><FiAlertCircle className="mt-0.5 shrink-0" /><span>{passwordErrors[String(key)]}</span></p> : null}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 border-t border-slate-100 pt-5">
+                {passwordSubmitNotice ? <div className="mb-4 flex gap-2.5 rounded-xl border border-blue-100 bg-blue-50/40 p-4 text-xs font-semibold text-haiti-navy"><FiAlertCircle className="size-4 shrink-0 text-blue-600" /><span>{passwordSubmitNotice}</span></div> : null}
+                <div className="flex flex-wrap gap-3">
+                  <button type="submit" disabled={passwordSubmitPending} className="inline-flex min-h-11 min-w-[8.5rem] items-center justify-center rounded-xl bg-haiti-navy px-5 text-sm font-bold text-white shadow-xs transition hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50">
+                    {passwordSubmitPending ? <span className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : "Update Password"}
+                  </button>
+                  <button type="button" onClick={resetPasswordForm} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 shadow-xs transition hover:border-slate-300 hover:bg-slate-50">
+                    Reset Form
+                  </button>
+                </div>
+              </div>
+            </form>
+          </article>
+        </div>
+      )}
     </section>
   );
 };
