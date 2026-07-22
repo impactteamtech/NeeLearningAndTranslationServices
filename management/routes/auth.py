@@ -8,10 +8,12 @@
 #                                                                     #
 #        - POST /register         → create account (learner)         #
 #        - POST /login            → return JWT                       #
+#        - POST /logout           → clear cookie                     #
 #        - GET  /me               → current user info                #
 #        - POST /become-tutor     → upgrade learner → tutor          #
 #        - POST /forgot-password  → send reset link to email         #
 #        - POST /reset-password   → reset password with token        #
+#        - POST /change-password  → change password (auth'd users)   #
 #                                                                     #
 #######################################################################
 
@@ -23,20 +25,14 @@ from jose import JWTError
 
 from database.database import get_db
 from models.user import User
-<<<<<<< HEAD
 from models.learner_profile import LearnerProfile
 from models.tutor_profile import TutorProfile
 from schemas.user import (
     UserCreate, UserLogin, UserResponse, Token,
     BecomeTutorRequest, ForgotPasswordRequest, ResetPasswordRequest,
+    ChangePasswordRequest,
 )
 from schemas.tutor_profile import TutorProfileResponse
-=======
-from models.learner_profile import StudentProfile
-from models.tutor_profile import TeacherProfile
-from schemas.user import UserCreate, UserLogin, UserResponse, Token, BecomeTeacherRequest
-from schemas.tutor_profile import TeacherProfileResponse
->>>>>>> main
 from auth.hashing import hash_password, verify_password
 from auth.token import create_access_token, create_reset_token, verify_reset_token
 from auth.email import send_password_reset_email, send_welcome_email
@@ -59,11 +55,6 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this email already exists",
         )
-    # if user.role == "admin": #admin validation
-    #     raise HTTPException(
-    #         status_code=403,
-    #         detail="Admin accounts cannot be created through registration."
-    # )
 
     # every new account is a learner — role is not user-selectable at registration
     new_user = User(
@@ -88,6 +79,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         print(f"[warn] failed to send welcome email to {new_user.email}: {exc}")
 
     return new_user
+
 
 # ─── Login ──────────────────────────────────────────────────────────
 @router.post("/login", response_model=Token)
@@ -119,23 +111,23 @@ def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+# ─── Logout ─────────────────────────────────────────────────────────
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(response: Response):
+    response.delete_cookie(key="access_token", httponly=True, samesite="lax")
+    return {"message": "Successfully logged out"}
+
+
 # ─── Get current user ───────────────────────────────────────────────
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-<<<<<<< HEAD
 # ─── Become a tutor ─────────────────────────────────────────────────
 @router.post("/become-tutor", response_model=TutorProfileResponse, status_code=status.HTTP_201_CREATED)
 def become_tutor(
     payload: BecomeTutorRequest,
-=======
-# ─── Become a tutor ───────────────────────────────────────────────
-@router.post("/become-tutor", response_model=TeacherProfileResponse, status_code=status.HTTP_201_CREATED)
-def become_tutor(
-    payload: BecomeTeacherRequest,
->>>>>>> main
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -145,14 +137,12 @@ def become_tutor(
     - Updates the user's role from learner → tutor.
     - The learner_profile row is kept (history is preserved).
     """
-    # only learners can request this upgrade
     if current_user.role != UserRole.LEARNER:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only learners can become tutors. You are already a tutor or admin.",
         )
 
-    # guard against duplicate tutor profiles
     existing = db.execute(
         select(TutorProfile).where(TutorProfile.user_id == current_user.id)
     ).scalars().first()
@@ -162,16 +152,9 @@ def become_tutor(
             detail="A tutor profile already exists for this account.",
         )
 
-    # upgrade the role in the users table
     current_user.role = UserRole.TUTOR
 
-<<<<<<< HEAD
-    # create the tutor profile
     tutor_profile = TutorProfile(
-=======
-    # create the teacher profile
-    tutor_profile = TeacherProfile(
->>>>>>> main
         user_id=current_user.id,
         bio=payload.bio,
         specialization=payload.specialization,
@@ -184,7 +167,6 @@ def become_tutor(
     return tutor_profile
 
 
-<<<<<<< HEAD
 # ─── Forgot password ────────────────────────────────────────────────
 @router.post("/forgot-password")
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
@@ -199,10 +181,8 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
     if user:
         # only allow reset for local auth users (Google users have no password)
         if user.auth_provider == "google":
-            # still return 200 to not leak info
             return {"message": "If an account with that email exists, a reset link has been sent."}
 
-        # generate a short-lived reset token and email it
         reset_token = create_reset_token(email=user.email)
         try:
             send_password_reset_email(to_email=user.email, reset_token=reset_token)
@@ -212,16 +192,13 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
                 detail="Failed to send reset email. Please try again later.",
             )
 
-    # always return same message whether user exists or not
     return {"message": "If an account with that email exists, a reset link has been sent."}
 
 
 # ─── Reset password ─────────────────────────────────────────────────
 @router.post("/reset-password")
 def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
-    """
-    Resets the user's password using the token from the reset email.
-    """
+    """Resets the user's password using the token from the reset email."""
     try:
         email = verify_reset_token(payload.token)
     except JWTError:
@@ -240,14 +217,49 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
             detail="User not found.",
         )
 
-    # update password
     user.hashed_password = hash_password(payload.new_password)
     db.commit()
     return {"message": "Password has been reset successfully."}
-=======
-#logout endpoint 
-@router.post("/logout", status_code=status.HTTP_200_OK)
-async def logout(response: Response):
-    response.delete_cookie(key="access_token", httponly=True, samesite="lax")
-    return {"Successfully logged out"}
->>>>>>> main
+
+
+# ─── Change password (for logged-in learners AND tutors) ────────────
+@router.post("/change-password", status_code=status.HTTP_200_OK)
+def change_password(
+    payload: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Change the current user's password.
+    Works for any authenticated user (learner or tutor).
+    Google-auth accounts cannot change their password here.
+    """
+    if current_user.auth_provider == "google":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Google-authenticated accounts cannot change their password here.",
+        )
+
+    if not current_user.hashed_password or not verify_password(
+        payload.current_password, current_user.hashed_password
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect.",
+        )
+
+    if len(payload.new_password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 8 characters long.",
+        )
+
+    if payload.current_password == payload.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from the current password.",
+        )
+
+    current_user.hashed_password = hash_password(payload.new_password)
+    db.commit()
+    return {"message": "Password changed successfully."}

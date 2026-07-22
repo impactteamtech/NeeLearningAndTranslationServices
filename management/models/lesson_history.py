@@ -31,11 +31,7 @@ class LessonHistory(Base):
     status: Mapped[LessonStatus] = mapped_column(String(20))
     learner_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     tutor_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-<<<<<<< HEAD
     learner_rating: Mapped[int | None] = mapped_column(nullable=True)  # 1–5
-=======
-    student_rating: Mapped[int | None] = mapped_column(nullable=True)  # 1–5
->>>>>>> main
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 

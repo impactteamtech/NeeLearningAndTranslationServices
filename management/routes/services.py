@@ -8,7 +8,7 @@ from sqlalchemy import select
 from fastapi import Depends
 from models.service import Service
 from models.user import User
-from models.tutor_profile import TeacherProfile
+from models.tutor_profile import TutorProfile
 from auth.dependencies import get_current_user
 router = APIRouter()
 
@@ -83,7 +83,7 @@ def get_services(db: Session = Depends(get_db)):
 def get_services_with_tutors(db:Session = Depends(get_db)):
     
     list_tutors = []
-    query_tutors_info = select(Service, User, TeacherProfile).join(User, Service.tutor_id == User.id).outerjoin(TeacherProfile, TeacherProfile.user_id == User.id)
+    query_tutors_info = select(Service, User, TutorProfile).join(User, Service.tutor_id == User.id).outerjoin(TutorProfile, TutorProfile.user_id == User.id)
     results = db.execute(query_tutors_info).all()
     for service, tutor, profile in results:
         new_list = ServiceWithTutorResponse(

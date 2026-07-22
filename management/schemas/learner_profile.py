@@ -9,6 +9,7 @@ class LearnerProfileCreate(BaseModel):
     bio: Optional[str] = None
     learning_goals: Optional[str] = None
     preferred_language: Optional[str] = None
+    profile_picture_url: Optional[str] = None
 
 
 class LearnerProfileUpdate(LearnerProfileCreate):

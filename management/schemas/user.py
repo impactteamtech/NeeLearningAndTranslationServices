@@ -56,3 +56,9 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
+
+
+# schema for changing password while logged in (learner or tutor)
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str

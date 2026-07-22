@@ -11,6 +11,7 @@ class TutorProfileCreate(BaseModel):
     years_of_experience: Optional[int] = None
     hourly_rate: Optional[float] = None
     meeting_platform: Optional[list[str]] = None
+    profile_picture_url: Optional[str] = None
 
 
 class TutorProfileUpdate(TutorProfileCreate):
