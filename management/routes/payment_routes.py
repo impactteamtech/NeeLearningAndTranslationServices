@@ -29,7 +29,7 @@ from schemas.payment import (
     PaymentResponse,
 )
 from services.paypal_service import paypal_service
-
+from enums.enums import Status
 
 router = APIRouter(
     prefix="/payments/paypal",
@@ -453,7 +453,7 @@ async def capture_paypal_order(
     # ---------------------------------------------------------
     # 17. Mark booking as paid
     # ---------------------------------------------------------
-    booking.status = "Confirmed" #change to reflect enum 
+    booking.status = Status.CONFIRMED #change to reflect enum 
 
     # ---------------------------------------------------------
     # 18. Commit Payment + Booking together
