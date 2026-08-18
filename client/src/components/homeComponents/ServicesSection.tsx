@@ -18,7 +18,7 @@ const services: Service[] = [
     id: "language-learning",
     title: "Language Learning",
     desc: "Structured Haitian Kreyòl and language courses designed for beginners to advanced learners of all ages.",
-    link: "/services",
+    link: "/about",
     dark: true,
     icon: "/servicesSection-icons/language-learning.png",
   },
@@ -26,7 +26,7 @@ const services: Service[] = [
     id: "translation-services",
     title: "Translation Services",
     desc: "Professional Kreyòl–English translation for documents, legal papers, medical records, and business content.",
-    link: "/services",
+    link: "/about",
     dark: false,
     icon: "/servicesSection-icons/translation-service.png",
   },
@@ -34,7 +34,7 @@ const services: Service[] = [
     id: "cultural-integration",
     title: "Cultural Integration",
     desc: "Workshops to help individuals and families navigate cultural transitions with confidence.",
-    link: "/services",
+    link: "/about",
     dark: true,
     icon: "/servicesSection-icons/cultural-integration.png",
   },
@@ -216,7 +216,7 @@ const ServicesSection = () => {
 
           {/* "View All Services" pill */}
           <Link
-            to="/services"
+            to="/#contact"
             aria-label="View all services"
             className="group relative inline-flex items-center gap-[14px] bg-gradient-to-br from-[#080c18] via-[#0d1f7a] to-[#00209F] text-white rounded-full font-sans text-[13px] font-bold tracking-[0.12em] uppercase no-underline whitespace-nowrap overflow-hidden shadow-[0_4px_20px_rgba(0,32,159,0.40),0_1px_6px_rgba(8,12,24,0.30),inset_0_1px_1px_rgba(255,255,255,0.2)] transition-[transform,box-shadow] duration-[400ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-[3px] hover:shadow-[0_12px_40px_rgba(0,32,159,0.55),0_4px_12px_rgba(8,12,24,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.3)] active:-translate-y-[1px]"
             style={{ padding: "16px 28px 16px 36px" }}

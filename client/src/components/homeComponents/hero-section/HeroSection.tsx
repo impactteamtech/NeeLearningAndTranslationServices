@@ -66,13 +66,13 @@ const HeroSection = () => {
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:max-w-[430px] justify-center lg:justify-start relative z-10">
           {/* Primary */}
-          <Link to="/contact" className={`${btnDark} w-full sm:w-auto`}>
-            Book Your First Lesson
+          <Link to="/login" className={`${btnDark} w-full sm:w-auto`}>
+            Get Started
           </Link>
 
           {/* Outline — gradient border via background-clip trick */}
           <Link
-            to="/services"
+            to="/#services"
             className="inline-flex items-center justify-center gap-2 rounded-full font-sans text-[13px] font-bold tracking-[0.12em] uppercase cursor-pointer border-2 border-transparent transition-[transform,box-shadow,color] duration-300 whitespace-nowrap no-underline w-full sm:w-auto hover:-translate-y-[3px] active:-translate-y-[1px] group"
             style={{
               padding: "14px 34px",
