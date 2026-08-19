@@ -12,6 +12,7 @@ from routes import (
     auth,
     availability,
     bookings,
+    contact,
     files,
     google_auth,
     learner_profiles,
@@ -91,6 +92,11 @@ app.include_router(
     lesson_history.router,
     prefix="/api/v1/lesson-history",
     tags=["Lesson History"],
+)
+app.include_router(
+    contact.router,
+    prefix="/api/v1/contact",
+    tags=["Contact"],
 )
 app.include_router(payment_router)
 

@@ -72,11 +72,15 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    # send a welcome email — don't block registration if it fails
+    # send a welcome email — don't block registration if it fails, but do
+    # dump the real reason (Brevo response body, network, etc.) to the log
+    # so misconfiguration is visible.
     try:
         send_welcome_email(to_email=new_user.email, full_name=new_user.full_name)
     except Exception as exc:
+        import traceback
         print(f"[warn] failed to send welcome email to {new_user.email}: {exc}")
+        traceback.print_exc()
 
     return new_user
 
@@ -186,7 +190,10 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
         reset_token = create_reset_token(email=user.email)
         try:
             send_password_reset_email(to_email=user.email, reset_token=reset_token)
-        except Exception:
+        except Exception as exc:
+            import traceback
+            print(f"[error] failed to send password reset email to {user.email}: {exc}")
+            traceback.print_exc()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to send reset email. Please try again later.",

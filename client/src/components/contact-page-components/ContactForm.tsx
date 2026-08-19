@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import { HiArrowRight } from "react-icons/hi";
+import { ApiError } from "../../lib/apiClient";
+import { contactApi } from "../../features/contact/contactApi";
 
 export const ContactForm = () => {
   const [formState, setFormState] = useState({
@@ -13,6 +15,7 @@ export const ContactForm = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (
@@ -41,7 +44,7 @@ export const ContactForm = () => {
     return errors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
@@ -49,11 +52,18 @@ export const ContactForm = () => {
       return;
     }
 
+    setSubmitError(null);
     setIsSubmitting(true);
 
-    // Simulate premium API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await contactApi.submit({
+        name: formState.name.trim(),
+        email: formState.email.trim(),
+        phone: formState.phone.trim() || undefined,
+        service: formState.service,
+        message: formState.message.trim(),
+      });
+
       setSubmitSuccess(true);
       setFormState({
         name: "",
@@ -62,7 +72,15 @@ export const ContactForm = () => {
         service: "Haitian Creole Lessons",
         message: "",
       });
-    }, 1500);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Something went wrong. Please try again in a moment.";
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -195,6 +213,15 @@ export const ContactForm = () => {
               <span className="text-[11px] text-haiti-red font-semibold mt-0.5">{formErrors.message}</span>
             )}
           </div>
+
+          {submitError && (
+            <div
+              role="alert"
+              className="rounded-xl border border-haiti-red/30 bg-haiti-red/5 px-4 py-3 text-sm text-haiti-red"
+            >
+              {submitError}
+            </div>
+          )}
 
           {/* Submit Button */}
           <button
