@@ -28,6 +28,7 @@ import { useCurrentUser } from "../../features/auth/authQueries";
 import {
   useLearnerBookings,
   useLearningServices,
+  useMyLearnerProfile,
   useTranslationFileDetails,
 } from "../../features/learner/learnerQueries";
 import type { Booking, TranslationFile } from "../../features/learner/learnerTypes";
@@ -161,6 +162,7 @@ const CustomTooltip = ({ active, payload, label }: ActivityTooltipProps) => {
 
 export const LearnerOverviewPage = () => {
   const { data: user, isPending: isUserPending } = useCurrentUser();
+  const { data: profile, isLoading: isProfileLoading } = useMyLearnerProfile();
   const bookingsQuery = useLearnerBookings(user?.id);
   const servicesQuery = useLearningServices();
 
@@ -372,7 +374,8 @@ export const LearnerOverviewPage = () => {
     <section className="space-y-6">
       <LearnerWelcomeBanner
         learnerName={user?.full_name}
-        isLoading={isUserPending}
+        profile={profile}
+        isLoading={isUserPending || isProfileLoading}
       />
 
       {isDataLoading ? (
