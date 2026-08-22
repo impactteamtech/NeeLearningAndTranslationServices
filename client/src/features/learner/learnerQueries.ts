@@ -146,15 +146,30 @@ export const useTutorAvailability = (tutorId?: number | null) =>
     enabled: Boolean(tutorId),
     staleTime: 5 * 60_000,
   });
-
-export const useAvailabilityDetails = (availabilityIds: number[]) =>
+// changed when testing production for booking payment (YP)
+export const useAvailabilityDetails = (
+  availabilityIds: number[]
+) =>
   useQueries({
-    queries: [...new Set(availabilityIds)].map((availabilityId) => ({
-      queryKey: learnerKeys.availabilityDetail(availabilityId),
-      queryFn: () => learnerApi.getAvailabilityById(availabilityId),
-      staleTime: 5 * 60_000,
-    })),
+    queries: [...new Set(availabilityIds)]
+      .filter(
+        (availabilityId) =>
+          Number.isInteger(availabilityId) &&
+          availabilityId > 0
+      )
+      .map((availabilityId) => ({
+        queryKey:
+          learnerKeys.availabilityDetail(
+            availabilityId
+          ),
+        queryFn: () =>
+          learnerApi.getAvailabilityById(
+            availabilityId
+          ),
+        staleTime: 5 * 60_000,
+      })),
   });
+  // end of modification (yp)
 
 export const useTranslationLanguages = () =>
   useQuery({

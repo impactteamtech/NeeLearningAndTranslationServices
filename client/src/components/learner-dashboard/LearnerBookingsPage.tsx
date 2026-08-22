@@ -379,10 +379,20 @@ export const LearnerBookingsPage = () => {
     () => (bookingsQuery.data ?? []).filter((booking) => bookingBelongsToLearner(booking, user?.id)),
     [bookingsQuery.data, user?.id],
   );
+  // change due to testing on production (YP)
   const availabilityIds = useMemo(
-    () => bookings.map((booking) => booking.availability_id).filter((id): id is number => Number.isFinite(id)),
-    [bookings],
-  );
+  () =>
+    bookings
+      .map((booking) => booking.availability_id)
+      .filter(
+        (id): id is number =>
+          typeof id === "number" && Number.isInteger(id) && id > 0
+      ),
+  [bookings],
+);
+// end of modification (YP)
+
+
   const uniqueAvailabilityIds = useMemo(() => [...new Set(availabilityIds)], [availabilityIds]);
   const availabilityQueries = useAvailabilityDetails(availabilityIds);
   const [statusFilter, setStatusFilter] = useState("all");
