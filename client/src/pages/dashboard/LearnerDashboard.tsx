@@ -13,6 +13,8 @@ import {
 } from "react-icons/fi";
 import type { IconType } from "react-icons";
 import { useCurrentUser, useLogoutMutation } from "../../features/auth/authQueries";
+import { useMyLearnerProfile } from "../../features/learner/learnerQueries";
+import { initialsFrom, safeImageUrl } from "../../components/learner-dashboard/learner-settings/settings.constants";
 
 type NavigationItem = {
   label: string;
@@ -51,6 +53,13 @@ const LearnerSidebar = ({
   isLoggingOut: boolean;
 }) => {
   const { data: user } = useCurrentUser();
+  const { data: profile } = useMyLearnerProfile();
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const avatarUrl =
+    !imgFailed && profile?.profile_picture_url
+      ? safeImageUrl(profile.profile_picture_url)
+      : null;
 
   return (
     <>
@@ -111,19 +120,49 @@ const LearnerSidebar = ({
         </nav>
 
         <div className="mt-4 border-t border-slate-100 pt-4">
-          <div className="mb-3 rounded-lg bg-slate-50 p-3">
-            <p className="truncate text-sm font-extrabold text-slate-900">
-              {user?.full_name ?? "Learner"}
-            </p>
-            <p className="truncate text-xs font-semibold text-slate-500">
-              {user?.email ?? "Signed in"}
-            </p>
-          </div>
+          <NavLink
+            to="/dashboard/learner/settings"
+            onClick={onClose}
+            title="Manage account & profile picture"
+            className="group mb-3 flex items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 shadow-xs transition duration-200 hover:border-slate-300 hover:bg-slate-100/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-haiti-navy"
+          >
+            <div className="relative shrink-0">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={`${user?.full_name ?? "Learner"} profile`}
+                  onError={() => setImgFailed(true)}
+                  className="size-11 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-200/80 transition-transform duration-200 group-hover:scale-105"
+                />
+              ) : (
+                <div className="flex size-11 items-center justify-center rounded-full bg-linear-to-br from-haiti-navy via-slate-800 to-blue-900 text-sm font-extrabold text-white shadow-sm ring-1 ring-slate-200/80 transition-transform duration-200 group-hover:scale-105">
+                  {initialsFrom(user?.full_name)}
+                </div>
+              )}
+              <span
+                className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-white bg-emerald-500"
+                title="Online"
+              />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-extrabold text-slate-900 transition-colors group-hover:text-haiti-navy">
+                {user?.full_name ?? "Learner"}
+              </p>
+              <p className="truncate text-xs font-semibold text-slate-500">
+                {user?.email ?? "Signed in"}
+              </p>
+              <span className="mt-1 inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[0.65rem] font-extrabold uppercase tracking-wider text-haiti-navy">
+                Learner
+              </span>
+            </div>
+          </NavLink>
+
           <button
             type="button"
             onClick={onLogout}
             disabled={isLoggingOut}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-red-100 bg-red-50 px-3 text-sm font-extrabold text-haiti-red transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50/80 px-3 text-sm font-extrabold text-haiti-red shadow-xs transition hover:border-red-200 hover:bg-red-100 active:scale-[0.99] disabled:cursor-wait disabled:opacity-60"
           >
             <FiLogOut className="size-4" />
             {isLoggingOut ? "Signing out..." : "Sign out"}

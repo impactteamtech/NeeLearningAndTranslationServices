@@ -109,7 +109,7 @@ const OptimizeSection = () => {
           </div>
 
           <Link
-            to="/#contact"
+            to="/login"
             className="group mt-8 inline-flex items-center gap-3 rounded-full bg-linear-to-r from-[#080c18] via-[#0d1f7a] to-[#00209F] px-6 py-3.5 text-[11px] font-extrabold uppercase tracking-[0.13em] text-white shadow-[0_8px_25px_rgba(0,32,159,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_35px_rgba(0,32,159,0.35)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-haiti-navy"
           >
             Start your journey

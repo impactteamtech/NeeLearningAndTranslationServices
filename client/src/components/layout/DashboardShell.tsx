@@ -101,7 +101,7 @@ export const DashboardSidebar = ({
           >
             <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-blue-50">
               <img
-                src="/admin-related-pictures/personal-security.png"
+                src="/admin-related-pictures/admin.png"
                 alt=""
                 className="size-6 object-contain"
                 aria-hidden="true"

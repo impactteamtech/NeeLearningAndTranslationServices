@@ -28,6 +28,7 @@ import { useCurrentUser } from "../../features/auth/authQueries";
 import {
   useLearnerBookings,
   useLearningServices,
+  useMyLearnerProfile,
   useTranslationFileDetails,
 } from "../../features/learner/learnerQueries";
 import type { Booking, TranslationFile } from "../../features/learner/learnerTypes";
@@ -87,8 +88,7 @@ const statusName = (status?: string) => status?.trim() || "Pending";
 const bookingBelongsToLearner = (booking: Booking, learnerId?: number) =>
   Boolean(
     learnerId &&
-      (String(booking.student_id ?? "") === String(learnerId) ||
-        String(booking.learner_id ?? "") === String(learnerId)),
+      String(booking.learner_id ?? "") === String(learnerId),
   );
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
@@ -162,6 +162,7 @@ const CustomTooltip = ({ active, payload, label }: ActivityTooltipProps) => {
 
 export const LearnerOverviewPage = () => {
   const { data: user, isPending: isUserPending } = useCurrentUser();
+  const { data: profile, isLoading: isProfileLoading } = useMyLearnerProfile();
   const bookingsQuery = useLearnerBookings(user?.id);
   const servicesQuery = useLearningServices();
 
@@ -373,7 +374,8 @@ export const LearnerOverviewPage = () => {
     <section className="space-y-6">
       <LearnerWelcomeBanner
         learnerName={user?.full_name}
-        isLoading={isUserPending}
+        profile={profile}
+        isLoading={isUserPending || isProfileLoading}
       />
 
       {isDataLoading ? (

@@ -13,16 +13,16 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 /* ─── Link data ─── */
 const serviceLinks = [
-  { label: "Language Learning",    href: "/#courses" },
-  { label: "Translation Services", href: "/#courses" },
-  { label: "Cultural Integration", href: "/#courses" },
+  { label: "Language Learning",    href: "/#services" },
+  { label: "Translation Services", href: "/#services" },
+  { label: "Cultural Integration", href: "/#services" },
 ];
 
 const companyLinks = [
-  { label: "About Us",   href: "/about"   },
-  { label: "Pricing",    href: "/#pricing" },
-  { label: "Contact Us", href: "/#contact" },
-  { label: "FAQ",        href: "/#faq"     },
+  { label: "About Us",     href: "/about"       },
+  { label: "Why Choose Us",href: "/#why-choose" },
+  { label: "Our Tutors",   href: "/#tutors"     },
+  { label: "Contact Us",   href: "/#contact"    },
 ];
 
 const socialLinks = [
