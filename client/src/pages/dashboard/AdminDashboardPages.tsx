@@ -49,6 +49,8 @@ import {
   useAdminTranslationRequests,
   useDeleteAdminFile,
 } from "../../features/files/files.queries";
+import { useTutorsWithServices } from "../../features/admin/tutorManagement.queries";
+import { useAdminUsers } from "../../features/admin/adminQueries";
 import { ApiError } from "../../lib/apiClient";
 import type {
   AdminAvailability as AdminAvailabilityRecord,
@@ -111,6 +113,55 @@ const byDateDesc = <T extends { createdAt?: string; bookingDate?: string }>(item
     const right = Date.parse(b.createdAt ?? b.bookingDate ?? "");
     return (Number.isFinite(right) ? right : 0) - (Number.isFinite(left) ? left : 0);
   });
+
+const useUserLookup = () => {
+  const usersQuery = useAdminUsers();
+  const tutorsQuery = useTutorsWithServices();
+
+  return useMemo(() => {
+    const tutorNames = new Map<string, string>();
+    const learnerNames = new Map<string, string>();
+    const allUserNames = new Map<string, string>();
+
+    const users = usersQuery.data ?? [];
+    users.forEach((u) => {
+      const name = u.full_name?.trim() || u.email;
+      if (name) {
+        allUserNames.set(String(u.id), name);
+        if (u.tutor_id) {
+          tutorNames.set(String(u.tutor_id), name);
+        }
+        if (u.role === "tutor") {
+          tutorNames.set(String(u.id), name);
+        }
+        if (u.role === "learner") {
+          learnerNames.set(String(u.id), name);
+        }
+      }
+    });
+
+    const tutors = tutorsQuery.data ?? [];
+    tutors.forEach((t) => {
+      if (t.tutorId && t.fullName) {
+        tutorNames.set(String(t.tutorId), t.fullName);
+      }
+    });
+
+    const getTutorName = (id?: string | number) => {
+      if (id === undefined || id === null || id === "") return "Not assigned";
+      const key = String(id);
+      return tutorNames.get(key) || allUserNames.get(key) || `Tutor #${id}`;
+    };
+
+    const getLearnerName = (id?: string | number) => {
+      if (id === undefined || id === null || id === "") return "Not assigned";
+      const key = String(id);
+      return learnerNames.get(key) || allUserNames.get(key) || `Learner #${id}`;
+    };
+
+    return { getTutorName, getLearnerName };
+  }, [usersQuery.data, tutorsQuery.data]);
+};
 
 const formatDateTime = (value?: string) => {
   if (!value) return "Not provided";
@@ -299,6 +350,7 @@ const ServiceDetailItem = ({
 );
 
 const ServiceDetailsPanel = ({ service }: { service: AdminService }) => {
+  const { getTutorName } = useUserLookup();
   const rawFields = Object.entries(service.raw).filter(([, value]) => {
     if (value === undefined || value === null || value === "") return false;
     return typeof value !== "object";
@@ -339,7 +391,18 @@ const ServiceDetailsPanel = ({ service }: { service: AdminService }) => {
         </p>
       </section>
 
-      <section>
+      <section className="grid gap-3 sm:grid-cols-2">
+        {service.tutorId ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-slate-400">
+              Tutor
+            </p>
+            <p className="mt-2 text-sm font-extrabold text-slate-900">
+              {getTutorName(service.tutorId)}
+            </p>
+            <p className="text-xs font-semibold text-slate-400">ID: {formatValue(service.tutorId)}</p>
+          </div>
+        ) : null}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-slate-400">
             Created
@@ -379,6 +442,7 @@ const AvailabilityDetailsPanel = ({
 }: {
   availability: AdminAvailabilityRecord;
 }) => {
+  const { getTutorName } = useUserLookup();
   const rawFields = Object.entries(availability.raw).filter(([, value]) => {
     if (value === undefined || value === null || value === "") return false;
     return typeof value !== "object";
@@ -420,8 +484,9 @@ const AvailabilityDetailsPanel = ({
             Tutor
           </p>
           <p className="mt-2 text-sm font-extrabold text-slate-900">
-            {formatValue(availability.tutorId)}
+            {getTutorName(availability.tutorId)}
           </p>
+          <p className="text-xs font-semibold text-slate-400">ID: {formatValue(availability.tutorId)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-slate-400">
@@ -476,6 +541,7 @@ const bookingWindowLabel = (booking: AdminBooking) => {
 };
 
 const BookingDetailsPanel = ({ booking }: { booking: AdminBooking }) => {
+  const { getTutorName, getLearnerName } = useUserLookup();
   const rawFields = Object.entries(booking.raw).filter(([, value]) => {
     if (value === undefined || value === null || value === "") return false;
     return typeof value !== "object";
@@ -516,16 +582,18 @@ const BookingDetailsPanel = ({ booking }: { booking: AdminBooking }) => {
             Tutor
           </p>
           <p className="mt-2 text-sm font-extrabold text-slate-900">
-            {formatValue(booking.tutorId)}
+            {getTutorName(booking.tutorId)}
           </p>
+          <p className="text-xs font-semibold text-slate-400">ID: {formatValue(booking.tutorId)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-slate-400">
             Learner
           </p>
           <p className="mt-2 text-sm font-extrabold text-slate-900">
-            {formatValue(booking.learnerId)}
+            {getLearnerName(booking.learnerId)}
           </p>
+          <p className="text-xs font-semibold text-slate-400">ID: {formatValue(booking.learnerId)}</p>
         </div>
       </section>
 
@@ -731,6 +799,7 @@ export const AdminOverview = () => {
 };
 
 export const AdminServices = () => {
+  const { getTutorName } = useUserLookup();
   const query = useAdminServices();
   const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<AdminService | null>(null);
@@ -741,6 +810,7 @@ export const AdminServices = () => {
   const search = params.get("q") ?? "";
   const category = params.get("category") ?? "";
   const language = params.get("language") ?? "";
+  const tutor = params.get("tutor") ?? "";
   const active = params.get("active") ?? "";
 
   const updateParam = (key: string, value: string) => {
@@ -751,16 +821,27 @@ export const AdminServices = () => {
   };
 
   const items = query.data ?? [];
+  const tutorOptions = useMemo(() => {
+    const ids = uniqueOptions(items, (item) => item.tutorId);
+    return ids
+      .map((id) => ({
+        value: id,
+        label: getTutorName(id),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [items, getTutorName]);
+
   const filtered = items.filter((item) => {
     const text = `${item.name ?? ""} ${item.description ?? ""}`.toLowerCase();
     const matchesSearch = !search || text.includes(search.toLowerCase());
     const matchesCategory = !category || item.category === category;
     const matchesLanguage = !language || item.language === language;
+    const matchesTutor = !tutor || String(item.tutorId) === tutor;
     const matchesActive =
       !active ||
       (active === "active" && item.isActive === true) ||
       (active === "inactive" && item.isActive === false);
-    return matchesSearch && matchesCategory && matchesLanguage && matchesActive;
+    return matchesSearch && matchesCategory && matchesLanguage && matchesTutor && matchesActive;
   });
   const { paged, page, pageCount, setPage } = usePagedItems(filtered);
 
@@ -794,7 +875,7 @@ export const AdminServices = () => {
   if (has(items, (item) => item.tutorId)) {
     columns.push({
       key: "tutor",
-      header: "Tutor ID",
+      header: "Tutor",
       render: (item) => (
         <button
           type="button"
@@ -802,9 +883,10 @@ export const AdminServices = () => {
             event.stopPropagation();
             setTutorId(item.tutorId);
           }}
-          className="font-extrabold text-haiti-navy underline-offset-2 hover:underline"
+          className="text-left font-extrabold text-haiti-navy underline-offset-2 hover:underline"
         >
-          {formatValue(item.tutorId)}
+          <span>{getTutorName(item.tutorId)}</span>
+          <span className="block text-[0.7rem] font-semibold text-slate-400">ID: {formatValue(item.tutorId)}</span>
         </button>
       ),
     });
@@ -827,6 +909,14 @@ export const AdminServices = () => {
         />
         <SelectFilter label="All categories" value={category} onChange={(value) => updateParam("category", value)} options={uniqueOptions(items, (item) => item.category)} />
         <SelectFilter label="All languages" value={language} onChange={(value) => updateParam("language", value)} options={uniqueOptions(items, (item) => item.language)} />
+        {tutorOptions.length ? (
+          <SelectFilter
+            label="All tutors"
+            value={tutor}
+            onChange={(value) => updateParam("tutor", value)}
+            options={tutorOptions}
+          />
+        ) : null}
         <SelectFilter label="All states" value={active} onChange={(value) => updateParam("active", value)} options={["active", "inactive"]} />
       </FilterBar>
 
@@ -859,7 +949,7 @@ export const AdminServices = () => {
       <DetailsDrawer
         open={tutorId !== undefined}
         title="Tutor services"
-        description={tutorId !== undefined ? `Tutor #${tutorId}` : undefined}
+        description={tutorId !== undefined ? getTutorName(tutorId) : undefined}
         onClose={() => setTutorId(undefined)}
       >
         {tutorServices.isLoading ? <LoadingSkeleton rows={2} /> : null}
@@ -884,6 +974,7 @@ export const AdminServices = () => {
 };
 
 export const AdminAvailability = () => {
+  const { getTutorName } = useUserLookup();
   const query = useAdminAvailability();
   const [selected, setSelected] = useState<AdminAvailabilityRecord | null>(null);
   const [tutorId, setTutorId] = useState<string | number>();
@@ -892,6 +983,17 @@ export const AdminAvailability = () => {
   const detail = useAdminAvailabilitySlot(selected?.id);
   const tutorAvailability = useAdminTutorAvailability(tutorId);
   const items = query.data ?? [];
+
+  const tutorOptions = useMemo(() => {
+    const ids = uniqueOptions(items, (item) => item.tutorId);
+    return ids
+      .map((id) => ({
+        value: id,
+        label: getTutorName(id),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [items, getTutorName]);
+
   const filtered = items.filter((item) => {
     const matchesTutor = !tutorFilter || String(item.tutorId) === tutorFilter;
     const matchesDate = !dateFilter || item.date === dateFilter || item.day === dateFilter;
@@ -912,9 +1014,10 @@ export const AdminAvailability = () => {
                 event.stopPropagation();
                 setTutorId(item.tutorId);
               }}
-              className="font-extrabold text-haiti-navy underline-offset-2 hover:underline"
+              className="text-left font-extrabold text-haiti-navy underline-offset-2 hover:underline"
             >
-              {formatValue(item.tutorId)}
+              <span>{getTutorName(item.tutorId)}</span>
+              <span className="block text-[0.7rem] font-semibold text-slate-400">ID: {formatValue(item.tutorId)}</span>
             </button>
           ),
         }]
@@ -941,7 +1044,7 @@ export const AdminAvailability = () => {
         description="Read-only tutor availability inspection using the documented availability endpoints."
       />
       <FilterBar>
-        <SelectFilter label="All tutors" value={tutorFilter} onChange={setTutorFilter} options={uniqueOptions(items, (item) => item.tutorId)} />
+        <SelectFilter label="All tutors" value={tutorFilter} onChange={setTutorFilter} options={tutorOptions} />
         <SelectFilter label="All dates/days" value={dateFilter} onChange={setDateFilter} options={uniqueOptions(items, (item) => item.date ?? item.day)} />
       </FilterBar>
       {query.isLoading ? <LoadingSkeleton /> : null}
@@ -965,7 +1068,7 @@ export const AdminAvailability = () => {
         {availabilityForDetails ? <AvailabilityDetailsPanel availability={availabilityForDetails} /> : null}
       </DetailsDrawer>
 
-      <DetailsDrawer open={tutorId !== undefined} title="Tutor availability" description={tutorId !== undefined ? `Tutor #${tutorId}` : undefined} onClose={() => setTutorId(undefined)}>
+      <DetailsDrawer open={tutorId !== undefined} title="Tutor availability" description={tutorId !== undefined ? getTutorName(tutorId) : undefined} onClose={() => setTutorId(undefined)}>
         {tutorAvailability.isLoading ? <LoadingSkeleton rows={2} /> : null}
         {tutorAvailability.isError ? <ErrorState message={getErrorMessage(tutorAvailability.error)} onRetry={() => tutorAvailability.refetch()} /> : null}
         {tutorAvailability.data ? (
@@ -982,6 +1085,7 @@ export const AdminAvailability = () => {
 };
 
 export const AdminBookings = () => {
+  const { getTutorName, getLearnerName } = useUserLookup();
   const query = useAdminBookings();
   const [selected, setSelected] = useState<AdminBooking | null>(null);
   const [status, setStatus] = useState("");
@@ -995,6 +1099,26 @@ export const AdminBookings = () => {
   const tutorBookings = useAdminTutorBookings(relatedTutorId);
   const learnerBookings = useAdminLearnerBookings(relatedLearnerId);
   const items = query.data ?? [];
+
+  const tutorOptions = useMemo(() => {
+    const ids = uniqueOptions(items, (item) => item.tutorId);
+    return ids
+      .map((id) => ({
+        value: id,
+        label: getTutorName(id),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [items, getTutorName]);
+
+  const learnerOptions = useMemo(() => {
+    const ids = uniqueOptions(items, (item) => item.learnerId);
+    return ids
+      .map((id) => ({
+        value: id,
+        label: getLearnerName(id),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [items, getLearnerName]);
 
   const filtered = items.filter((item) => {
     const matchesStatus = !status || item.status === status;
@@ -1022,7 +1146,7 @@ export const AdminBookings = () => {
     { key: "time", header: "Time", render: (item) => formatTimeRange(item.startTime, item.endTime) },
     {
       key: "tutor",
-      header: "Tutor ID",
+      header: "Tutor",
       render: (item) => (
         <button
           type="button"
@@ -1030,15 +1154,16 @@ export const AdminBookings = () => {
             event.stopPropagation();
             setRelatedTutorId(item.tutorId);
           }}
-          className="font-extrabold text-haiti-navy underline-offset-2 hover:underline"
+          className="text-left font-extrabold text-haiti-navy underline-offset-2 hover:underline"
         >
-          {formatValue(item.tutorId)}
+          <span>{getTutorName(item.tutorId)}</span>
+          <span className="block text-[0.7rem] font-semibold text-slate-400">ID: {formatValue(item.tutorId)}</span>
         </button>
       ),
     },
     {
       key: "learner",
-      header: "Learner ID",
+      header: "Learner",
       render: (item) => (
         <button
           type="button"
@@ -1046,9 +1171,10 @@ export const AdminBookings = () => {
             event.stopPropagation();
             setRelatedLearnerId(item.learnerId);
           }}
-          className="font-extrabold text-haiti-navy underline-offset-2 hover:underline"
+          className="text-left font-extrabold text-haiti-navy underline-offset-2 hover:underline"
         >
-          {formatValue(item.learnerId)}
+          <span>{getLearnerName(item.learnerId)}</span>
+          <span className="block text-[0.7rem] font-semibold text-slate-400">ID: {formatValue(item.learnerId)}</span>
         </button>
       ),
     },
@@ -1065,8 +1191,8 @@ export const AdminBookings = () => {
       <FilterBar>
         <SearchInput value={bookingId} onChange={setBookingId} placeholder="Search booking ID" />
         <SelectFilter label="All statuses" value={status} onChange={setStatus} options={uniqueOptions(items, (item) => item.status)} />
-        <SelectFilter label="All tutors" value={tutorId} onChange={setTutorId} options={uniqueOptions(items, (item) => item.tutorId)} />
-        <SelectFilter label="All learners" value={learnerId} onChange={setLearnerId} options={uniqueOptions(items, (item) => item.learnerId)} />
+        <SelectFilter label="All tutors" value={tutorId} onChange={setTutorId} options={tutorOptions} />
+        <SelectFilter label="All learners" value={learnerId} onChange={setLearnerId} options={learnerOptions} />
         {has(items, (item) => item.bookingDate) ? (
           <SelectFilter label="All dates" value={date} onChange={setDate} options={uniqueOptions(items, (item) => item.bookingDate)} />
         ) : null}
@@ -1092,7 +1218,7 @@ export const AdminBookings = () => {
         {bookingForDetails ? <BookingDetailsPanel booking={bookingForDetails} /> : null}
       </DetailsDrawer>
 
-      <DetailsDrawer open={relatedTutorId !== undefined} title="Tutor bookings" description={relatedTutorId !== undefined ? `Tutor #${relatedTutorId}` : undefined} onClose={() => setRelatedTutorId(undefined)}>
+      <DetailsDrawer open={relatedTutorId !== undefined} title="Tutor bookings" description={relatedTutorId !== undefined ? getTutorName(relatedTutorId) : undefined} onClose={() => setRelatedTutorId(undefined)}>
         {tutorBookings.isLoading ? <LoadingSkeleton rows={2} /> : null}
         {tutorBookings.isError ? <ErrorState message={getErrorMessage(tutorBookings.error)} onRetry={() => tutorBookings.refetch()} /> : null}
         {tutorBookings.data ? (
@@ -1105,7 +1231,7 @@ export const AdminBookings = () => {
         ) : null}
       </DetailsDrawer>
 
-      <DetailsDrawer open={relatedLearnerId !== undefined} title="Learner bookings" description={relatedLearnerId !== undefined ? `Learner #${relatedLearnerId}` : undefined} onClose={() => setRelatedLearnerId(undefined)}>
+      <DetailsDrawer open={relatedLearnerId !== undefined} title="Learner bookings" description={relatedLearnerId !== undefined ? getLearnerName(relatedLearnerId) : undefined} onClose={() => setRelatedLearnerId(undefined)}>
         {learnerBookings.isLoading ? <LoadingSkeleton rows={2} /> : null}
         {learnerBookings.isError ? <ErrorState message={getErrorMessage(learnerBookings.error)} onRetry={() => learnerBookings.refetch()} /> : null}
         {learnerBookings.data ? (

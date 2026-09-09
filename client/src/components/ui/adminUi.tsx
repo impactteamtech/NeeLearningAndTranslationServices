@@ -116,6 +116,8 @@ export const FilterBar = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
+export type SelectOption = string | { label: string; value: string };
+
 export const SelectFilter = ({
   label,
   value,
@@ -125,7 +127,7 @@ export const SelectFilter = ({
   label: string;
   value: string;
   onChange: (value: string) => void;
-  options: string[];
+  options: SelectOption[];
 }) => (
   <label className="min-w-0 md:w-48">
     <span className="sr-only">{label}</span>
@@ -135,11 +137,15 @@ export const SelectFilter = ({
       className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-haiti-navy focus:ring-4 focus:ring-blue-100"
     >
       <option value="">{label}</option>
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
+      {options.map((option) => {
+        const optionValue = typeof option === "string" ? option : option.value;
+        const optionLabel = typeof option === "string" ? option : option.label;
+        return (
+          <option key={optionValue} value={optionValue}>
+            {optionLabel}
+          </option>
+        );
+      })}
     </select>
   </label>
 );
