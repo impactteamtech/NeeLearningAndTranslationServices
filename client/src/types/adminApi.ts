@@ -29,7 +29,9 @@ export type AdminAvailability = {
 export type AdminBooking = {
   id: number | string;
   learnerId?: number | string;
+  learnerName?: string;
   tutorId?: number | string;
+  tutorName?: string;
   serviceId?: number | string;
   availabilityId?: number | string;
   bookingDate?: string;

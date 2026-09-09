@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -50,8 +51,9 @@ import {
   useDeleteAdminFile,
 } from "../../features/files/files.queries";
 import { useTutorsWithServices } from "../../features/admin/tutorManagement.queries";
-import { useAdminUsers } from "../../features/admin/adminQueries";
-import { ApiError } from "../../lib/apiClient";
+import { useAdminUsers, useTutorProfiles } from "../../features/admin/adminQueries";
+import { ApiError, apiRequest } from "../../lib/apiClient";
+import { unwrapList } from "../../lib/api/responseAdapters";
 import type {
   AdminAvailability as AdminAvailabilityRecord,
   AdminBooking,
@@ -114,16 +116,119 @@ const byDateDesc = <T extends { createdAt?: string; bookingDate?: string }>(item
     return (Number.isFinite(right) ? right : 0) - (Number.isFinite(left) ? left : 0);
   });
 
-const useUserLookup = () => {
+const useResolvedUserNames = (userIds: (string | number)[]) => {
+  const uniqueIds = useMemo(
+    () => Array.from(new Set(userIds.filter((id) => id !== undefined && id !== null && id !== "").map(String))),
+    [userIds]
+  );
+
+  return useQuery({
+    queryKey: ["admin", "resolved-user-names", uniqueIds.sort().join(",")],
+    queryFn: async () => {
+      const map = new Map<string, string>();
+      const extractName = (obj: unknown): string | undefined => {
+        if (!obj || typeof obj !== "object") return undefined;
+        const rec = obj as Record<string, unknown>;
+        const user = (rec.user || rec.data || rec.profile || rec) as Record<string, unknown>;
+        const possible = [
+          user.full_name,
+          user.name,
+          rec.full_name,
+          rec.name,
+          user.email,
+          rec.email,
+        ];
+        for (const p of possible) {
+          if (typeof p === "string" && p.trim()) return p.trim();
+        }
+        return undefined;
+      };
+
+      await Promise.all(
+        uniqueIds.map(async (id) => {
+          // 1. Try /api/v1/users/:id
+          try {
+            const user = await apiRequest<unknown>(`/api/v1/users/${id}`, {}, true);
+            const name = extractName(user);
+            if (name) {
+              map.set(id, name);
+              return;
+            }
+          } catch {
+            // ignore
+          }
+
+          // 2. Try /api/v1/learner-profiles/:id
+          try {
+            const profile = await apiRequest<unknown>(
+              `/api/v1/learner-profiles/${encodeURIComponent(id)}`,
+              {},
+              true
+            );
+            const name = extractName(profile);
+            if (name) {
+              map.set(id, name);
+              return;
+            }
+          } catch {
+            // ignore
+          }
+
+          // 3. Try /api/v1/tutor-profiles/:id
+          try {
+            const profile = await apiRequest<unknown>(
+              `/api/v1/tutor-profiles/${encodeURIComponent(id)}`,
+              {},
+              true
+            );
+            const name = extractName(profile);
+            if (name) {
+              map.set(id, name);
+              return;
+            }
+          } catch {
+            // ignore
+          }
+        })
+      );
+      return map;
+    },
+    enabled: uniqueIds.length > 0,
+    staleTime: 5 * 60_000,
+  });
+};
+
+const useUserLookup = (extraLearnerIds: (string | number)[] = [], extraTutorIds: (string | number)[] = []) => {
   const usersQuery = useAdminUsers();
-  const tutorsQuery = useTutorsWithServices();
+  const tutorsWithServicesQuery = useTutorsWithServices();
+  const tutorProfilesQuery = useTutorProfiles();
+  const translationRequestsQuery = useAdminTranslationRequests();
+  const learnerProfilesQuery = useQuery({
+    queryKey: ["admin", "all-learner-profiles"],
+    queryFn: async () => {
+      try {
+        const res = await apiRequest<unknown>("/api/v1/learner-profiles/", {}, true);
+        return unwrapList<Record<string, unknown>>(res);
+      } catch {
+        try {
+          const res = await apiRequest<unknown>("/api/v1/learner-profiles", {}, true);
+          return unwrapList<Record<string, unknown>>(res);
+        } catch {
+          return [];
+        }
+      }
+    },
+    staleTime: 5 * 60_000,
+  });
+  const resolvedUsersQuery = useResolvedUserNames([...extraLearnerIds, ...extraTutorIds]);
 
   return useMemo(() => {
     const tutorNames = new Map<string, string>();
     const learnerNames = new Map<string, string>();
     const allUserNames = new Map<string, string>();
 
-    const users = usersQuery.data ?? [];
+    // 1. All users from /api/v1/users/
+    const users = Array.isArray(usersQuery.data) ? usersQuery.data : [];
     users.forEach((u) => {
       const name = u.full_name?.trim() || u.email;
       if (name) {
@@ -140,27 +245,89 @@ const useUserLookup = () => {
       }
     });
 
-    const tutors = tutorsQuery.data ?? [];
-    tutors.forEach((t) => {
-      if (t.tutorId && t.fullName) {
+    // 2. All tutor profiles from /api/v1/tutor-profiles/
+    const tutorProfiles = Array.isArray(tutorProfilesQuery.data) ? tutorProfilesQuery.data : [];
+    tutorProfiles.forEach((tp) => {
+      if (tp.full_name && !tp.full_name.startsWith("Tutor #")) {
+        tutorNames.set(String(tp.id), tp.full_name);
+        if (tp.user_id) {
+          tutorNames.set(String(tp.user_id), tp.full_name);
+          allUserNames.set(String(tp.user_id), tp.full_name);
+        }
+      } else if (tp.email) {
+        if (!tutorNames.has(String(tp.id))) tutorNames.set(String(tp.id), tp.email);
+        if (tp.user_id && !allUserNames.has(String(tp.user_id))) allUserNames.set(String(tp.user_id), tp.email);
+      }
+    });
+
+    // 2b. Learner profiles from /api/v1/learner-profiles/
+    const learnerProfiles = Array.isArray(learnerProfilesQuery.data) ? learnerProfilesQuery.data : [];
+    learnerProfiles.forEach((lp) => {
+      const user = lp.user as Record<string, unknown> | undefined;
+      const name = (lp.full_name || user?.full_name || user?.name || lp.email || user?.email) as string | undefined;
+      if (name && typeof name === "string" && name.trim()) {
+        const trimmed = name.trim();
+        if (lp.id) learnerNames.set(String(lp.id), trimmed);
+        if (lp.user_id) {
+          learnerNames.set(String(lp.user_id), trimmed);
+          allUserNames.set(String(lp.user_id), trimmed);
+        }
+        if (user?.id) {
+          learnerNames.set(String(user.id), trimmed);
+          allUserNames.set(String(user.id), trimmed);
+        }
+      }
+    });
+
+    // 3. Tutors with services from /services/with-tutors
+    const tutorsWithServices = Array.isArray(tutorsWithServicesQuery.data) ? tutorsWithServicesQuery.data : [];
+    tutorsWithServices.forEach((t) => {
+      if (t.tutorId && t.fullName && !t.fullName.startsWith("Tutor #")) {
         tutorNames.set(String(t.tutorId), t.fullName);
       }
     });
 
-    const getTutorName = (id?: string | number) => {
+    // 4. Translation requests from /api/v1/translation-requests
+    const requests = Array.isArray(translationRequestsQuery.data) ? translationRequestsQuery.data : [];
+    requests.forEach((req) => {
+      if (req.learnerId && req.learnerName) {
+        learnerNames.set(String(req.learnerId), req.learnerName);
+        allUserNames.set(String(req.learnerId), req.learnerName);
+      }
+    });
+
+    // 5. Direct resolved user/profile names
+    if (resolvedUsersQuery.data) {
+      resolvedUsersQuery.data.forEach((name, id) => {
+        allUserNames.set(id, name);
+        if (!learnerNames.has(id)) learnerNames.set(id, name);
+        if (!tutorNames.has(id)) tutorNames.set(id, name);
+      });
+    }
+
+    const getTutorName = (id?: string | number, fallbackName?: string) => {
+      if (fallbackName && !fallbackName.startsWith("Tutor #")) return fallbackName;
       if (id === undefined || id === null || id === "") return "Not assigned";
       const key = String(id);
-      return tutorNames.get(key) || allUserNames.get(key) || `Tutor #${id}`;
+      return tutorNames.get(key) || allUserNames.get(key) || fallbackName || `Tutor #${id}`;
     };
 
-    const getLearnerName = (id?: string | number) => {
+    const getLearnerName = (id?: string | number, fallbackName?: string) => {
+      if (fallbackName && !fallbackName.startsWith("Learner #")) return fallbackName;
       if (id === undefined || id === null || id === "") return "Not assigned";
       const key = String(id);
-      return learnerNames.get(key) || allUserNames.get(key) || `Learner #${id}`;
+      return learnerNames.get(key) || allUserNames.get(key) || fallbackName || `Learner #${id}`;
     };
 
     return { getTutorName, getLearnerName };
-  }, [usersQuery.data, tutorsQuery.data]);
+  }, [
+    usersQuery.data,
+    tutorsWithServicesQuery.data,
+    tutorProfilesQuery.data,
+    translationRequestsQuery.data,
+    learnerProfilesQuery.data,
+    resolvedUsersQuery.data,
+  ]);
 };
 
 const formatDateTime = (value?: string) => {
@@ -350,7 +517,7 @@ const ServiceDetailItem = ({
 );
 
 const ServiceDetailsPanel = ({ service }: { service: AdminService }) => {
-  const { getTutorName } = useUserLookup();
+  const { getTutorName } = useUserLookup([], service.tutorId ? [service.tutorId] : []);
   const rawFields = Object.entries(service.raw).filter(([, value]) => {
     if (value === undefined || value === null || value === "") return false;
     return typeof value !== "object";
@@ -442,7 +609,7 @@ const AvailabilityDetailsPanel = ({
 }: {
   availability: AdminAvailabilityRecord;
 }) => {
-  const { getTutorName } = useUserLookup();
+  const { getTutorName } = useUserLookup([], availability.tutorId ? [availability.tutorId] : []);
   const rawFields = Object.entries(availability.raw).filter(([, value]) => {
     if (value === undefined || value === null || value === "") return false;
     return typeof value !== "object";
@@ -541,7 +708,10 @@ const bookingWindowLabel = (booking: AdminBooking) => {
 };
 
 const BookingDetailsPanel = ({ booking }: { booking: AdminBooking }) => {
-  const { getTutorName, getLearnerName } = useUserLookup();
+  const { getTutorName, getLearnerName } = useUserLookup(
+    booking.learnerId ? [booking.learnerId] : [],
+    booking.tutorId ? [booking.tutorId] : []
+  );
   const rawFields = Object.entries(booking.raw).filter(([, value]) => {
     if (value === undefined || value === null || value === "") return false;
     return typeof value !== "object";
@@ -582,7 +752,7 @@ const BookingDetailsPanel = ({ booking }: { booking: AdminBooking }) => {
             Tutor
           </p>
           <p className="mt-2 text-sm font-extrabold text-slate-900">
-            {getTutorName(booking.tutorId)}
+            {getTutorName(booking.tutorId, booking.tutorName)}
           </p>
           <p className="text-xs font-semibold text-slate-400">ID: {formatValue(booking.tutorId)}</p>
         </div>
@@ -591,7 +761,7 @@ const BookingDetailsPanel = ({ booking }: { booking: AdminBooking }) => {
             Learner
           </p>
           <p className="mt-2 text-sm font-extrabold text-slate-900">
-            {getLearnerName(booking.learnerId)}
+            {getLearnerName(booking.learnerId, booking.learnerName)}
           </p>
           <p className="text-xs font-semibold text-slate-400">ID: {formatValue(booking.learnerId)}</p>
         </div>
@@ -799,8 +969,13 @@ export const AdminOverview = () => {
 };
 
 export const AdminServices = () => {
-  const { getTutorName } = useUserLookup();
   const query = useAdminServices();
+  const items = query.data ?? [];
+  const tutorIds = useMemo(
+    () => items.map((item) => item.tutorId).filter((id): id is string | number => id !== undefined && id !== null),
+    [items]
+  );
+  const { getTutorName } = useUserLookup([], tutorIds);
   const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<AdminService | null>(null);
   const [tutorId, setTutorId] = useState<string | number>();
@@ -820,7 +995,6 @@ export const AdminServices = () => {
     setParams(next);
   };
 
-  const items = query.data ?? [];
   const tutorOptions = useMemo(() => {
     const ids = uniqueOptions(items, (item) => item.tutorId);
     return ids
@@ -928,7 +1102,7 @@ export const AdminServices = () => {
             items={paged}
             columns={columns}
             getKey={(item) => item.id}
-            onRowClick={setSelected}
+            onRowClick={(item) => setSelected(item)}
             empty={<EmptyState title="No matching services" description="Adjust the filters or retry the services endpoint." />}
           />
           <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
@@ -974,15 +1148,19 @@ export const AdminServices = () => {
 };
 
 export const AdminAvailability = () => {
-  const { getTutorName } = useUserLookup();
   const query = useAdminAvailability();
+  const items = query.data ?? [];
+  const tutorIds = useMemo(
+    () => items.map((item) => item.tutorId).filter((id): id is string | number => id !== undefined && id !== null),
+    [items]
+  );
+  const { getTutorName } = useUserLookup([], tutorIds);
   const [selected, setSelected] = useState<AdminAvailabilityRecord | null>(null);
   const [tutorId, setTutorId] = useState<string | number>();
   const [tutorFilter, setTutorFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const detail = useAdminAvailabilitySlot(selected?.id);
   const tutorAvailability = useAdminTutorAvailability(tutorId);
-  const items = query.data ?? [];
 
   const tutorOptions = useMemo(() => {
     const ids = uniqueOptions(items, (item) => item.tutorId);
@@ -1055,7 +1233,7 @@ export const AdminAvailability = () => {
             items={paged}
             columns={columns}
             getKey={(item) => item.id}
-            onRowClick={setSelected}
+            onRowClick={(item) => setSelected(item)}
             empty={<EmptyState title="No availability records" description="No records matched the current filters." />}
           />
           <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
@@ -1085,8 +1263,17 @@ export const AdminAvailability = () => {
 };
 
 export const AdminBookings = () => {
-  const { getTutorName, getLearnerName } = useUserLookup();
   const query = useAdminBookings();
+  const items = query.data ?? [];
+  const learnerIds = useMemo(
+    () => items.map((i) => i.learnerId).filter((id): id is string | number => id !== undefined && id !== null),
+    [items]
+  );
+  const tutorIds = useMemo(
+    () => items.map((i) => i.tutorId).filter((id): id is string | number => id !== undefined && id !== null),
+    [items]
+  );
+  const { getTutorName, getLearnerName } = useUserLookup(learnerIds, tutorIds);
   const [selected, setSelected] = useState<AdminBooking | null>(null);
   const [status, setStatus] = useState("");
   const [tutorId, setTutorId] = useState("");
@@ -1098,25 +1285,30 @@ export const AdminBookings = () => {
   const detail = useAdminBooking(selected?.id);
   const tutorBookings = useAdminTutorBookings(relatedTutorId);
   const learnerBookings = useAdminLearnerBookings(relatedLearnerId);
-  const items = query.data ?? [];
 
   const tutorOptions = useMemo(() => {
     const ids = uniqueOptions(items, (item) => item.tutorId);
     return ids
-      .map((id) => ({
-        value: id,
-        label: getTutorName(id),
-      }))
+      .map((id) => {
+        const item = items.find((i) => String(i.tutorId) === String(id));
+        return {
+          value: id,
+          label: getTutorName(id, item?.tutorName),
+        };
+      })
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [items, getTutorName]);
 
   const learnerOptions = useMemo(() => {
     const ids = uniqueOptions(items, (item) => item.learnerId);
     return ids
-      .map((id) => ({
-        value: id,
-        label: getLearnerName(id),
-      }))
+      .map((id) => {
+        const item = items.find((i) => String(i.learnerId) === String(id));
+        return {
+          value: id,
+          label: getLearnerName(id, item?.learnerName),
+        };
+      })
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [items, getLearnerName]);
 
@@ -1156,7 +1348,7 @@ export const AdminBookings = () => {
           }}
           className="text-left font-extrabold text-haiti-navy underline-offset-2 hover:underline"
         >
-          <span>{getTutorName(item.tutorId)}</span>
+          <span>{getTutorName(item.tutorId, item.tutorName)}</span>
           <span className="block text-[0.7rem] font-semibold text-slate-400">ID: {formatValue(item.tutorId)}</span>
         </button>
       ),
@@ -1173,7 +1365,7 @@ export const AdminBookings = () => {
           }}
           className="text-left font-extrabold text-haiti-navy underline-offset-2 hover:underline"
         >
-          <span>{getLearnerName(item.learnerId)}</span>
+          <span>{getLearnerName(item.learnerId, item.learnerName)}</span>
           <span className="block text-[0.7rem] font-semibold text-slate-400">ID: {formatValue(item.learnerId)}</span>
         </button>
       ),
@@ -1205,7 +1397,7 @@ export const AdminBookings = () => {
             items={paged}
             columns={columns}
             getKey={(item) => item.id}
-            onRowClick={setSelected}
+            onRowClick={(item) => setSelected(item)}
             empty={<EmptyState title="No bookings found" description="No records matched the current filters." />}
           />
           <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
