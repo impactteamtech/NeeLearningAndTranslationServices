@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -49,7 +50,10 @@ import {
   useAdminTranslationRequests,
   useDeleteAdminFile,
 } from "../../features/files/files.queries";
-import { ApiError } from "../../lib/apiClient";
+import { useTutorsWithServices } from "../../features/admin/tutorManagement.queries";
+import { useAdminUsers, useTutorProfiles } from "../../features/admin/adminQueries";
+import { ApiError, apiRequest } from "../../lib/apiClient";
+import { unwrapList } from "../../lib/api/responseAdapters";
 import type {
   AdminAvailability as AdminAvailabilityRecord,
   AdminBooking,
@@ -111,6 +115,220 @@ const byDateDesc = <T extends { createdAt?: string; bookingDate?: string }>(item
     const right = Date.parse(b.createdAt ?? b.bookingDate ?? "");
     return (Number.isFinite(right) ? right : 0) - (Number.isFinite(left) ? left : 0);
   });
+
+const useResolvedUserNames = (userIds: (string | number)[]) => {
+  const uniqueIds = useMemo(
+    () => Array.from(new Set(userIds.filter((id) => id !== undefined && id !== null && id !== "").map(String))),
+    [userIds]
+  );
+
+  return useQuery({
+    queryKey: ["admin", "resolved-user-names", uniqueIds.sort().join(",")],
+    queryFn: async () => {
+      const map = new Map<string, string>();
+      const extractName = (obj: unknown): string | undefined => {
+        if (!obj || typeof obj !== "object") return undefined;
+        const rec = obj as Record<string, unknown>;
+        const user = (rec.user || rec.data || rec.profile || rec) as Record<string, unknown>;
+        const possible = [
+          user.full_name,
+          user.name,
+          rec.full_name,
+          rec.name,
+          user.email,
+          rec.email,
+        ];
+        for (const p of possible) {
+          if (typeof p === "string" && p.trim()) return p.trim();
+        }
+        return undefined;
+      };
+
+      await Promise.all(
+        uniqueIds.map(async (id) => {
+          // 1. Try /api/v1/users/:id
+          try {
+            const user = await apiRequest<unknown>(`/api/v1/users/${id}`, {}, true);
+            const name = extractName(user);
+            if (name) {
+              map.set(id, name);
+              return;
+            }
+          } catch {
+            // ignore
+          }
+
+          // 2. Try /api/v1/learner-profiles/:id
+          try {
+            const profile = await apiRequest<unknown>(
+              `/api/v1/learner-profiles/${encodeURIComponent(id)}`,
+              {},
+              true
+            );
+            const name = extractName(profile);
+            if (name) {
+              map.set(id, name);
+              return;
+            }
+          } catch {
+            // ignore
+          }
+
+          // 3. Try /api/v1/tutor-profiles/:id
+          try {
+            const profile = await apiRequest<unknown>(
+              `/api/v1/tutor-profiles/${encodeURIComponent(id)}`,
+              {},
+              true
+            );
+            const name = extractName(profile);
+            if (name) {
+              map.set(id, name);
+              return;
+            }
+          } catch {
+            // ignore
+          }
+        })
+      );
+      return map;
+    },
+    enabled: uniqueIds.length > 0,
+    staleTime: 5 * 60_000,
+  });
+};
+
+const useUserLookup = (extraLearnerIds: (string | number)[] = [], extraTutorIds: (string | number)[] = []) => {
+  const usersQuery = useAdminUsers();
+  const tutorsWithServicesQuery = useTutorsWithServices();
+  const tutorProfilesQuery = useTutorProfiles();
+  const translationRequestsQuery = useAdminTranslationRequests();
+  const learnerProfilesQuery = useQuery({
+    queryKey: ["admin", "all-learner-profiles"],
+    queryFn: async () => {
+      try {
+        const res = await apiRequest<unknown>("/api/v1/learner-profiles/", {}, true);
+        return unwrapList<Record<string, unknown>>(res);
+      } catch {
+        try {
+          const res = await apiRequest<unknown>("/api/v1/learner-profiles", {}, true);
+          return unwrapList<Record<string, unknown>>(res);
+        } catch {
+          return [];
+        }
+      }
+    },
+    staleTime: 5 * 60_000,
+  });
+  const resolvedUsersQuery = useResolvedUserNames([...extraLearnerIds, ...extraTutorIds]);
+
+  return useMemo(() => {
+    const tutorNames = new Map<string, string>();
+    const learnerNames = new Map<string, string>();
+    const allUserNames = new Map<string, string>();
+
+    // 1. All users from /api/v1/users/
+    const users = Array.isArray(usersQuery.data) ? usersQuery.data : [];
+    users.forEach((u) => {
+      const name = u.full_name?.trim() || u.email;
+      if (name) {
+        allUserNames.set(String(u.id), name);
+        if (u.tutor_id) {
+          tutorNames.set(String(u.tutor_id), name);
+        }
+        if (u.role === "tutor") {
+          tutorNames.set(String(u.id), name);
+        }
+        if (u.role === "learner") {
+          learnerNames.set(String(u.id), name);
+        }
+      }
+    });
+
+    // 2. All tutor profiles from /api/v1/tutor-profiles/
+    const tutorProfiles = Array.isArray(tutorProfilesQuery.data) ? tutorProfilesQuery.data : [];
+    tutorProfiles.forEach((tp) => {
+      if (tp.full_name && !tp.full_name.startsWith("Tutor #")) {
+        tutorNames.set(String(tp.id), tp.full_name);
+        if (tp.user_id) {
+          tutorNames.set(String(tp.user_id), tp.full_name);
+          allUserNames.set(String(tp.user_id), tp.full_name);
+        }
+      } else if (tp.email) {
+        if (!tutorNames.has(String(tp.id))) tutorNames.set(String(tp.id), tp.email);
+        if (tp.user_id && !allUserNames.has(String(tp.user_id))) allUserNames.set(String(tp.user_id), tp.email);
+      }
+    });
+
+    // 2b. Learner profiles from /api/v1/learner-profiles/
+    const learnerProfiles = Array.isArray(learnerProfilesQuery.data) ? learnerProfilesQuery.data : [];
+    learnerProfiles.forEach((lp) => {
+      const user = lp.user as Record<string, unknown> | undefined;
+      const name = (lp.full_name || user?.full_name || user?.name || lp.email || user?.email) as string | undefined;
+      if (name && typeof name === "string" && name.trim()) {
+        const trimmed = name.trim();
+        if (lp.id) learnerNames.set(String(lp.id), trimmed);
+        if (lp.user_id) {
+          learnerNames.set(String(lp.user_id), trimmed);
+          allUserNames.set(String(lp.user_id), trimmed);
+        }
+        if (user?.id) {
+          learnerNames.set(String(user.id), trimmed);
+          allUserNames.set(String(user.id), trimmed);
+        }
+      }
+    });
+
+    // 3. Tutors with services from /services/with-tutors
+    const tutorsWithServices = Array.isArray(tutorsWithServicesQuery.data) ? tutorsWithServicesQuery.data : [];
+    tutorsWithServices.forEach((t) => {
+      if (t.tutorId && t.fullName && !t.fullName.startsWith("Tutor #")) {
+        tutorNames.set(String(t.tutorId), t.fullName);
+      }
+    });
+
+    // 4. Translation requests from /api/v1/translation-requests
+    const requests = Array.isArray(translationRequestsQuery.data) ? translationRequestsQuery.data : [];
+    requests.forEach((req) => {
+      if (req.learnerId && req.learnerName) {
+        learnerNames.set(String(req.learnerId), req.learnerName);
+        allUserNames.set(String(req.learnerId), req.learnerName);
+      }
+    });
+
+    // 5. Direct resolved user/profile names
+    if (resolvedUsersQuery.data) {
+      resolvedUsersQuery.data.forEach((name, id) => {
+        allUserNames.set(id, name);
+        if (!learnerNames.has(id)) learnerNames.set(id, name);
+        if (!tutorNames.has(id)) tutorNames.set(id, name);
+      });
+    }
+
+    const getTutorName = (id?: string | number, fallbackName?: string) => {
+      if (fallbackName && !fallbackName.startsWith("Tutor #")) return fallbackName;
+      if (id === undefined || id === null || id === "") return "Not assigned";
+      const key = String(id);
+      return tutorNames.get(key) || allUserNames.get(key) || fallbackName || `Tutor #${id}`;
+    };
+
+    const getLearnerName = (id?: string | number, fallbackName?: string) => {
+      if (fallbackName && !fallbackName.startsWith("Learner #")) return fallbackName;
+      if (id === undefined || id === null || id === "") return "Not assigned";
+      const key = String(id);
+      return learnerNames.get(key) || allUserNames.get(key) || fallbackName || `Learner #${id}`;
+    };
+
+    return { getTutorName, getLearnerName };
+  }, [
+    usersQuery.data,
+    tutorsWithServicesQuery.data,
+    tutorProfilesQuery.data,
+    translationRequestsQuery.data,
+    learnerProfilesQuery.data,
+    resolvedUsersQuery.data,
+  ]);
+};
 
 const formatDateTime = (value?: string) => {
   if (!value) return "Not provided";
@@ -299,6 +517,7 @@ const ServiceDetailItem = ({
 );
 
 const ServiceDetailsPanel = ({ service }: { service: AdminService }) => {
+  const { getTutorName } = useUserLookup([], service.tutorId ? [service.tutorId] : []);
   const rawFields = Object.entries(service.raw).filter(([, value]) => {
     if (value === undefined || value === null || value === "") return false;
     return typeof value !== "object";
@@ -339,7 +558,18 @@ const ServiceDetailsPanel = ({ service }: { service: AdminService }) => {
         </p>
       </section>
 
-      <section>
+      <section className="grid gap-3 sm:grid-cols-2">
+        {service.tutorId ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-slate-400">
+              Tutor
+            </p>
+            <p className="mt-2 text-sm font-extrabold text-slate-900">
+              {getTutorName(service.tutorId)}
+            </p>
+            <p className="text-xs font-semibold text-slate-400">ID: {formatValue(service.tutorId)}</p>
+          </div>
+        ) : null}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-slate-400">
             Created
@@ -379,6 +609,7 @@ const AvailabilityDetailsPanel = ({
 }: {
   availability: AdminAvailabilityRecord;
 }) => {
+  const { getTutorName } = useUserLookup([], availability.tutorId ? [availability.tutorId] : []);
   const rawFields = Object.entries(availability.raw).filter(([, value]) => {
     if (value === undefined || value === null || value === "") return false;
     return typeof value !== "object";
@@ -420,8 +651,9 @@ const AvailabilityDetailsPanel = ({
             Tutor
           </p>
           <p className="mt-2 text-sm font-extrabold text-slate-900">
-            {formatValue(availability.tutorId)}
+            {getTutorName(availability.tutorId)}
           </p>
+          <p className="text-xs font-semibold text-slate-400">ID: {formatValue(availability.tutorId)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-slate-400">
@@ -476,6 +708,10 @@ const bookingWindowLabel = (booking: AdminBooking) => {
 };
 
 const BookingDetailsPanel = ({ booking }: { booking: AdminBooking }) => {
+  const { getTutorName, getLearnerName } = useUserLookup(
+    booking.learnerId ? [booking.learnerId] : [],
+    booking.tutorId ? [booking.tutorId] : []
+  );
   const rawFields = Object.entries(booking.raw).filter(([, value]) => {
     if (value === undefined || value === null || value === "") return false;
     return typeof value !== "object";
@@ -516,16 +752,18 @@ const BookingDetailsPanel = ({ booking }: { booking: AdminBooking }) => {
             Tutor
           </p>
           <p className="mt-2 text-sm font-extrabold text-slate-900">
-            {formatValue(booking.tutorId)}
+            {getTutorName(booking.tutorId, booking.tutorName)}
           </p>
+          <p className="text-xs font-semibold text-slate-400">ID: {formatValue(booking.tutorId)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-slate-400">
             Learner
           </p>
           <p className="mt-2 text-sm font-extrabold text-slate-900">
-            {formatValue(booking.learnerId)}
+            {getLearnerName(booking.learnerId, booking.learnerName)}
           </p>
+          <p className="text-xs font-semibold text-slate-400">ID: {formatValue(booking.learnerId)}</p>
         </div>
       </section>
 
@@ -732,6 +970,12 @@ export const AdminOverview = () => {
 
 export const AdminServices = () => {
   const query = useAdminServices();
+  const items = query.data ?? [];
+  const tutorIds = useMemo(
+    () => items.map((item) => item.tutorId).filter((id): id is string | number => id !== undefined && id !== null),
+    [items]
+  );
+  const { getTutorName } = useUserLookup([], tutorIds);
   const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<AdminService | null>(null);
   const [tutorId, setTutorId] = useState<string | number>();
@@ -741,6 +985,7 @@ export const AdminServices = () => {
   const search = params.get("q") ?? "";
   const category = params.get("category") ?? "";
   const language = params.get("language") ?? "";
+  const tutor = params.get("tutor") ?? "";
   const active = params.get("active") ?? "";
 
   const updateParam = (key: string, value: string) => {
@@ -750,17 +995,27 @@ export const AdminServices = () => {
     setParams(next);
   };
 
-  const items = query.data ?? [];
+  const tutorOptions = useMemo(() => {
+    const ids = uniqueOptions(items, (item) => item.tutorId);
+    return ids
+      .map((id) => ({
+        value: id,
+        label: getTutorName(id),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [items, getTutorName]);
+
   const filtered = items.filter((item) => {
     const text = `${item.name ?? ""} ${item.description ?? ""}`.toLowerCase();
     const matchesSearch = !search || text.includes(search.toLowerCase());
     const matchesCategory = !category || item.category === category;
     const matchesLanguage = !language || item.language === language;
+    const matchesTutor = !tutor || String(item.tutorId) === tutor;
     const matchesActive =
       !active ||
       (active === "active" && item.isActive === true) ||
       (active === "inactive" && item.isActive === false);
-    return matchesSearch && matchesCategory && matchesLanguage && matchesActive;
+    return matchesSearch && matchesCategory && matchesLanguage && matchesTutor && matchesActive;
   });
   const { paged, page, pageCount, setPage } = usePagedItems(filtered);
 
@@ -794,7 +1049,7 @@ export const AdminServices = () => {
   if (has(items, (item) => item.tutorId)) {
     columns.push({
       key: "tutor",
-      header: "Tutor ID",
+      header: "Tutor",
       render: (item) => (
         <button
           type="button"
@@ -802,9 +1057,10 @@ export const AdminServices = () => {
             event.stopPropagation();
             setTutorId(item.tutorId);
           }}
-          className="font-extrabold text-haiti-navy underline-offset-2 hover:underline"
+          className="text-left font-extrabold text-haiti-navy underline-offset-2 hover:underline"
         >
-          {formatValue(item.tutorId)}
+          <span>{getTutorName(item.tutorId)}</span>
+          <span className="block text-[0.7rem] font-semibold text-slate-400">ID: {formatValue(item.tutorId)}</span>
         </button>
       ),
     });
@@ -827,6 +1083,14 @@ export const AdminServices = () => {
         />
         <SelectFilter label="All categories" value={category} onChange={(value) => updateParam("category", value)} options={uniqueOptions(items, (item) => item.category)} />
         <SelectFilter label="All languages" value={language} onChange={(value) => updateParam("language", value)} options={uniqueOptions(items, (item) => item.language)} />
+        {tutorOptions.length ? (
+          <SelectFilter
+            label="All tutors"
+            value={tutor}
+            onChange={(value) => updateParam("tutor", value)}
+            options={tutorOptions}
+          />
+        ) : null}
         <SelectFilter label="All states" value={active} onChange={(value) => updateParam("active", value)} options={["active", "inactive"]} />
       </FilterBar>
 
@@ -838,7 +1102,7 @@ export const AdminServices = () => {
             items={paged}
             columns={columns}
             getKey={(item) => item.id}
-            onRowClick={setSelected}
+            onRowClick={(item) => setSelected(item)}
             empty={<EmptyState title="No matching services" description="Adjust the filters or retry the services endpoint." />}
           />
           <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
@@ -859,7 +1123,7 @@ export const AdminServices = () => {
       <DetailsDrawer
         open={tutorId !== undefined}
         title="Tutor services"
-        description={tutorId !== undefined ? `Tutor #${tutorId}` : undefined}
+        description={tutorId !== undefined ? getTutorName(tutorId) : undefined}
         onClose={() => setTutorId(undefined)}
       >
         {tutorServices.isLoading ? <LoadingSkeleton rows={2} /> : null}
@@ -885,13 +1149,29 @@ export const AdminServices = () => {
 
 export const AdminAvailability = () => {
   const query = useAdminAvailability();
+  const items = query.data ?? [];
+  const tutorIds = useMemo(
+    () => items.map((item) => item.tutorId).filter((id): id is string | number => id !== undefined && id !== null),
+    [items]
+  );
+  const { getTutorName } = useUserLookup([], tutorIds);
   const [selected, setSelected] = useState<AdminAvailabilityRecord | null>(null);
   const [tutorId, setTutorId] = useState<string | number>();
   const [tutorFilter, setTutorFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const detail = useAdminAvailabilitySlot(selected?.id);
   const tutorAvailability = useAdminTutorAvailability(tutorId);
-  const items = query.data ?? [];
+
+  const tutorOptions = useMemo(() => {
+    const ids = uniqueOptions(items, (item) => item.tutorId);
+    return ids
+      .map((id) => ({
+        value: id,
+        label: getTutorName(id),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [items, getTutorName]);
+
   const filtered = items.filter((item) => {
     const matchesTutor = !tutorFilter || String(item.tutorId) === tutorFilter;
     const matchesDate = !dateFilter || item.date === dateFilter || item.day === dateFilter;
@@ -912,9 +1192,10 @@ export const AdminAvailability = () => {
                 event.stopPropagation();
                 setTutorId(item.tutorId);
               }}
-              className="font-extrabold text-haiti-navy underline-offset-2 hover:underline"
+              className="text-left font-extrabold text-haiti-navy underline-offset-2 hover:underline"
             >
-              {formatValue(item.tutorId)}
+              <span>{getTutorName(item.tutorId)}</span>
+              <span className="block text-[0.7rem] font-semibold text-slate-400">ID: {formatValue(item.tutorId)}</span>
             </button>
           ),
         }]
@@ -941,7 +1222,7 @@ export const AdminAvailability = () => {
         description="Read-only tutor availability inspection using the documented availability endpoints."
       />
       <FilterBar>
-        <SelectFilter label="All tutors" value={tutorFilter} onChange={setTutorFilter} options={uniqueOptions(items, (item) => item.tutorId)} />
+        <SelectFilter label="All tutors" value={tutorFilter} onChange={setTutorFilter} options={tutorOptions} />
         <SelectFilter label="All dates/days" value={dateFilter} onChange={setDateFilter} options={uniqueOptions(items, (item) => item.date ?? item.day)} />
       </FilterBar>
       {query.isLoading ? <LoadingSkeleton /> : null}
@@ -952,7 +1233,7 @@ export const AdminAvailability = () => {
             items={paged}
             columns={columns}
             getKey={(item) => item.id}
-            onRowClick={setSelected}
+            onRowClick={(item) => setSelected(item)}
             empty={<EmptyState title="No availability records" description="No records matched the current filters." />}
           />
           <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
@@ -965,7 +1246,7 @@ export const AdminAvailability = () => {
         {availabilityForDetails ? <AvailabilityDetailsPanel availability={availabilityForDetails} /> : null}
       </DetailsDrawer>
 
-      <DetailsDrawer open={tutorId !== undefined} title="Tutor availability" description={tutorId !== undefined ? `Tutor #${tutorId}` : undefined} onClose={() => setTutorId(undefined)}>
+      <DetailsDrawer open={tutorId !== undefined} title="Tutor availability" description={tutorId !== undefined ? getTutorName(tutorId) : undefined} onClose={() => setTutorId(undefined)}>
         {tutorAvailability.isLoading ? <LoadingSkeleton rows={2} /> : null}
         {tutorAvailability.isError ? <ErrorState message={getErrorMessage(tutorAvailability.error)} onRetry={() => tutorAvailability.refetch()} /> : null}
         {tutorAvailability.data ? (
@@ -983,6 +1264,16 @@ export const AdminAvailability = () => {
 
 export const AdminBookings = () => {
   const query = useAdminBookings();
+  const items = query.data ?? [];
+  const learnerIds = useMemo(
+    () => items.map((i) => i.learnerId).filter((id): id is string | number => id !== undefined && id !== null),
+    [items]
+  );
+  const tutorIds = useMemo(
+    () => items.map((i) => i.tutorId).filter((id): id is string | number => id !== undefined && id !== null),
+    [items]
+  );
+  const { getTutorName, getLearnerName } = useUserLookup(learnerIds, tutorIds);
   const [selected, setSelected] = useState<AdminBooking | null>(null);
   const [status, setStatus] = useState("");
   const [tutorId, setTutorId] = useState("");
@@ -994,7 +1285,32 @@ export const AdminBookings = () => {
   const detail = useAdminBooking(selected?.id);
   const tutorBookings = useAdminTutorBookings(relatedTutorId);
   const learnerBookings = useAdminLearnerBookings(relatedLearnerId);
-  const items = query.data ?? [];
+
+  const tutorOptions = useMemo(() => {
+    const ids = uniqueOptions(items, (item) => item.tutorId);
+    return ids
+      .map((id) => {
+        const item = items.find((i) => String(i.tutorId) === String(id));
+        return {
+          value: id,
+          label: getTutorName(id, item?.tutorName),
+        };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [items, getTutorName]);
+
+  const learnerOptions = useMemo(() => {
+    const ids = uniqueOptions(items, (item) => item.learnerId);
+    return ids
+      .map((id) => {
+        const item = items.find((i) => String(i.learnerId) === String(id));
+        return {
+          value: id,
+          label: getLearnerName(id, item?.learnerName),
+        };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [items, getLearnerName]);
 
   const filtered = items.filter((item) => {
     const matchesStatus = !status || item.status === status;
@@ -1022,7 +1338,7 @@ export const AdminBookings = () => {
     { key: "time", header: "Time", render: (item) => formatTimeRange(item.startTime, item.endTime) },
     {
       key: "tutor",
-      header: "Tutor ID",
+      header: "Tutor",
       render: (item) => (
         <button
           type="button"
@@ -1030,15 +1346,16 @@ export const AdminBookings = () => {
             event.stopPropagation();
             setRelatedTutorId(item.tutorId);
           }}
-          className="font-extrabold text-haiti-navy underline-offset-2 hover:underline"
+          className="text-left font-extrabold text-haiti-navy underline-offset-2 hover:underline"
         >
-          {formatValue(item.tutorId)}
+          <span>{getTutorName(item.tutorId, item.tutorName)}</span>
+          <span className="block text-[0.7rem] font-semibold text-slate-400">ID: {formatValue(item.tutorId)}</span>
         </button>
       ),
     },
     {
       key: "learner",
-      header: "Learner ID",
+      header: "Learner",
       render: (item) => (
         <button
           type="button"
@@ -1046,9 +1363,10 @@ export const AdminBookings = () => {
             event.stopPropagation();
             setRelatedLearnerId(item.learnerId);
           }}
-          className="font-extrabold text-haiti-navy underline-offset-2 hover:underline"
+          className="text-left font-extrabold text-haiti-navy underline-offset-2 hover:underline"
         >
-          {formatValue(item.learnerId)}
+          <span>{getLearnerName(item.learnerId, item.learnerName)}</span>
+          <span className="block text-[0.7rem] font-semibold text-slate-400">ID: {formatValue(item.learnerId)}</span>
         </button>
       ),
     },
@@ -1065,8 +1383,8 @@ export const AdminBookings = () => {
       <FilterBar>
         <SearchInput value={bookingId} onChange={setBookingId} placeholder="Search booking ID" />
         <SelectFilter label="All statuses" value={status} onChange={setStatus} options={uniqueOptions(items, (item) => item.status)} />
-        <SelectFilter label="All tutors" value={tutorId} onChange={setTutorId} options={uniqueOptions(items, (item) => item.tutorId)} />
-        <SelectFilter label="All learners" value={learnerId} onChange={setLearnerId} options={uniqueOptions(items, (item) => item.learnerId)} />
+        <SelectFilter label="All tutors" value={tutorId} onChange={setTutorId} options={tutorOptions} />
+        <SelectFilter label="All learners" value={learnerId} onChange={setLearnerId} options={learnerOptions} />
         {has(items, (item) => item.bookingDate) ? (
           <SelectFilter label="All dates" value={date} onChange={setDate} options={uniqueOptions(items, (item) => item.bookingDate)} />
         ) : null}
@@ -1079,7 +1397,7 @@ export const AdminBookings = () => {
             items={paged}
             columns={columns}
             getKey={(item) => item.id}
-            onRowClick={setSelected}
+            onRowClick={(item) => setSelected(item)}
             empty={<EmptyState title="No bookings found" description="No records matched the current filters." />}
           />
           <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
@@ -1092,7 +1410,7 @@ export const AdminBookings = () => {
         {bookingForDetails ? <BookingDetailsPanel booking={bookingForDetails} /> : null}
       </DetailsDrawer>
 
-      <DetailsDrawer open={relatedTutorId !== undefined} title="Tutor bookings" description={relatedTutorId !== undefined ? `Tutor #${relatedTutorId}` : undefined} onClose={() => setRelatedTutorId(undefined)}>
+      <DetailsDrawer open={relatedTutorId !== undefined} title="Tutor bookings" description={relatedTutorId !== undefined ? getTutorName(relatedTutorId) : undefined} onClose={() => setRelatedTutorId(undefined)}>
         {tutorBookings.isLoading ? <LoadingSkeleton rows={2} /> : null}
         {tutorBookings.isError ? <ErrorState message={getErrorMessage(tutorBookings.error)} onRetry={() => tutorBookings.refetch()} /> : null}
         {tutorBookings.data ? (
@@ -1105,7 +1423,7 @@ export const AdminBookings = () => {
         ) : null}
       </DetailsDrawer>
 
-      <DetailsDrawer open={relatedLearnerId !== undefined} title="Learner bookings" description={relatedLearnerId !== undefined ? `Learner #${relatedLearnerId}` : undefined} onClose={() => setRelatedLearnerId(undefined)}>
+      <DetailsDrawer open={relatedLearnerId !== undefined} title="Learner bookings" description={relatedLearnerId !== undefined ? getLearnerName(relatedLearnerId) : undefined} onClose={() => setRelatedLearnerId(undefined)}>
         {learnerBookings.isLoading ? <LoadingSkeleton rows={2} /> : null}
         {learnerBookings.isError ? <ErrorState message={getErrorMessage(learnerBookings.error)} onRetry={() => learnerBookings.refetch()} /> : null}
         {learnerBookings.data ? (

@@ -1,5 +1,6 @@
 import { apiRequest } from "../../lib/apiClient";
 import { learnerApi } from "../learner/learnerApi";
+import { unwrapList } from "../../lib/api/responseAdapters";
 import type { AvailabilitySlot, Booking } from "../learner/learnerTypes";
 import type {
   AdminUser,
@@ -60,16 +61,41 @@ export const adminApi = {
     }),
 
   getTutorProfiles: async () => {
-    const profiles = await apiRequest<RawTutorProfile[]>(
-      "/api/v1/tutor-profiles/",
-      {},
-      true
-    );
-
-    return profiles.map(normalizeTutorProfile);
+    try {
+      const profiles = await apiRequest<unknown>(
+        "/api/v1/tutor-profiles/",
+        {},
+        true
+      );
+      return unwrapList<RawTutorProfile>(profiles).map(normalizeTutorProfile);
+    } catch {
+      try {
+        const profiles = await apiRequest<unknown>(
+          "/api/v1/tutor-profiles",
+          {},
+          true
+        );
+        return unwrapList<RawTutorProfile>(profiles).map(normalizeTutorProfile);
+      } catch {
+        return [];
+      }
+    }
   },
 
-  getUsers: () => apiRequest<AdminUser[]>("/api/v1/users/", {}, true),
+  getUsers: async () => {
+    try {
+      const response = await apiRequest<unknown>("/api/v1/users/", {}, true);
+      return unwrapList<AdminUser>(response);
+    } catch {
+      try {
+        const response = await apiRequest<unknown>("/api/v1/users", {}, true);
+        return unwrapList<AdminUser>(response);
+      } catch {
+        return [];
+      }
+    }
+  },
+
   getBookings: () => apiRequest<Booking[]>("/api/v1/bookings/", {}, true),
   getServices: learnerApi.getServices,
   getAvailability: () =>

@@ -14,9 +14,25 @@ export const unwrapList = <T = unknown>(value: unknown): T[] => {
   if (Array.isArray(value)) return value as T[];
   if (!isRecord(value)) return [];
 
-  for (const key of ["items", "results", "data", "value", "files"]) {
+  for (const key of [
+    "items",
+    "results",
+    "data",
+    "value",
+    "files",
+    "users",
+    "tutors",
+    "learners",
+    "profiles",
+    "tutor_profiles",
+    "bookings",
+  ]) {
     const nested = value[key];
     if (Array.isArray(nested)) return nested as T[];
+    if (isRecord(nested)) {
+      const sub = unwrapList<T>(nested);
+      if (sub.length > 0) return sub;
+    }
   }
 
   return [];
@@ -115,8 +131,14 @@ export const normalizeBooking = (value: unknown): AdminBooking => {
 
   return {
     id: fallbackId(record),
-    learnerId: idish(record, ["learner_id"]),
+    learnerId: idish(record, ["learner_id", "user_id"]),
+    learnerName:
+      text(record, ["learner_name", "user_name", "full_name", "learnerName", "student_name", "name"]) ??
+      nestedText(record, ["learner", "user", "learner_profile", "student"], ["full_name", "name", "email"]),
     tutorId: idish(record, ["tutor_id"]),
+    tutorName:
+      text(record, ["tutor_name", "tutorName", "teacher_name", "instructor_name"]) ??
+      nestedText(record, ["tutor", "teacher", "instructor", "tutor_profile"], ["full_name", "name", "email"]),
     serviceId: idish(record, ["service_id"]),
     availabilityId: idish(record, ["availability_id"]),
     bookingDate: text(record, ["booking_date", "date"]),
